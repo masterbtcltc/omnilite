@@ -18,13 +18,13 @@ BEGIN
         BLOCK "040904E4" // U.S. English - multilingual (hex)
         BEGIN
             VALUE "CompanyName",        "Omni Foundation"
-            VALUE "FileDescription",    "Omni Core CLI (OSS RPC client for Bitcoin and the Omni Layer)"
+            VALUE "FileDescription",    "OmniFeather CLI (OSS RPC client for OmniFeather)"
             VALUE "FileVersion",        VER_FILEVERSION_STR
-            VALUE "InternalName",       "omnicore-cli"
+            VALUE "InternalName",       "omnifeather-cli"
             VALUE "LegalCopyright",     COPYRIGHT_STR
             VALUE "LegalTrademarks1",   "Distributed under the MIT/X11 software license, see the accompanying file COPYING or http://www.opensource.org/licenses/mit-license.php."
-            VALUE "OriginalFilename",   "omnicore-cli.exe"
-            VALUE "ProductName",        "Omni Core CLI"
+            VALUE "OriginalFilename",   "omnifeather-cli.exe"
+            VALUE "ProductName",        "OmniFeather CLI"
             VALUE "ProductVersion",     VER_PRODUCTVERSION_STR
         END
     END

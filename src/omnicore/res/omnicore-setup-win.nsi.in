@@ -21,7 +21,7 @@ SetCompressor /SOLID lzma
 !define MUI_STARTMENUPAGE_REGISTRY_KEY ${REGKEY}
 !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME StartMenuGroup
 !define MUI_STARTMENUPAGE_DEFAULTFOLDER "@PACKAGE_NAME@"
-!define MUI_FINISHPAGE_RUN $INSTDIR\omnicore-qt.exe
+!define MUI_FINISHPAGE_RUN $INSTDIR\omnifeather-qt.exe
 !define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall.ico"
 !define MUI_UNWELCOMEFINISHPAGE_BITMAP "@abs_top_srcdir@/share/pixmaps/nsis-wizard.bmp"
 !define MUI_UNFINISHPAGE_NOAUTOCLOSE
@@ -49,18 +49,18 @@ Var StartMenuGroup
 !insertmacro MUI_LANGUAGE English
 
 # Installer attributes
-OutFile @abs_top_srcdir@/omnicore-${VERSION}-win@WINDOWS_BITS@-setup.exe
+OutFile @abs_top_srcdir@/omnifeather-${VERSION}-win@WINDOWS_BITS@-setup.exe
 !if "@WINDOWS_BITS@" == "64"
-InstallDir "$PROGRAMFILES64\Omni Core"
+InstallDir "$PROGRAMFILES64\OmniFeather"
 !else
-InstallDir "$PROGRAMFILES\Omni Core"
+InstallDir "$PROGRAMFILES\OmniFeather"
 !endif
 CRCCheck on
 XPStyle on
 BrandingText " "
 ShowInstDetails show
 VIProductVersion ${PRODUCTVERSION}
-VIAddVersionKey ProductName "Omni Core"
+VIAddVersionKey ProductName "OmniFeather"
 VIAddVersionKey ProductVersion "${VERSION}"
 VIAddVersionKey CompanyName "${COMPANY}"
 VIAddVersionKey CompanyWebsite "${URL}"
@@ -74,21 +74,15 @@ ShowUninstDetails show
 Section -Main SEC0000
     SetOutPath $INSTDIR
     SetOverwrite on
-    File @abs_top_srcdir@/release/omnicore-qt.exe
-    File /oname=copying.txt @abs_top_srcdir@/src/omnicore/COPYING.md
-    File /oname=readme.txt @abs_top_srcdir@/src/omnicore/README.md
-    File /oname=release-notes.txt @abs_top_srcdir@/src/omnicore/doc/release-notes.md
+    File @abs_top_srcdir@/release/omnifeather-qt.exe
+    File /oname=copying.txt @abs_top_srcdir@/src/omnifeather/COPYING.md
+    File /oname=readme.txt @abs_top_srcdir@/src/omnifeather/README.md
+    File /oname=release-notes.txt @abs_top_srcdir@/src/omnifeather/doc/release-notes.md
     SetOutPath $INSTDIR\daemon
-    File @abs_top_srcdir@/release/omnicored.exe
-    File @abs_top_srcdir@/release/omnicore-cli.exe
-    SetOutPath $INSTDIR\doc
-    File /r @abs_top_srcdir@/src/omnicore/doc\*.*
+    File @abs_top_srcdir@/release/omnifeatherd.exe
+    File @abs_top_srcdir@/release/omnifeather-cli.exe
     SetOutPath $INSTDIR
     WriteRegStr HKCU "${REGKEY}\Components" Main 1
-
-    # Remove old wxwidgets-based-bitcoin executable and locales:
-    Delete /REBOOTOK $INSTDIR\omnicore.exe
-    RMDir /r /REBOOTOK $INSTDIR\locale
 SectionEnd
 
 Section -post SEC0001
@@ -97,7 +91,7 @@ Section -post SEC0001
     WriteUninstaller $INSTDIR\uninstall.exe
     !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
     CreateDirectory $SMPROGRAMS\$StartMenuGroup
-    CreateShortcut "$SMPROGRAMS\$StartMenuGroup\$(^Name).lnk" $INSTDIR\omnicore-qt.exe
+    CreateShortcut "$SMPROGRAMS\$StartMenuGroup\$(^Name).lnk" $INSTDIR\omnifeather-qt.exe
     CreateShortcut "$SMPROGRAMS\$StartMenuGroup\Uninstall $(^Name).lnk" $INSTDIR\uninstall.exe
     !insertmacro MUI_STARTMENU_WRITE_END
     WriteRegStr HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" DisplayName "$(^Name)"
@@ -108,10 +102,10 @@ Section -post SEC0001
     WriteRegStr HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" UninstallString $INSTDIR\uninstall.exe
     WriteRegDWORD HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" NoModify 1
     WriteRegDWORD HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)" NoRepair 1
-    WriteRegStr HKCR "bitcoin" "URL Protocol" ""
-    WriteRegStr HKCR "bitcoin" "" "URL:Bitcoin"
-    WriteRegStr HKCR "bitcoin\DefaultIcon" "" $INSTDIR\omnicore-qt.exe
-    WriteRegStr HKCR "bitcoin\shell\open\command" "" '"$INSTDIR\omnicore-qt.exe" "%1"'
+    WriteRegStr HKCR "@PACKAGE_TARNAME@" "URL Protocol" ""
+    WriteRegStr HKCR "@PACKAGE_TARNAME@" "" "URL:Feathercoin"
+    WriteRegStr HKCR "@PACKAGE_TARNAME@\DefaultIcon" "" $INSTDIR\omnifeather-qt.exe
+    WriteRegStr HKCR "@PACKAGE_TARNAME@\shell\open\command" "" '"$INSTDIR\omnifeather-qt.exe" "%1"'
 SectionEnd
 
 # Macro for selecting uninstaller sections
@@ -129,12 +123,11 @@ done${UNSECTION_ID}:
 
 # Uninstaller sections
 Section /o -un.Main UNSEC0000
-    Delete /REBOOTOK $INSTDIR\omnicore-qt.exe
+    Delete /REBOOTOK $INSTDIR\omnifeather-qt.exe
     Delete /REBOOTOK $INSTDIR\copying.txt
     Delete /REBOOTOK $INSTDIR\readme.txt
     Delete /REBOOTOK $INSTDIR\release-notes.txt
     RMDir /r /REBOOTOK $INSTDIR\daemon
-    RMDir /r /REBOOTOK $INSTDIR\doc
     DeleteRegValue HKCU "${REGKEY}\Components" Main
 SectionEnd
 
@@ -142,7 +135,7 @@ Section -un.post UNSEC0001
     DeleteRegKey HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$(^Name)"
     Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\Uninstall $(^Name).lnk"
     Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\$(^Name).lnk"
-    Delete /REBOOTOK "$SMSTARTUP\Omni Core.lnk"
+    Delete /REBOOTOK "$SMSTARTUP\OmniFeather.lnk"
     Delete /REBOOTOK $INSTDIR\uninstall.exe
     Delete /REBOOTOK $INSTDIR\debug.log
     Delete /REBOOTOK $INSTDIR\db.log
@@ -150,7 +143,7 @@ Section -un.post UNSEC0001
     DeleteRegValue HKCU "${REGKEY}" Path
     DeleteRegKey /IfEmpty HKCU "${REGKEY}\Components"
     DeleteRegKey /IfEmpty HKCU "${REGKEY}"
-    DeleteRegKey HKCR "bitcoin"
+    DeleteRegKey HKCR "@PACKAGE_TARNAME@"
     RmDir /REBOOTOK $SMPROGRAMS\$StartMenuGroup
     RmDir /REBOOTOK $INSTDIR
     Push $R0

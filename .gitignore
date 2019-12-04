@@ -9,6 +9,10 @@ src/feathercoin-wallet
 src/test/test_feathercoin
 src/test/test_feathercoin_fuzzy
 src/qt/test/test_feathercoin-qt
+src/omnifeatherd
+src/omnifeather-cli
+src/test/test_omnifeather
+src/qt/test/test_omnifeather-qt
 
 # autoreconf
 Makefile.in
@@ -38,6 +42,9 @@ share/setup.nsi
 share/qt/Info.plist
 
 src/univalue/gen
+
+# Omni Core Windows installer script
+src/omnicore/res/omnicore-setup-win.nsi
 
 src/qt/*.moc
 src/qt/moc_*.cpp
@@ -84,6 +91,8 @@ src/qt/bitcoin-qt.includes
 Makefile
 feathercoin-qt
 Feathercoin-Qt.app
+omnifeather-qt
+OmniFeather-Qt.app
 background.tiff*
 
 # Qt Creator
@@ -92,6 +101,7 @@ Makefile.am.user
 # Unit-tests
 Makefile.test
 feathercoin-qt_test
+omnifeather-qt_test
 
 # Resources cpp
 qrc_*.cpp
@@ -114,6 +124,7 @@ linux-build
 win32-build
 test/config.ini
 test/cache/*
+test/tmp
 
 !src/leveldb*/Makefile
 

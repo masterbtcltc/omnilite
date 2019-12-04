@@ -124,6 +124,7 @@ enum class OptionsCategory {
     COMMANDS,
     REGISTER_COMMANDS,
     CHECKPOINTING,
+    OMNI,
 
     HIDDEN // Always the last option to avoid printing these in the help
 };
@@ -249,6 +250,7 @@ public:
     // Forces an arg setting. Called by SoftSetArg() if the arg hasn't already
     // been set. Also called directly in testing.
     void ForceSetArg(const std::string& strArg, const std::string& strValue);
+    void ForceSetArgs(const std::string& strArg, const std::vector<std::string>& strVector);
 
     /**
      * Looks for -regtest, -testnet and returns the appropriate BIP70 chain name.

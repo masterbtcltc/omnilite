@@ -17,6 +17,7 @@
 #include <keystore.h>
 #include <validation.h>
 #include <net.h>
+#include <omnicore/script.h> // OmniGetDustThreshold
 #include <policy/fees.h>
 #include <policy/policy.h>
 #include <policy/rbf.h>
@@ -2071,7 +2072,13 @@ bool CWalletTx::InMempool() const
     return fInMempool;
 }
 
-bool CWalletTx::IsTrusted(interfaces::Chain::Lock& locked_chain) const
+bool CWalletTx::InMempoolDirect() const
+{
+    LOCK(mempool.cs);
+    return mempool.exists(GetHash());
+}
+
+bool CWalletTx::IsTrusted(interfaces::Chain::Lock& locked_chain, bool directMemCheck) const
 {
     LockAnnotation lock(::cs_main); // Temporary, for CheckFinalTx below. Removed in upcoming commit.
 
@@ -2087,7 +2094,9 @@ bool CWalletTx::IsTrusted(interfaces::Chain::Lock& locked_chain) const
         return false;
 
     // Don't trust unconfirmed transactions from us unless they are in the mempool.
-    if (!InMempool())
+    if (directMemCheck && !InMempoolDirect())
+        return false;
+    else if (!InMempool())
         return false;
 
     // Trusted if all inputs are from us and are in the mempool:
@@ -2782,7 +2791,7 @@ OutputType CWallet::TransactionChangeType(OutputType change_type, const std::vec
 }
 
 bool CWallet::CreateTransaction(interfaces::Chain::Lock& locked_chain, const std::vector<CRecipient>& vecSend, CTransactionRef& tx, CReserveKey& reservekey, CAmount& nFeeRet,
-                         int& nChangePosInOut, std::string& strFailReason, const CCoinControl& coin_control, bool sign)
+                         int& nChangePosInOut, std::string& strFailReason, const CCoinControl& coin_control, bool sign, bool omni, CAmount min_fee)
 {
     CAmount nValue = 0;
     int nChangePosRequest = nChangePosInOut;
@@ -2945,6 +2954,26 @@ bool CWallet::CreateTransaction(interfaces::Chain::Lock& locked_chain, const std
                             return false;
                         }
                     }
+
+                    if (omni) {
+                        // Omni funded send. If vin amount minus the amount to select is less than the dust
+                        // threshold then add the dust threshold to the amount to select and try again. This
+                        // avoids dropping the "change" output which would otherwise be added to the fee and
+                        // generating an Omni "send to self without change" error.
+                        CAmount nAmount = nValueIn - nValueToSelect;
+                        CAmount nDust = GetDustThreshold(CTxOut(nAmount, scriptChange), discard_rate);
+                        int i = 0; // Stop after 5 iterations
+                        while (nAmount < nDust && ++i < 6) {
+                            nValueToSelect = nValueIn + (nDust - nAmount);
+                            nValueIn = 0;
+                            if (!SelectCoins(vAvailableCoins, nValueToSelect, setCoins, nValueIn, coin_control, coin_selection_params, bnb_used))
+                            {
+                                strFailReason = _("Insufficient funds");
+                                return false;
+                            }
+                            nAmount = nValueIn - nValueToSelect;
+                        }
+                    }
                 } else {
                     bnb_used = false;
                 }
@@ -2995,7 +3024,7 @@ bool CWallet::CreateTransaction(interfaces::Chain::Lock& locked_chain, const std
                     return false;
                 }
 
-                nFeeNeeded = GetMinimumFee(*this, nBytes, coin_control, ::mempool, ::feeEstimator, &feeCalc);
+                nFeeNeeded = std::max(min_fee, GetMinimumFee(*this, nBytes, coin_control, ::mempool, ::feeEstimator, &feeCalc));
                 if (feeCalc.reason == FeeReason::FALLBACK && !m_allow_fallback_fee) {
                     // eventually allow a fallback fee
                     strFailReason = _("Fee estimation failed. Fallbackfee is disabled. Wait a few blocks or enable -fallbackfee.");

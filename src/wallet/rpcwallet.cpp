@@ -364,7 +364,7 @@ static UniValue sendtoaddress(const JSONRPCRequest& request)
                     HelpRequiringPassphrase(pwallet) + "\n",
                 {
                     {"address", RPCArg::Type::STR, RPCArg::Optional::NO, "The feathercoin address to send to."},
-                    {"amount", RPCArg::Type::AMOUNT, RPCArg::Optional::NO, "The amount in " + CURRENCY_UNIT + " to send. eg 0.1"},
+                    {"amounttosend", RPCArg::Type::AMOUNT, RPCArg::Optional::NO, "The amount in " + CURRENCY_UNIT + " to send. eg 0.1"},
                     {"comment", RPCArg::Type::STR, RPCArg::Optional::OMITTED_NAMED_ARG, "A comment used to store what the transaction is for.\n"
             "                             This is not part of the transaction, just kept in your wallet."},
                     {"comment_to", RPCArg::Type::STR, RPCArg::Optional::OMITTED_NAMED_ARG, "A comment to store the name of the person or organization\n"
@@ -2351,7 +2351,7 @@ static UniValue settxfee(const JSONRPCRequest& request)
             RPCHelpMan{"settxfee",
                 "\nSet the transaction fee per kB for this wallet. Overrides the global -paytxfee command line parameter.\n",
                 {
-                    {"amount", RPCArg::Type::AMOUNT, RPCArg::Optional::NO, "The transaction fee in " + CURRENCY_UNIT + "/kB"},
+                    {"feeamount", RPCArg::Type::AMOUNT, RPCArg::Optional::NO, "The transaction fee in " + CURRENCY_UNIT + "/kB"},
                 },
                 RPCResult{
             "true|false        (boolean) Returns true if successful\n"
@@ -2525,7 +2525,7 @@ static UniValue loadwallet(const JSONRPCRequest& request)
         throw std::runtime_error(
             RPCHelpMan{"loadwallet",
                 "\nLoads a wallet from a wallet file or directory."
-                "\nNote that all wallet command-line options used when starting feathercoind will be"
+                "\nNote that all wallet command-line options used when starting omnifeatherd will be"
                 "\napplied to the new wallet (eg -zapwallettxes, upgradewallet, rescan, etc).\n",
                 {
                     {"filename", RPCArg::Type::STR, RPCArg::Optional::NO, "The wallet directory or .dat file."},
@@ -3393,7 +3393,7 @@ UniValue generate(const JSONRPCRequest& request)
 
     if (!IsDeprecatedRPCEnabled("generate")) {
         throw JSONRPCError(RPC_METHOD_DEPRECATED, "The wallet generate rpc method is deprecated and will be fully removed in v0.19. "
-            "To use generate in v0.18, restart feathercoind with -deprecatedrpc=generate.\n"
+            "To use generate in v0.18, restart omnifeatherd with -deprecatedrpc=generate.\n"
             "Clients should transition to using the node rpc method generatetoaddress\n");
     }
 
@@ -4196,10 +4196,10 @@ static const CRPCCommand commands[] =
     { "wallet",             "removeprunedfunds",                &removeprunedfunds,             {"txid"} },
     { "wallet",             "rescanblockchain",                 &rescanblockchain,              {"start_height", "stop_height"} },
     { "wallet",             "sendmany",                         &sendmany,                      {"dummy","amounts","minconf","comment","subtractfeefrom","replaceable","conf_target","estimate_mode"} },
-    { "wallet",             "sendtoaddress",                    &sendtoaddress,                 {"address","amount","comment","comment_to","subtractfeefromamount","replaceable","conf_target","estimate_mode"} },
+    { "wallet",             "sendtoaddress",                    &sendtoaddress,                 {"address","amounttosend","comment","comment_to","subtractfeefromamount","replaceable","conf_target","estimate_mode"} },
     { "wallet",             "sethdseed",                        &sethdseed,                     {"newkeypool","seed"} },
     { "wallet",             "setlabel",                         &setlabel,                      {"address","label"} },
-    { "wallet",             "settxfee",                         &settxfee,                      {"amount"} },
+    { "wallet",             "settxfee",                         &settxfee,                      {"feeamount"} },
     { "wallet",             "signmessage",                      &signmessage,                   {"address","message"} },
     { "wallet",             "signrawtransactionwithwallet",     &signrawtransactionwithwallet,  {"hexstring","prevtxs","sighashtype"} },
     { "wallet",             "unloadwallet",                     &unloadwallet,                  {"wallet_name"} },

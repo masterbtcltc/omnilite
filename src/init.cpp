@@ -53,6 +53,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <omnicore/version.h>
+
 #ifndef WIN32
 #include <attributes.h>
 #include <cerrno>
@@ -94,6 +96,11 @@ std::unique_ptr<BanMan> g_banman;
 #endif
 
 static const char* FEE_ESTIMATES_FILENAME="fee_estimates.dat";
+
+// Omni Core initialization and shutdown handlers
+extern int mastercore_init();
+extern int mastercore_shutdown();
+extern int CheckWalletUpdate(bool forceUpdate = false);
 
 /**
  * The PID file facilities.
@@ -280,6 +287,9 @@ void Shutdown(InitInterfaces& interfaces)
         client->stop();
     }
 
+    //! Omni Core shutdown
+    mastercore_shutdown();
+
 #if ENABLE_ZMQ
     if (g_zmq_notification_interface) {
         UnregisterValidationInterface(g_zmq_notification_interface);
@@ -318,6 +328,7 @@ static void HandleSIGTERM(int)
 static void HandleSIGHUP(int)
 {
     LogInstance().m_reopen_file = true;
+    fReopenOmniCoreLog = true;
 }
 #else
 static BOOL WINAPI consoleCtrlHandler(DWORD dwCtrlType)
@@ -403,7 +414,6 @@ void SetupServerArgs()
 #else
     hidden_args.emplace_back("-sysperms");
 #endif
-    gArgs.AddArg("-txindex", strprintf("Maintain a full transaction index, used by the getrawtransaction rpc call (default: %u)", DEFAULT_TXINDEX), false, OptionsCategory::OPTIONS);
 
     gArgs.AddArg("-addnode=<ip>", "Add a node to connect to and attempt to keep the connection open (see the `addnode` RPC command help for more info). This option can be specified multiple times to add multiple nodes.", false, OptionsCategory::CONNECTION);
     gArgs.AddArg("-banscore=<n>", strprintf("Threshold for disconnecting misbehaving peers (default: %u)", DEFAULT_BANSCORE_THRESHOLD), false, OptionsCategory::CONNECTION);
@@ -535,6 +545,7 @@ void SetupServerArgs()
     gArgs.AddArg("-rpcport=<port>", strprintf("Listen for JSON-RPC connections on <port> (default: %u, testnet: %u, regtest: %u)", defaultBaseParams->RPCPort(), testnetBaseParams->RPCPort(), regtestBaseParams->RPCPort()), false, OptionsCategory::RPC);
     gArgs.AddArg("-rpcserialversion", strprintf("Sets the serialization of raw transaction or block hex returned in non-verbose mode, non-segwit(0) or segwit(1) (default: %d)", DEFAULT_RPC_SERIALIZE_VERSION), false, OptionsCategory::RPC);
     gArgs.AddArg("-rpcservertimeout=<n>", strprintf("Timeout during HTTP requests (default: %d)", DEFAULT_HTTP_SERVER_TIMEOUT), true, OptionsCategory::RPC);
+    gArgs.AddArg("-rpcforceutf8", strprintf("Replace invalid UTF-8 encoded characters with question marks in RPC response (default: %d)", 1), false, OptionsCategory::RPC);
     gArgs.AddArg("-rpcthreads=<n>", strprintf("Set the number of threads to service RPC calls (default: %d)", DEFAULT_HTTP_THREADS), false, OptionsCategory::RPC);
     gArgs.AddArg("-rpcuser=<user>", "Username for JSON-RPC connections", false, OptionsCategory::RPC);
     gArgs.AddArg("-rpcworkqueue=<n>", strprintf("Set the depth of the work queue to service RPC calls (default: %d)", DEFAULT_HTTP_WORKQUEUE), true, OptionsCategory::RPC);
@@ -542,6 +553,26 @@ void SetupServerArgs()
 
     gArgs.AddArg("-checkpointdepth", "Set block depth to checkpoint", false, OptionsCategory::CHECKPOINTING);
     gArgs.AddArg("-checkpointkey", "Set private key to sign checkpoint messages", false, OptionsCategory::CHECKPOINTING);
+
+    // TODO: append help messages somewhere else
+    // TODO: translation
+    gArgs.AddArg("-startclean", "Clear all persistence files on startup; triggers reparsing of Omni transactions (default: 0)", false, OptionsCategory::OMNI);
+    gArgs.AddArg("-omnitxcache", "The maximum number of transactions in the input transaction cache (default: 500000)", false, OptionsCategory::OMNI);
+    gArgs.AddArg("-omniprogressfrequency", "Time in seconds after which the initial scanning progress is reported (default: 30)", false, OptionsCategory::OMNI);
+    gArgs.AddArg("-omniseedblockfilter", "Set skipping of blocks without Omni transactions during initial scan (default: 1)", false, OptionsCategory::OMNI);
+    gArgs.AddArg("-omnilogfile", "The path of the log file (default: omnicore.log)", false, OptionsCategory::OMNI);
+    gArgs.AddArg("-omnidebug=<category>", "Enable or disable log categories, can be \"all\" or \"none\"", false, OptionsCategory::OMNI);
+    gArgs.AddArg("-autocommit", "Enable or disable broadcasting of transactions, when creating transactions (default: 1)", false, OptionsCategory::OMNI);
+    gArgs.AddArg("-overrideforcedshutdown", "Overwrite shutdown, triggered by an alert (default: 0)", false, OptionsCategory::OMNI);
+    gArgs.AddArg("-omnialertallowsender", "Whitelist senders of alerts, can be \"any\")", false, OptionsCategory::OMNI);
+    gArgs.AddArg("-omnialertignoresender", "Ignore senders of alerts", false, OptionsCategory::OMNI);
+    gArgs.AddArg("-omniactivationignoresender", "Ignore senders of activations", false, OptionsCategory::OMNI);
+    gArgs.AddArg("-omniactivationallowsender", "Whitelist senders of activations", false, OptionsCategory::OMNI);
+    gArgs.AddArg("-disclaimer", "Explicitly show QT disclaimer on startup (default: 0)", false, OptionsCategory::OMNI);
+    gArgs.AddArg("-omniuiwalletscope", "Max. transactions to show in trade and transaction history (default: 65535)", false, OptionsCategory::OMNI);
+    gArgs.AddArg("-omnishowblockconsensushash", "Calculate and log the consensus hash for the specified block", false, OptionsCategory::OMNI);
+    gArgs.AddArg("-omniuseragent", "Show Omni and Omni version in user agent string (default: 1)", false, OptionsCategory::OMNI);
+
 
 #if HAVE_DECL_DAEMON
     gArgs.AddArg("-daemon", "Run in the background as a daemon and accept commands", false, OptionsCategory::OPTIONS);
@@ -555,7 +586,7 @@ void SetupServerArgs()
 
 std::string LicenseInfo()
 {
-    const std::string URL_SOURCE_CODE = "<https://github.com/FeatherCoin/Feathercoin>";
+    const std::string URL_SOURCE_CODE = "<https://github.com/OmniLayer/omnifeather>";
     const std::string URL_WEBSITE = "<https://feathercoin.com>";
 
     return CopyrightHolders(strprintf(_("Copyright (C) %i-%i"), 2013, COPYRIGHT_YEAR) + " ") + "\n" +
@@ -959,8 +990,7 @@ bool AppInitParameterInteraction()
 
     // if using block pruning, then disallow txindex
     if (gArgs.GetArg("-prune", 0)) {
-        if (gArgs.GetBoolArg("-txindex", DEFAULT_TXINDEX))
-            return InitError(_("Prune mode is incompatible with -txindex."));
+        return InitError(_("Prune mode is incompatible with -txindex."));
     }
 
     // -bind and -whitebind can't be set when not listening
@@ -1354,7 +1384,14 @@ bool AppInitMain(InitInterfaces& interfaces)
             return InitError(strprintf(_("User Agent comment (%s) contains unsafe characters."), cmt));
         uacomments.push_back(cmt);
     }
-    strSubVersion = FormatSubVersion(CLIENT_NAME, CLIENT_VERSION, uacomments);
+
+    if (gArgs.GetArg("-omniuseragent", true)) {
+        uacomments.emplace(uacomments.begin(), OMNI_CLIENT_NAME + ":" + FormatVersion(OMNI_USERAGENT_VERSION));
+        strSubVersion = FormatSubVersion(CLIENT_NAME, CLIENT_VERSION, uacomments);
+    } else {
+        strSubVersion = FormatSubVersion(CLIENT_NAME, CLIENT_VERSION, uacomments);
+    }
+
     if (strSubVersion.size() > MAX_SUBVERSION_LENGTH) {
         return InitError(strprintf(_("Total length of network version string (%i) exceeds maximum length (%i). Reduce the number or size of uacomments."),
             strSubVersion.size(), MAX_SUBVERSION_LENGTH));
@@ -1458,7 +1495,7 @@ bool AppInitMain(InitInterfaces& interfaces)
     nTotalCache = std::min(nTotalCache, nMaxDbCache << 20); // total cache cannot be greater than nMaxDbcache
     int64_t nBlockTreeDBCache = std::min(nTotalCache / 8, nMaxBlockDBCache << 20);
     nTotalCache -= nBlockTreeDBCache;
-    int64_t nTxIndexCache = std::min(nTotalCache / 8, gArgs.GetBoolArg("-txindex", DEFAULT_TXINDEX) ? nMaxTxIndexCache << 20 : 0);
+    int64_t nTxIndexCache = std::min(nTotalCache / 8, nMaxTxIndexCache << 20);
     nTotalCache -= nTxIndexCache;
     int64_t nCoinDBCache = std::min(nTotalCache / 2, (nTotalCache / 4) + (1 << 23)); // use 25%-50% of the remainder for disk cache
     nCoinDBCache = std::min(nCoinDBCache, nMaxCoinsDBCache << 20); // cap total coins db cache
@@ -1467,9 +1504,7 @@ bool AppInitMain(InitInterfaces& interfaces)
     int64_t nMempoolSizeMax = gArgs.GetArg("-maxmempool", DEFAULT_MAX_MEMPOOL_SIZE) * 1000000;
     LogPrintf("Cache configuration:\n");
     LogPrintf("* Using %.1f MiB for block index database\n", nBlockTreeDBCache * (1.0 / 1024 / 1024));
-    if (gArgs.GetBoolArg("-txindex", DEFAULT_TXINDEX)) {
-        LogPrintf("* Using %.1f MiB for transaction index database\n", nTxIndexCache * (1.0 / 1024 / 1024));
-    }
+    LogPrintf("* Using %.1f MiB for transaction index database\n", nTxIndexCache * (1.0 / 1024 / 1024));
     LogPrintf("* Using %.1f MiB for chain state database\n", nCoinDBCache * (1.0 / 1024 / 1024));
     LogPrintf("* Using %.1f MiB for in-memory UTXO set (plus up to %.1f MiB of unused mempool space)\n", nCoinCacheUsage * (1.0 / 1024 / 1024), nMempoolSizeMax * (1.0 / 1024 / 1024));
 
@@ -1658,10 +1693,14 @@ bool AppInitMain(InitInterfaces& interfaces)
     fFeeEstimatesInitialized = true;
 
     // ********************************************************* Step 8: start indexers
-    if (gArgs.GetBoolArg("-txindex", DEFAULT_TXINDEX)) {
-        g_txindex = MakeUnique<TxIndex>(nTxIndexCache, false, fReindex);
-        g_txindex->Start();
-    }
+    g_txindex = MakeUnique<TxIndex>(nTxIndexCache, false, fReindex);
+    g_txindex->Start();
+
+    // ********************************************************* Step 8.5: load omni core
+
+    uiInterface.InitMessage(_("Parsing Omni Layer transactions..."));
+
+    mastercore_init();
 
     // ********************************************************* Step 9: load wallet
     for (const auto& client : interfaces.chain_clients) {
@@ -1669,6 +1708,9 @@ bool AppInitMain(InitInterfaces& interfaces)
             return false;
         }
     }
+
+    // Omni Core code should be initialized and wallet should now be loaded, perform an initial populat$
+    CheckWalletUpdate();
 
     // ********************************************************* Step 10: data directory maintenance
 

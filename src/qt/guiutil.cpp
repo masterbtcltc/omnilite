@@ -548,10 +548,10 @@ fs::path static StartupShortcutPath()
 {
     std::string chain = gArgs.GetChainName();
     if (chain == CBaseChainParams::MAIN)
-        return GetSpecialFolderPath(CSIDL_STARTUP) / "Feathercoin.lnk";
+        return GetSpecialFolderPath(CSIDL_STARTUP) / "OmniFeather.lnk";
     if (chain == CBaseChainParams::TESTNET) // Remove this special case when CBaseChainParams::TESTNET = "testnet4"
-        return GetSpecialFolderPath(CSIDL_STARTUP) / "Feathercoin (testnet).lnk";
-    return GetSpecialFolderPath(CSIDL_STARTUP) / strprintf("Feathercoin (%s).lnk", chain);
+        return GetSpecialFolderPath(CSIDL_STARTUP) / "OmniFeather (testnet).lnk";
+    return GetSpecialFolderPath(CSIDL_STARTUP) / strprintf("OmniFeather (%s).lnk", chain);
 }
 
 bool GetStartOnSystemStartup()
@@ -631,8 +631,8 @@ fs::path static GetAutostartFilePath()
 {
     std::string chain = gArgs.GetChainName();
     if (chain == CBaseChainParams::MAIN)
-        return GetAutostartDir() / "feathercoin.desktop";
-    return GetAutostartDir() / strprintf("feathercoin-%s.lnk", chain);
+        return GetAutostartDir() / "omnifeather.desktop";
+    return GetAutostartDir() / strprintf("omnifeather-%s.lnk", chain);
 }
 
 bool GetStartOnSystemStartup()
@@ -676,9 +676,9 @@ bool SetStartOnSystemStartup(bool fAutoStart)
         optionFile << "[Desktop Entry]\n";
         optionFile << "Type=Application\n";
         if (chain == CBaseChainParams::MAIN)
-            optionFile << "Name=Feathercoin\n";
+            optionFile << "Name=OmniFeather\n";
         else
-            optionFile << strprintf("Name=Feathercoin (%s)\n", chain);
+            optionFile << strprintf("Name=OmniFeather (%s)\n", chain);
         optionFile << "Exec=" << pszExePath << strprintf(" -min -testnet=%d -regtest=%d\n", gArgs.GetBoolArg("-testnet", false), gArgs.GetBoolArg("-regtest", false));
         optionFile << "Terminal=false\n";
         optionFile << "Hidden=false\n";

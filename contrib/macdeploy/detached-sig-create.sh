@@ -7,7 +7,7 @@ export LC_ALL=C
 set -e
 
 ROOTDIR=dist
-BUNDLE="${ROOTDIR}/Feathercoin-Qt.app"
+BUNDLE="${ROOTDIR}/OmniFeather-Qt.app"
 CODESIGN=codesign
 TEMPDIR=sign.temp
 TEMPLIST=${TEMPDIR}/signatures.txt

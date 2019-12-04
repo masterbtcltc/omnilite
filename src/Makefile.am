@@ -82,11 +82,11 @@ TESTS =
 BENCHMARKS =
 
 if BUILD_BITCOIND
-  bin_PROGRAMS += feathercoind
+  bin_PROGRAMS += omnifeatherd
 endif
 
 if BUILD_BITCOIN_CLI
-  bin_PROGRAMS += feathercoin-cli
+  bin_PROGRAMS += omnifeather-cli
 endif
 if BUILD_BITCOIN_TX
   bin_PROGRAMS += feathercoin-tx
@@ -486,16 +486,16 @@ nodist_libbitcoin_util_a_SOURCES = $(srcdir)/obj/build.h
 #
 
 # bitcoind binary #
-feathercoind_SOURCES = bitcoind.cpp
-feathercoind_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
-feathercoind_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-feathercoind_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+omnifeatherd_SOURCES = bitcoind.cpp
+omnifeatherd_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
+omnifeatherd_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+omnifeatherd_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-feathercoind_SOURCES += bitcoind-res.rc
+omnifeatherd_SOURCES += bitcoind-res.rc
 endif
 
-feathercoind_LDADD = \
+omnifeatherd_LDADD = \
   $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_WALLET) \
   $(LIBBITCOIN_SERVER) \
@@ -510,25 +510,25 @@ feathercoind_LDADD = \
   $(LIBMEMENV) \
   $(LIBSECP256K1)
 
-feathercoind_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS)
+omnifeatherd_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS)
 
 # bitcoin-cli binary #
-feathercoin_cli_SOURCES = bitcoin-cli.cpp
-feathercoin_cli_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(EVENT_CFLAGS)
-feathercoin_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-feathercoin_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+omnifeather_cli_SOURCES = bitcoin-cli.cpp
+omnifeather_cli_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(EVENT_CFLAGS)
+omnifeather_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+omnifeather_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-feathercoin_cli_SOURCES += bitcoin-cli-res.rc
+omnifeather_cli_SOURCES += bitcoin-cli-res.rc
 endif
 
-feathercoin_cli_LDADD = \
+omnifeather_cli_LDADD = \
   $(LIBBITCOIN_CLI) \
   $(LIBUNIVALUE) \
   $(LIBBITCOIN_UTIL) \
   $(LIBBITCOIN_CRYPTO)
 
-feathercoin_cli_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS)
+omnifeather_cli_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS) $(EVENT_LIBS)
 #
 
 # bitcoin-tx binary #
@@ -679,3 +679,7 @@ endif
 if ENABLE_QT_TESTS
 include Makefile.qttest.include
 endif
+
+# Omni Core
+include Makefile.omnicore.include
+#
