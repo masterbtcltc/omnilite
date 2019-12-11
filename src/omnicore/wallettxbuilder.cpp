@@ -174,7 +174,6 @@ static void UnlockCoins(
         iWallet->unlockCoin(output);
     }
 }
-#endif
 
 /**
  * Creates and sends a raw transaction by selecting all coins from the sender
@@ -188,7 +187,6 @@ int CreateFundedTransaction(
         uint256& retTxid,
         interfaces::Wallet* iWallet)
 {
-#ifdef ENABLE_WALLET
     if (!iWallet) {
         return MP_ERR_WALLET_ACCESS;
     }
@@ -367,8 +365,5 @@ int CreateFundedTransaction(
     retTxid = txid;
 
     return 0;
-#else
-    return MP_ERR_WALLET_ACCESS;
-#endif
-
 }
+#endif
