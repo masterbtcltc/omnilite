@@ -130,7 +130,7 @@ private:
     /**
      * Logic and "effects"
      */
-    int logicMath_SimpleSend();
+    int logicMath_SimpleSend(uint256& blockHash);
     int logicMath_SendToOwners();
     int logicMath_SendAll();
     int logicMath_TradeOffer();
@@ -157,7 +157,7 @@ private:
     /**
      * Logic helpers
      */
-    int logicHelper_CrowdsaleParticipation();
+    int logicHelper_CrowdsaleParticipation(uint256& blockHash);
 
 public:
     //! DEx and MetaDEx action values
