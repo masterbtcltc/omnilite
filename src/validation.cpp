@@ -3496,10 +3496,6 @@ bool CChainState::AcceptBlock(const std::shared_ptr<const CBlock>& pblock, CVali
     if (!IsInitialBlockDownload() && chainActive.Tip() == pindex->pprev)
         GetMainSignals().NewPoWValidBlock(pindex, pblock);
 
-    // Check that the block satisfies synchronized checkpoint
-    if (!IsInitialBlockDownload() && !CheckSyncCheckpoint(pindex))
-        return error("%s: rejected by synchronized checkpoint", __func__);
-
     // Write block to history file
     if (fNewBlock) *fNewBlock = true;
     try {
