@@ -276,8 +276,6 @@ public Q_SLOTS:
     void gotoBitcoinHistoryTab();
     /** Switch to utility page */
     void gotoToolboxPage();
-    /** Switch to exchange page */
-    void gotoExchangePage();
     /** Switch to receive coins page */
     void gotoReceiveCoinsPage();
     /** Switch to send coins page */

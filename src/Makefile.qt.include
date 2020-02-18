@@ -118,9 +118,6 @@ QT_FORMS_UI = \
   qt/forms/lookupspdialog.ui \
   qt/forms/lookuptxdialog.ui \
   qt/forms/txhistorydialog.ui \
-  qt/forms/metadexcanceldialog.ui \
-  qt/forms/metadexdialog.ui \
-  qt/forms/tradehistorydialog.ui \
   qt/forms/balancesdialog.ui
 
 QT_MOC_CPP = \
@@ -176,10 +173,7 @@ QT_MOC_CPP = \
   qt/moc_lookupspdialog.cpp \
   qt/moc_lookuptxdialog.cpp \
   qt/moc_txhistorydialog.cpp \
-  qt/moc_balancesdialog.cpp \
-  qt/moc_metadexdialog.cpp \
-  qt/moc_metadexcanceldialog.cpp \
-  qt/moc_tradehistorydialog.cpp
+  qt/moc_balancesdialog.cpp
 
 BITCOIN_MM = \
   qt/macdockiconhandler.mm \
@@ -269,9 +263,6 @@ BITCOIN_QT_H = \
   qt/txhistorydialog.h \
   qt/balancesdialog.h \
   qt/omnicore_init.h \
-  qt/metadexdialog.h \
-  qt/metadexcanceldialog.h \
-  qt/tradehistorydialog.h \
   qt/sendmpdialog.h \
   qt/omnicore_qtutils.h
 
@@ -408,10 +399,7 @@ BITCOIN_QT_WALLET_CPP = \
   qt/lookupspdialog.cpp \
   qt/lookuptxdialog.cpp \
   qt/txhistorydialog.cpp \
-  qt/balancesdialog.cpp \
-  qt/metadexdialog.cpp \
-  qt/metadexcanceldialog.cpp \
-  qt/tradehistorydialog.cpp
+  qt/balancesdialog.cpp
 
 BITCOIN_QT_WALLET_BIP70_CPP = \
   qt/paymentrequestplus.cpp

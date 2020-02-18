@@ -5,17 +5,14 @@ OMNICORE_H = \
   omnicore/createpayload.h \
   omnicore/createtx.h \
   omnicore/dbbase.h \
-  omnicore/dbfees.h \
   omnicore/dbspinfo.h \
   omnicore/dbstolist.h \
-  omnicore/dbtradelist.h \
   omnicore/dbtransaction.h \
   omnicore/dbtxlist.h \
   omnicore/dex.h \
   omnicore/encoding.h \
   omnicore/errors.h \
   omnicore/log.h \
-  omnicore/mdex.h \
   omnicore/notifications.h \
   omnicore/omnicore.h \
   omnicore/parse_string.h \
@@ -29,7 +26,6 @@ OMNICORE_H = \
   omnicore/rpcvalues.h \
   omnicore/rules.h \
   omnicore/script.h \
-  omnicore/seedblocks.h \
   omnicore/sp.h \
   omnicore/sto.h \
   omnicore/tally.h \
@@ -50,16 +46,13 @@ OMNICORE_CPP = \
   omnicore/createpayload.cpp \
   omnicore/createtx.cpp \
   omnicore/dbbase.cpp \
-  omnicore/dbfees.cpp \
   omnicore/dbspinfo.cpp \
   omnicore/dbstolist.cpp \
-  omnicore/dbtradelist.cpp \
   omnicore/dbtransaction.cpp \
   omnicore/dbtxlist.cpp \
   omnicore/dex.cpp \
   omnicore/encoding.cpp \
   omnicore/log.cpp \
-  omnicore/mdex.cpp \
   omnicore/notifications.cpp \
   omnicore/omnicore.cpp \
   omnicore/parse_string.cpp \
@@ -75,7 +68,6 @@ OMNICORE_CPP = \
   omnicore/rpcvalues.cpp \
   omnicore/rules.cpp \
   omnicore/script.cpp \
-  omnicore/seedblocks.cpp \
   omnicore/sp.cpp \
   omnicore/sto.cpp \
   omnicore/tally.cpp \

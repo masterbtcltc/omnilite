@@ -57,10 +57,6 @@ enum TransactionType {
   MSC_TYPE_AUTOMATIC_DISPENSARY       = 15,
   MSC_TYPE_TRADE_OFFER                = 20,
   MSC_TYPE_ACCEPT_OFFER_BTC           = 22,
-  MSC_TYPE_METADEX_TRADE              = 25,
-  MSC_TYPE_METADEX_CANCEL_PRICE       = 26,
-  MSC_TYPE_METADEX_CANCEL_PAIR        = 27,
-  MSC_TYPE_METADEX_CANCEL_ECOSYSTEM   = 28,
   MSC_TYPE_NOTIFICATION               = 31,
   MSC_TYPE_OFFER_ACCEPT_A_BET         = 40,
   MSC_TYPE_CREATE_PROPERTY_FIXED      = 50,
@@ -100,8 +96,6 @@ enum TransactionType {
 #define PKT_ERROR_STO         (-50000)
 #define PKT_ERROR_SEND        (-60000)
 #define PKT_ERROR_TRADEOFFER  (-70000)
-#define PKT_ERROR_METADEX     (-80000)
-#define METADEX_ERROR         (-81000)
 #define PKT_ERROR_TOKENS      (-82000)
 #define PKT_ERROR_SEND_ALL    (-83000)
 
@@ -120,9 +114,6 @@ std::string FormatShortMP(uint32_t propertyId, int64_t amount);
 
 /** Returns the Exodus address. */
 const CTxDestination ExodusAddress();
-
-/** Returns the Exodus crowdsale address. */
-const CTxDestination ExodusCrowdsaleAddress(int nBlock = 0);
 
 /** Returns the marker for class C transactions. */
 const std::vector<unsigned char> GetOmMarker();
@@ -166,9 +157,6 @@ bool IsInMarkerCache(const uint256& txHash);
 
 /** Global handler to total wallet balances. */
 void CheckWalletUpdate(bool forceUpdate = false);
-
-/** Used to notify that the number of tokens for a property has changed. */
-void NotifyTotalTokensChanged(uint32_t propertyId, int block);
 
 namespace mastercore
 {

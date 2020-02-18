@@ -42,7 +42,6 @@ More information about the general configuration and Bitcoin Core specific optio
 | `startclean`                 | boolean      | `0`            | clear all persistence files on startup; triggers reparsing of Omni transactions |
 | `omnitxcache`                | number       | `500000`       | the maximum number of transactions in the input transaction cache               |
 | `omniprogressfrequency`      | number       | `30`           | time in seconds after which the initial scanning progress is reported           |
-| `omniseedblockfilter`        | boolean      | `1`            | set skipping of blocks without Omni transactions during initial scan            |
 | `omnishowblockconsensushash` | number       | `0`            | calculate and log the consensus hash for the specified block                    |
 
 #### Log options:

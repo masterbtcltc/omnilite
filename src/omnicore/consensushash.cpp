@@ -7,7 +7,6 @@
 #include <omnicore/consensushash.h>
 #include <omnicore/dbspinfo.h>
 #include <omnicore/dex.h>
-#include <omnicore/mdex.h>
 #include <omnicore/log.h>
 #include <omnicore/parse_string.h>
 #include <omnicore/sp.h>
@@ -51,13 +50,12 @@ std::string GenerateConsensusString(const CMPTally& tallyObj, const std::string&
     int64_t balance = tallyObj.getMoney(propertyId, BALANCE);
     int64_t sellOfferReserve = tallyObj.getMoney(propertyId, SELLOFFER_RESERVE);
     int64_t acceptReserve = tallyObj.getMoney(propertyId, ACCEPT_RESERVE);
-    int64_t metaDExReserve = tallyObj.getMoney(propertyId, METADEX_RESERVE);
 
     // return a blank string if all balances are empty
-    if (!balance && !sellOfferReserve && !acceptReserve && !metaDExReserve) return "";
+    if (!balance && !sellOfferReserve && !acceptReserve) return "";
 
-    return strprintf("%s|%d|%d|%d|%d|%d",
-            address, propertyId, balance, sellOfferReserve, acceptReserve, metaDExReserve);
+    return strprintf("%s|%d|%d|%d|%d",
+            address, propertyId, balance, sellOfferReserve, acceptReserve);
 }
 
 // Generates a consensus string for hashing based on a DEx sell offer object
@@ -74,14 +72,6 @@ std::string GenerateConsensusString(const CMPAccept& acceptObj, const std::strin
     return strprintf("%s|%s|%d|%d|%d",
             acceptObj.getHash().GetHex(), address, acceptObj.getAcceptAmount(), acceptObj.getAcceptAmountRemaining(),
             acceptObj.getAcceptBlock());
-}
-
-// Generates a consensus string for hashing based on a MetaDEx object
-std::string GenerateConsensusString(const CMPMetaDEx& tradeObj)
-{
-    return strprintf("%s|%s|%d|%d|%d|%d|%d",
-            tradeObj.getHash().GetHex(), tradeObj.getAddr(), tradeObj.getProperty(), tradeObj.getAmountForSale(),
-            tradeObj.getDesProperty(), tradeObj.getAmountDesired(), tradeObj.getAmountRemaining());
 }
 
 // Generates a consensus string for hashing based on a crowdsale object
@@ -108,7 +98,7 @@ std::string GenerateConsensusString(const uint32_t propertyId, const std::string
  *
  * ---STAGE 1 - BALANCES---
  * Format specifiers & placeholders:
- *   "%s|%d|%d|%d|%d|%d" - "address|propertyid|balance|selloffer_reserve|accept_reserve|metadex_reserve"
+ *   "%s|%d|%d|%d|%d" - "address|propertyid|balance|selloffer_reserve|accept_reserve"
  *
  * Note: empty balance records and the pending tally are ignored. Addresses are sorted based
  * on lexicographical order, and balance records are sorted by the property identifiers.
@@ -125,19 +115,13 @@ std::string GenerateConsensusString(const uint32_t propertyId, const std::string
  *
  * Note: ordered ascending by matchedselloffertxid followed by buyer.
  *
- * ---STAGE 4 - METADEX TRADES---
- * Format specifiers & placeholders:
- *   "%s|%s|%d|%d|%d|%d|%d" - "txid|address|propertyidforsale|amountforsale|propertyiddesired|amountdesired|amountremaining"
- *
- * Note: ordered ascending by txid.
- *
- * ---STAGE 5 - CROWDSALES---
+ * ---STAGE 4 - CROWDSALES---
  * Format specifiers & placeholders:
  *   "%d|%d|%d|%d|%d" - "propertyid|propertyiddesired|deadline|usertokens|issuertokens"
  *
  * Note: ordered by property ID.
  *
- * ---STAGE 6 - PROPERTIES---
+ * ---STAGE 5 - PROPERTIES---
  * Format specifiers & placeholders:
  *   "%d|%s" - "propertyid|issueraddress"
  *
@@ -158,7 +142,7 @@ uint256 GetConsensusHash()
     if (msc_debug_consensus_hash) PrintToLog("Beginning generation of current consensus hash...\n");
 
     // Balances - loop through the tally map, updating the sha context with the data from each balance and tally type
-    // Placeholders:  "address|propertyid|balance|selloffer_reserve|accept_reserve|metadex_reserve"
+    // Placeholders:  "address|propertyid|balance|selloffer_reserve|accept_reserve"
     // Sort alphabetically first
     std::map<std::string, CMPTally> tallyMapSorted;
     for (std::unordered_map<std::string, CMPTally>::iterator uoit = mp_tally_map.begin(); uoit != mp_tally_map.end(); ++uoit) {
@@ -212,27 +196,6 @@ uint256 GetConsensusHash()
         SHA256_Update(&shaCtx, dataStr.c_str(), dataStr.length());
     }
 
-    // MetaDEx trades - loop through the MetaDEx maps and add each open trade to the consensus hash (ordered by txid)
-    // Placeholders: "txid|address|propertyidforsale|amountforsale|propertyiddesired|amountdesired|amountremaining"
-    std::vector<std::pair<arith_uint256, std::string> > vecMetaDExTrades;
-    for (md_PropertiesMap::const_iterator my_it = metadex.begin(); my_it != metadex.end(); ++my_it) {
-        const md_PricesMap& prices = my_it->second;
-        for (md_PricesMap::const_iterator it = prices.begin(); it != prices.end(); ++it) {
-            const md_Set& indexes = it->second;
-            for (md_Set::const_iterator it = indexes.begin(); it != indexes.end(); ++it) {
-                const CMPMetaDEx& obj = *it;
-                std::string dataStr = GenerateConsensusString(obj);
-                vecMetaDExTrades.push_back(std::make_pair(arith_uint256(obj.getHash().ToString()), dataStr));
-            }
-        }
-    }
-    std::sort (vecMetaDExTrades.begin(), vecMetaDExTrades.end());
-    for (std::vector<std::pair<arith_uint256, std::string> >::iterator it = vecMetaDExTrades.begin(); it != vecMetaDExTrades.end(); ++it) {
-        const std::string& dataStr = it->second;
-        if (msc_debug_consensus_hash) PrintToLog("Adding MetaDEx trade data to consensus hash: %s\n", dataStr);
-        SHA256_Update(&shaCtx, dataStr.c_str(), dataStr.length());
-    }
-
     // Crowdsales - loop through open crowdsales and add to the consensus hash (ordered by property ID)
     // Note: the variables of the crowdsale (amount, bonus etc) are not part of the crowdsale map and not included here to
     // avoid additionalal loading of SP entries from the database
@@ -275,39 +238,6 @@ uint256 GetConsensusHash()
     if (msc_debug_consensus_hash) PrintToLog("Finished generation of consensus hash.  Result: %s\n", consensusHash.GetHex());
 
     return consensusHash;
-}
-
-uint256 GetMetaDExHash(const uint32_t propertyId)
-{
-    SHA256_CTX shaCtx;
-    SHA256_Init(&shaCtx);
-
-    LOCK(cs_tally);
-
-    std::vector<std::pair<arith_uint256, std::string> > vecMetaDExTrades;
-    for (md_PropertiesMap::const_iterator my_it = metadex.begin(); my_it != metadex.end(); ++my_it) {
-        if (propertyId == 0 || propertyId == my_it->first) {
-            const md_PricesMap& prices = my_it->second;
-            for (md_PricesMap::const_iterator it = prices.begin(); it != prices.end(); ++it) {
-                const md_Set& indexes = it->second;
-                for (md_Set::const_iterator it = indexes.begin(); it != indexes.end(); ++it) {
-                    const CMPMetaDEx& obj = *it;
-                    std::string dataStr = GenerateConsensusString(obj);
-                    vecMetaDExTrades.push_back(std::make_pair(arith_uint256(obj.getHash().ToString()), dataStr));
-                }
-            }
-        }
-    }
-    std::sort (vecMetaDExTrades.begin(), vecMetaDExTrades.end());
-    for (std::vector<std::pair<arith_uint256, std::string> >::iterator it = vecMetaDExTrades.begin(); it != vecMetaDExTrades.end(); ++it) {
-        const std::string& dataStr = it->second;
-        SHA256_Update(&shaCtx, dataStr.c_str(), dataStr.length());
-    }
-
-    uint256 metadexHash;
-    SHA256_Final((unsigned char*)&metadexHash, &shaCtx);
-
-    return metadexHash;
 }
 
 /** Obtains a hash of the balances for a specific property. */

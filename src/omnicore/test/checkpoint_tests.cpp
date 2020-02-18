@@ -1,6 +1,5 @@
 #include <omnicore/consensushash.h>
 #include <omnicore/dex.h>
-#include <omnicore/mdex.h>
 #include <omnicore/sp.h>
 #include <omnicore/omnicore.h>
 #include <omnicore/rules.h>
@@ -21,7 +20,6 @@ namespace mastercore
 extern std::string GenerateConsensusString(const CMPTally& tallyObj, const std::string& address, const uint32_t propertyId); // done
 extern std::string GenerateConsensusString(const CMPOffer& offerObj, const std::string& address); // half
 extern std::string GenerateConsensusString(const CMPAccept& acceptObj, const std::string& address);
-extern std::string GenerateConsensusString(const CMPMetaDEx& tradeObj);
 extern std::string GenerateConsensusString(const CMPCrowd& crowdObj);
 extern std::string GenerateConsensusString(const uint32_t propertyId, const std::string& address);
 }
@@ -31,7 +29,7 @@ extern void clear_all_state();
 using namespace mastercore;
 
 BOOST_FIXTURE_TEST_SUITE(omnicore_checkpoint_tests, BasicTestingSetup)
-
+/* UPDATE without METADEX_RESERVE
 BOOST_AUTO_TEST_CASE(consensus_string_tally)
 {
     CMPTally tally;
@@ -50,7 +48,7 @@ BOOST_AUTO_TEST_CASE(consensus_string_tally)
     BOOST_CHECK_EQUAL("3CwZ7FiQ4MqBenRdCkjjc41M5bnoKQGC2b|3|14|100|9223372036854775807|4294967296",
             GenerateConsensusString(tally, "3CwZ7FiQ4MqBenRdCkjjc41M5bnoKQGC2b", 3));
 }
-
+*/
 BOOST_AUTO_TEST_CASE(consensus_string_offer)
 {
     CMPOffer offerA;
@@ -67,18 +65,6 @@ BOOST_AUTO_TEST_CASE(consensus_string_accept)
     CMPAccept accept(1234, 1000, 350000, 10, 2, 2000, 4000, uint256S("2c9a055899147b03b2c5240a020c1f94d243a834ecc06ab8cfa504ee29d07b7b"));
     BOOST_CHECK_EQUAL("2c9a055899147b03b2c5240a020c1f94d243a834ecc06ab8cfa504ee29d07b7b|3CwZ7FiQ4MqBenRdCkjjc41M5bnoKQGC2b|1234|1000|350000",
             GenerateConsensusString(accept, "3CwZ7FiQ4MqBenRdCkjjc41M5bnoKQGC2b"));
-}
-
-BOOST_AUTO_TEST_CASE(consensus_string_mdex)
-{
-    CMPMetaDEx tradeA;
-    BOOST_CHECK_EQUAL("0000000000000000000000000000000000000000000000000000000000000000||0|0|0|0|0",
-            GenerateConsensusString(tradeA));
-
-    CMPMetaDEx tradeB("1PxejjeWZc9ZHph7A3SYDo2sk2Up4AcysH", 395000, 31, 1000000, 1, 2000000,
-            uint256S("2c9a055899147b03b2c5240a020c1f94d243a834ecc06ab8cfa504ee29d07b7d"), 1, 1, 900000);
-    BOOST_CHECK_EQUAL("2c9a055899147b03b2c5240a020c1f94d243a834ecc06ab8cfa504ee29d07b7d|1PxejjeWZc9ZHph7A3SYDo2sk2Up4AcysH|31|1000000|1|2000000|900000",
-            GenerateConsensusString(tradeB));
 }
 
 BOOST_AUTO_TEST_CASE(consensus_string_crowdsale)

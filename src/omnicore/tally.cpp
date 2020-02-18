@@ -160,7 +160,6 @@ int64_t CMPTally::getMoneyReserved(uint32_t propertyId) const
         const BalanceRecord& record = it->second;
         money += record.balance[SELLOFFER_RESERVE];
         money += record.balance[ACCEPT_RESERVE];
-        money += record.balance[METADEX_RESERVE];
     }
 
     return money;
@@ -226,7 +225,6 @@ int64_t CMPTally::print(uint32_t propertyId, bool bDivisible) const
     int64_t selloffer_reserve = 0;
     int64_t accept_reserve = 0;
     int64_t pending = 0;
-    int64_t metadex_reserve = 0;
 
     TokenMap::const_iterator it = mp_token.find(propertyId);
 
@@ -236,18 +234,17 @@ int64_t CMPTally::print(uint32_t propertyId, bool bDivisible) const
         selloffer_reserve = record.balance[SELLOFFER_RESERVE];
         accept_reserve = record.balance[ACCEPT_RESERVE];
         pending = record.balance[PENDING];
-        metadex_reserve = record.balance[METADEX_RESERVE];
     }
 
     if (bDivisible) {
-        PrintToConsole("%22s [ SO_RESERVE= %22s, ACCEPT_RESERVE= %22s, METADEX_RESERVE= %22s ] %22s\n",
+        PrintToConsole("%22s [ SO_RESERVE= %22s, ACCEPT_RESERVE= %22s ] %22s\n",
                 FormatDivisibleMP(balance, true), FormatDivisibleMP(selloffer_reserve, true),
-                FormatDivisibleMP(accept_reserve, true), FormatDivisibleMP(metadex_reserve, true),
+                FormatDivisibleMP(accept_reserve, true),
                 FormatDivisibleMP(pending, true));
     } else {
-        PrintToConsole("%14d [ SO_RESERVE= %14d, ACCEPT_RESERVE= %14d, METADEX_RESERVE= %14d ] %14d\n",
-                balance, selloffer_reserve, accept_reserve, metadex_reserve, pending);
+        PrintToConsole("%14d [ SO_RESERVE= %14d, ACCEPT_RESERVE= %14d ] %14d\n",
+                balance, selloffer_reserve, accept_reserve, pending);
     }
 
-    return (balance + selloffer_reserve + accept_reserve + metadex_reserve);
+    return (balance + selloffer_reserve + accept_reserve);
 }

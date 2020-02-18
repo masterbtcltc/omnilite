@@ -10,22 +10,18 @@
 #include <omnicore/consensushash.h>
 #include <omnicore/convert.h>
 #include <omnicore/dbbase.h>
-#include <omnicore/dbfees.h>
 #include <omnicore/dbspinfo.h>
 #include <omnicore/dbstolist.h>
-#include <omnicore/dbtradelist.h>
 #include <omnicore/dbtransaction.h>
 #include <omnicore/dbtxlist.h>
 #include <omnicore/dex.h>
 #include <omnicore/log.h>
-#include <omnicore/mdex.h>
 #include <omnicore/notifications.h>
 #include <omnicore/parsing.h>
 #include <omnicore/pending.h>
 #include <omnicore/persistence.h>
 #include <omnicore/rules.h>
 #include <omnicore/script.h>
-#include <omnicore/seedblocks.h>
 #include <omnicore/sp.h>
 #include <omnicore/tally.h>
 #include <omnicore/tx.h>
@@ -78,14 +74,12 @@ using namespace mastercore;
 CCriticalSection cs_tally;
 
 //! Exodus address (changes based on network)
-static std::string exodus_address = "1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P";
+static std::string exodus_address = "6eXoDUSUV7yrAxKVNPEeKAHMY8San5Z37V";
 
 //! Mainnet Exodus address
-static const std::string exodus_mainnet = "1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P";
+static const std::string exodus_mainnet = "6eXoDUSUV7yrAxKVNPEeKAHMY8San5Z37V";
 //! Testnet Exodus address
-static const std::string exodus_testnet = "mpexoDuSkGGqvqrkrjiFng38QPkJQVFyqv";
-//! Testnet Exodus crowdsale address
-static const std::string getmoney_testnet = "moneyqMan7uh8FqdCA2BV5yZ8qVrc9ikLP";
+static const std::string exodus_testnet = "mpEXodUS8LUsXUHm1Vyk7b1AzG9CkKw6Mp";
 
 static int nWaterlineBlock = 0;
 
@@ -95,9 +89,6 @@ static int nWaterlineBlock = 0;
  * Can be set with configuration "-autocommit" or RPC "setautocommit_OMNI".
  */
 bool autoCommit = true;
-
-//! Number of "Dev Omni" of the last processed block
-int64_t exodus_prev = 0;
 
 //! Path for file based persistence
 fs::path pathStateFiles;
@@ -114,16 +105,10 @@ static int reorgRecoveryMaxHeight = 0;
 CMPSPInfo* mastercore::pDbSpInfo;
 //! LevelDB based storage for transactions, with txid as key and validity bit, and other data as value
 CMPTxList* mastercore::pDbTransactionList;
-//! LevelDB based storage for the MetaDEx trade history
-CMPTradeList* mastercore::pDbTradeList;
 //! LevelDB based storage for STO recipients
 CMPSTOList* mastercore::pDbStoList;
 //! LevelDB based storage for storing Omni transaction validation and position in block data
 COmniTransactionDB* mastercore::pDbTransaction;
-//! LevelDB based storage for the MetaDEx fee cache
-COmniFeeCache* mastercore::pDbFeeCache;
-//! LevelDB based storage for the MetaDEx fee distributions
-COmniFeeHistory* mastercore::pDbFeeHistory;
 
 //! In-memory collection of DEx offers
 OfferMap mastercore::my_offers;
@@ -285,7 +270,6 @@ int64_t GetReservedTokenBalance(const std::string& address, uint32_t propertyId)
 {
     int64_t nReserved = 0;
     nReserved += GetTokenBalance(address, propertyId, ACCEPT_RESERVE);
-    nReserved += GetTokenBalance(address, propertyId, METADEX_RESERVE);
     nReserved += GetTokenBalance(address, propertyId, SELLOFFER_RESERVE);
 
     return nReserved;
@@ -440,15 +424,12 @@ int64_t mastercore::getTotalTokens(uint32_t propertyId, int64_t* n_owners_total)
             totalTokens += tally.getMoney(propertyId, BALANCE);
             totalTokens += tally.getMoney(propertyId, SELLOFFER_RESERVE);
             totalTokens += tally.getMoney(propertyId, ACCEPT_RESERVE);
-            totalTokens += tally.getMoney(propertyId, METADEX_RESERVE);
 
             if (prev != totalTokens) {
                 prev = totalTokens;
                 owners++;
             }
         }
-        int64_t cachedFee = pDbFeeCache->GetCachedAmount(propertyId);
-        totalTokens += cachedFee;
     }
 
     if (property.fixed) {
@@ -513,61 +494,6 @@ bool mastercore::update_tally_map(const std::string& who, uint32_t propertyId, i
 // 10) need a locking mechanism between Core & Qt -- to retrieve the tally, for instance, this and similar to this: LOCK(wallet->cs_wallet);
 //
 
-/**
- * Calculates and updates the "development mastercoins".
- *
- * For every 10 MSC sold during the Exodus period, 1 additional "Dev MSC" was generated,
- * which are being awarded to the Exodus address slowly over the years.
- *
- * @see The "Dev MSC" specification:
- * https://github.com/OmniLayer/spec#development-mastercoins-dev-msc-previously-reward-mastercoins
- *
- * Note:
- * If timestamps are out of order, then previously vested "Dev MSC" are not voided.
- *
- * @param nTime  The timestamp of the block to update the "Dev MSC" for
- * @return The number of "Dev MSC" generated
- */
-static int64_t calculate_and_update_devmsc(unsigned int nTime, int block)
-{
-    // do nothing if before end of fundraiser
-    if (nTime < 1377993874) return 0;
-
-    // taken mainly from msc_validate.py: def get_available_reward(height, c)
-    int64_t devmsc = 0;
-    int64_t exodus_delta = 0;
-    // spec constants:
-    const int64_t all_reward = 5631623576222;
-    const double seconds_in_one_year = 31556926;
-    const double seconds_passed = nTime - 1377993874; // exodus bootstrap deadline
-    const double years = seconds_passed / seconds_in_one_year;
-    const double part_available = 1 - pow(0.5, years);
-    const double available_reward = all_reward * part_available;
-
-    devmsc = rounduint64(available_reward);
-    exodus_delta = devmsc - exodus_prev;
-
-    if (msc_debug_exo) PrintToLog("devmsc=%d, exodus_prev=%d, exodus_delta=%d\n", devmsc, exodus_prev, exodus_delta);
-
-    // skip if a block's timestamp is older than that of a previous one!
-    if (0 > exodus_delta) return 0;
-
-    // sanity check that devmsc isn't an impossible value
-    if (devmsc > all_reward || 0 > devmsc) {
-        PrintToLog("%s(): ERROR: insane number of Dev OMNI (nTime=%d, exodus_prev=%d, devmsc=%d)\n", __func__, nTime, exodus_prev, devmsc);
-        return 0;
-    }
-
-    if (exodus_delta > 0) {
-        update_tally_map(exodus_address, OMNI_PROPERTY_MSC, exodus_delta, BALANCE);
-        exodus_prev = devmsc;
-    }
-
-    NotifyTotalTokensChanged(OMNI_PROPERTY_MSC, block);
-
-    return exodus_delta;
-}
-
 uint32_t mastercore::GetNextPropertyId(bool maineco)
 {
     if (!pDbSpInfo)
@@ -578,13 +504,6 @@ uint32_t mastercore::GetNextPropertyId(bool maineco)
     } else {
         return pDbSpInfo->peekNextSPID(2);
     }
-}
-
-// Perform any actions that need to be taken when the total number of tokens for a property ID changes
-void NotifyTotalTokensChanged(uint32_t propertyId, int block)
-{
-    pDbFeeCache->UpdateDistributionThresholds(propertyId);
-    pDbFeeCache->EvalCache(propertyId, block);
 }
 
 void CheckWalletUpdate(bool forceUpdate)
@@ -632,42 +551,12 @@ void CheckWalletUpdate(bool forceUpdate)
             // work out the balances and add to globals
             global_balance_money[propertyId] += GetAvailableTokenBalance(address, propertyId);
             global_balance_reserved[propertyId] += GetTokenBalance(address, propertyId, SELLOFFER_RESERVE);
-            global_balance_reserved[propertyId] += GetTokenBalance(address, propertyId, METADEX_RESERVE);
             global_balance_reserved[propertyId] += GetTokenBalance(address, propertyId, ACCEPT_RESERVE);
         }
     }
     // signal an Omni balance change
     uiInterface.OmniBalanceChanged();
 #endif
-}
-
-/**
- * Executes Exodus crowdsale purchases.
- *
- * @return True, if it was a valid purchase
- */
-static bool TXExodusFundraiser(const CTransaction& tx, const std::string& sender, int64_t amountInvested, int nBlock, unsigned int nTime)
-{
-    const int secondsPerWeek = 60 * 60 * 24 * 7;
-    const CConsensusParams& params = ConsensusParams();
-
-    if (nBlock >= params.GENESIS_BLOCK && nBlock <= params.LAST_EXODUS_BLOCK) {
-        int deadlineTimeleft = params.exodusDeadline - nTime;
-        double bonusPercentage = params.exodusBonusPerWeek * deadlineTimeleft / secondsPerWeek;
-        double bonus = 1.0 + std::max(bonusPercentage, 0.0);
-
-        int64_t amountGenerated = round(params.exodusReward * amountInvested * bonus);
-        if (amountGenerated > 0) {
-            PrintToLog("Exodus Fundraiser tx detected, tx %s generated %s\n", tx.GetHash().ToString(), FormatDivisibleMP(amountGenerated));
-
-            assert(update_tally_map(sender, OMNI_PROPERTY_MSC, amountGenerated, BALANCE));
-            assert(update_tally_map(sender, OMNI_PROPERTY_TMSC, amountGenerated, BALANCE));
-
-            return true;
-        }
-    }
-
-    return false;
 }
 
 //! Cache for potential Omni Layer transactions
@@ -686,9 +575,8 @@ static CCriticalSection cs_marker_cache;
 static bool HasMarkerUnsafe(const CTransactionRef& tx)
 {
     const std::string strClassC("6f6d6e69");
-    const std::string strClassAB("76a914946cb2e08075bcbaf157e47bcb67eb2b2339d24288ac");
-    const std::string strClassABTest("76a914643ce12b1590633077b8620316f43a9362ef18e588ac");
-    const std::string strClassMoney("76a9145ab93563a289b74c355a9b9258b86f12bb84affb88ac");
+    const std::string strClassAB("76a91408c43043acc4761ad89e9121c58d412b4ad8b29688ac");
+    const std::string strClassABTest("76a9145f9e088b99c1515233c3fb1e2f9eb6102110dac288ac");
 
     for (unsigned int n = 0; n < tx->vout.size(); ++n) {
         const CTxOut& out = tx->vout[n];
@@ -704,9 +592,6 @@ static bool HasMarkerUnsafe(const CTransactionRef& tx)
             }
         } else {
             if (str == strClassABTest) {
-                return true;
-            }
-            if (str == strClassMoney) {
                 return true;
             }
         }
@@ -751,20 +636,19 @@ int mastercore::GetEncodingClass(const CTransaction& tx, int nBlock)
     bool hasExodus = false;
     bool hasMultisig = false;
     bool hasOpReturn = false;
-    bool hasMoney = false;
 
     /* Fast Search
      * Perform a string comparison on hex for each scriptPubKey & look directly for Exodus hash160 bytes or omni marker bytes
      * This allows to drop non-Omni transactions with less work
      */
     std::string strClassC = "6f6d6e69";
-    std::string strClassAB = "76a914946cb2e08075bcbaf157e47bcb67eb2b2339d24288ac";
+    std::string strClassAB = "76a91408c43043acc4761ad89e9121c58d412b4ad8b29688ac";
     bool examineClosely = false;
     for (unsigned int n = 0; n < tx.vout.size(); ++n) {
         const CTxOut& output = tx.vout[n];
         std::string strSPB = HexStr(output.scriptPubKey.begin(), output.scriptPubKey.end());
         if (strSPB != strClassAB) { // not an exodus marker
-            if (nBlock < 395000) { // class C not enabled yet, no need to search for marker bytes
+            if (nBlock < ConsensusParams().GENESIS_BLOCK) {
                 continue;
             } else {
                 if (strSPB.find(strClassC) != std::string::npos) {
@@ -802,9 +686,6 @@ int mastercore::GetEncodingClass(const CTransaction& tx, int nBlock)
                 if (dest == ExodusAddress()) {
                     hasExodus = true;
                 }
-                if (dest == ExodusCrowdsaleAddress(nBlock)) {
-                    hasMoney = true;
-                }
             }
         }
         if (outType == TX_MULTISIG) {
@@ -836,7 +717,7 @@ int mastercore::GetEncodingClass(const CTransaction& tx, int nBlock)
     if (hasExodus && hasMultisig) {
         return OMNI_CLASS_B;
     }
-    if (hasExodus || hasMoney) {
+    if (hasExodus) {
         return OMNI_CLASS_A;
     }
 
@@ -1377,35 +1258,6 @@ static bool HandleDExPayments(const CTransaction& tx, int nBlock, const std::str
 }
 
 /**
- * Handles potential Exodus crowdsale purchases.
- *
- * Note: must *not* be called outside of the transaction handler, and it does not
- * check, if a transaction marker exists.
- *
- * @return True, if it was a valid purchase
- */
-static bool HandleExodusPurchase(const CTransaction& tx, int nBlock, const std::string& strSender, unsigned int nTime)
-{
-    int64_t amountInvested = 0;
-
-    for (unsigned int n = 0; n < tx.vout.size(); ++n) {
-        CTxDestination dest;
-        if (ExtractDestination(tx.vout[n].scriptPubKey, dest)) {
-            if (dest == ExodusCrowdsaleAddress(nBlock)) {
-                amountInvested = tx.vout[n].nValue;
-                break; // TODO: maybe sum all values
-            }
-        }
-    }
-
-    if (0 < amountInvested) {
-        return TXExodusFundraiser(tx, strSender, amountInvested, nBlock, nTime);
-    }
-
-    return false;
-}
-
-/**
  * Reports the progress of the initial transaction scanning.
  *
  * The progress is printed to the console, written to the debug log file, and
@@ -1523,9 +1375,6 @@ static int msc_initial_scan(int nFirstBlock)
 
     ProgressReporter progressReporter(pFirstBlock, pLastBlock);
 
-    // check if using seed block filter should be disabled
-    bool seedBlockFilterEnabled = gArgs.GetBoolArg("-omniseedblockfilter", true);
-
     for (nBlock = nFirstBlock; nBlock <= nLastBlock; ++nBlock)
     {
         if (ShutdownRequested()) {
@@ -1554,14 +1403,12 @@ static int msc_initial_scan(int nFirstBlock)
         unsigned int nTxsFoundInBlock = 0;
         mastercore_handler_block_begin(nBlock, pblockindex);
 
-        if (!seedBlockFilterEnabled || !SkipBlock(nBlock)) {
-            CBlock block;
-            if (!ReadBlockFromDisk(block, pblockindex, Params().GetConsensus())) break;
+        CBlock block;
+        if (!ReadBlockFromDisk(block, pblockindex, Params().GetConsensus())) break;
 
-            for(const auto tx : block.vtx) {
-                if (mastercore_handler_tx(*tx, nBlock, nTxNum, pblockindex, nullptr)) ++nTxsFoundInBlock;
-                ++nTxNum;
-            }
+        for(const auto tx : block.vtx) {
+            if (mastercore_handler_tx(*tx, nBlock, nTxNum, pblockindex, nullptr)) ++nTxsFoundInBlock;
+            ++nTxNum;
         }
 
         nTxsFoundTotal += nTxsFoundInBlock;
@@ -1591,7 +1438,6 @@ void clear_all_state()
     my_offers.clear();
     my_accepts.clear();
     my_crowds.clear();
-    metadex.clear();
     my_pending.clear();
     ResetConsensusParams();
     ClearActivations();
@@ -1602,12 +1448,8 @@ void clear_all_state()
     pDbSpInfo->Clear();
     pDbTransactionList->Clear();
     pDbStoList->Clear();
-    pDbTradeList->Clear();
     pDbTransaction->Clear();
-    pDbFeeCache->Clear();
-    pDbFeeHistory->Clear();
     assert(pDbTransactionList->setDBVersion() == DB_VERSION); // new set of databases, set DB version
-    exodus_prev = 0;
 }
 
 void RewindDBsAndState(int nHeight, int nBlockPrev = 0, bool fInitialParse = false)
@@ -1621,10 +1463,7 @@ void RewindDBsAndState(int nHeight, int nBlockPrev = 0, bool fInitialParse = fal
 
         // NOTE: The blockNum parameter is inclusive, so deleteAboveBlock(1000) will delete records in block 1000 and above.
         pDbTransactionList->isMPinBlockRange(nHeight, reorgRecoveryMaxHeight, true);
-        pDbTradeList->deleteAboveBlock(nHeight);
         pDbStoList->deleteAboveBlock(nHeight);
-        pDbFeeCache->RollBackCache(nHeight);
-        pDbFeeHistory->RollBackHistory(nHeight);
         reorgRecoveryMaxHeight = 0;
 
         nWaterlineBlock = ConsensusParams().GENESIS_BLOCK - 1;
@@ -1701,20 +1540,14 @@ int mastercore_init()
             try {
                 fs::path persistPath = GetDataDir() / "MP_persist";
                 fs::path txlistPath = GetDataDir() / "MP_txlist";
-                fs::path tradePath = GetDataDir() / "MP_tradelist";
                 fs::path spPath = GetDataDir() / "MP_spinfo";
                 fs::path stoPath = GetDataDir() / "MP_stolist";
                 fs::path omniTXDBPath = GetDataDir() / "Omni_TXDB";
-                fs::path feesPath = GetDataDir() / "OMNI_feecache";
-                fs::path feeHistoryPath = GetDataDir() / "OMNI_feehistory";
                 if (fs::exists(persistPath)) fs::remove_all(persistPath);
                 if (fs::exists(txlistPath)) fs::remove_all(txlistPath);
-                if (fs::exists(tradePath)) fs::remove_all(tradePath);
                 if (fs::exists(spPath)) fs::remove_all(spPath);
                 if (fs::exists(stoPath)) fs::remove_all(stoPath);
                 if (fs::exists(omniTXDBPath)) fs::remove_all(omniTXDBPath);
-                if (fs::exists(feesPath)) fs::remove_all(feesPath);
-                if (fs::exists(feeHistoryPath)) fs::remove_all(feeHistoryPath);
                 PrintToLog("Success clearing persistence files in datadir %s\n", GetDataDir().string());
                 startClean = true;
             } catch (const fs::filesystem_error& e) {
@@ -1723,13 +1556,10 @@ int mastercore_init()
             }
         }
 
-        pDbTradeList = new CMPTradeList(GetDataDir() / "MP_tradelist", fReindex);
         pDbStoList = new CMPSTOList(GetDataDir() / "MP_stolist", fReindex);
         pDbTransactionList = new CMPTxList(GetDataDir() / "MP_txlist", fReindex);
         pDbSpInfo = new CMPSPInfo(GetDataDir() / "MP_spinfo", fReindex);
         pDbTransaction = new COmniTransactionDB(GetDataDir() / "Omni_TXDB", fReindex);
-        pDbFeeCache = new COmniFeeCache(GetDataDir() / "OMNI_feecache", fReindex);
-        pDbFeeHistory = new COmniFeeHistory(GetDataDir() / "OMNI_feehistory", fReindex);
 
         pathStateFiles = GetDataDir() / "MP_persist";
         TryCreateDirectories(pathStateFiles);
@@ -1795,18 +1625,10 @@ int mastercore_init()
 
         if (nWaterlineBlock < snapshotHeight) {
             nWaterlineBlock = snapshotHeight;
-            exodus_prev = 0;
         }
 
         // advance the waterline so that we start on the next unaccounted for block
         nWaterlineBlock += 1;
-
-        // collect the real Exodus balances available at the snapshot time
-        // redundant? do we need to show it both pre-parse and post-parse?  if so let's label the printfs accordingly
-        if (msc_debug_exo) {
-            int64_t exodus_balance = GetTokenBalance(exodus_address, OMNI_PROPERTY_MSC, BALANCE);
-            PrintToLog("Exodus balance at start: %s\n", FormatDivisibleMP(exodus_balance));
-        }
     }
 
     {
@@ -1832,14 +1654,6 @@ int mastercore_init()
     // initial scan
     msc_initial_scan(nWaterline);
 
-    {
-        LOCK(cs_tally);
-        // display Exodus balance
-        int64_t exodus_balance = GetTokenBalance(exodus_address, OMNI_PROPERTY_MSC, BALANCE);
-
-        PrintToLog("Exodus balance after initialization: %s\n", FormatDivisibleMP(exodus_balance));
-    }
-
     PrintToConsole("Omni Core initialization completed\n");
 
     return 0;
@@ -1861,10 +1675,6 @@ int mastercore_shutdown()
         delete pDbTransactionList;
         pDbTransactionList = nullptr;
     }
-    if (pDbTradeList) {
-        delete pDbTradeList;
-        pDbTradeList = nullptr;
-    }
     if (pDbStoList) {
         delete pDbStoList;
         pDbStoList = nullptr;
@@ -1876,14 +1686,6 @@ int mastercore_shutdown()
     if (pDbTransaction) {
         delete pDbTransaction;
         pDbTransaction = nullptr;
-    }
-    if (pDbFeeCache) {
-        delete pDbFeeCache;
-        pDbFeeCache = nullptr;
-    }
-    if (pDbFeeHistory) {
-        delete pDbFeeHistory;
-        pDbFeeHistory = nullptr;
     }
 
     mastercoreInitialized = 0;
@@ -1938,17 +1740,6 @@ bool mastercore_handler_tx(const CTransaction& tx, int nBlock, unsigned int idx,
 
     {
         LOCK(cs_tally);
-
-        if (pop_ret >= 0) {
-            assert(mp_obj.getEncodingClass() != NO_MARKER);
-            assert(mp_obj.getSender().empty() == false);
-
-            // extra iteration of the outputs for every transaction, not needed on mainnet after Exodus closed
-            const CConsensusParams& params = ConsensusParams();
-            if (isNonMainNet() || nBlock <= params.LAST_EXODUS_BLOCK) {
-                fFoundTx |= HandleExodusPurchase(tx, nBlock, mp_obj.getSender(), nBlockTime);
-            }
-        }
 
         if (pop_ret > 0) {
             assert(mp_obj.getEncodingClass() == OMNI_CLASS_A);
@@ -2051,21 +1842,11 @@ int mastercore_handler_block_end(int nBlockNow, CBlockIndex const * pBlockIndex,
         // 1) remove expired entries from the accept list (per spec accept entries are
         //    valid until their blocklimit expiration; because the customer can keep
         //    paying BTC for the offer in several installments)
-        // 2) update the amount in the Exodus address
-        int64_t devmsc = 0;
         unsigned int how_many_erased = eraseExpiredAccepts(nBlockNow);
 
         if (how_many_erased) {
             PrintToLog("%s(%d); erased %u accepts this block, line %d, file: %s\n",
                 __FUNCTION__, how_many_erased, nBlockNow, __LINE__, __FILE__);
-        }
-
-        // calculate devmsc as of this block and update the Exodus' balance
-        devmsc = calculate_and_update_devmsc(pBlockIndex->GetBlockTime(), nBlockNow);
-
-        if (msc_debug_exo) {
-            int64_t balance = GetTokenBalance(exodus_address, OMNI_PROPERTY_MSC, BALANCE);
-            PrintToLog("devmsc for block %d: %d, Exodus balance: %d\n", nBlockNow, devmsc, FormatDivisibleMP(balance));
         }
 
         // check the alert status, do we need to do anything else here?
@@ -2139,32 +1920,6 @@ const CTxDestination ExodusAddress()
         static CTxDestination mainAddress = DecodeDestination(exodus_mainnet);
         return mainAddress;
     }
-}
-
-/**
- * Returns the Exodus crowdsale address.
- *
- * Main network:
- *   1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P
- *
- * Test network:
- *   mpexoDuSkGGqvqrkrjiFng38QPkJQVFyqv (for blocks <  270775)
- *   moneyqMan7uh8FqdCA2BV5yZ8qVrc9ikLP (for blocks >= 270775)
- *
- * @return The Exodus fundraiser address
- */
-const CTxDestination ExodusCrowdsaleAddress(int nBlock)
-{
-    if (MONEYMAN_TESTNET_BLOCK <= nBlock && isNonMainNet()) {
-        static CTxDestination moneyAddress = DecodeDestination(getmoney_testnet);
-        return moneyAddress;
-    }
-    else if (MONEYMAN_REGTEST_BLOCK <= nBlock && RegTest()) {
-        static CTxDestination moneyAddress = DecodeDestination(getmoney_testnet);
-        return moneyAddress;
-    }
-
-    return ExodusAddress();
 }
 
 /**

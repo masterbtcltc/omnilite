@@ -25,7 +25,6 @@ enum MPRPCErrorCode
     MP_ERR_CREATE_TX =              -211,
     MP_ERR_COMMIT_TX =              -213,
 
-    //gettransaction_MP, listtransactions_MP
     MP_TX_NOT_FOUND =               -3331,  // No information available about transaction. (GetTransaction failed)
     MP_TX_UNCONFIRMED =             -3332,  // Unconfirmed transactions are not supported. (blockHash is 0)
     MP_BLOCK_NOT_IN_CHAIN =         -3333,  // Transaction not part of the active chain.   (pBlockIndex is NULL)
@@ -203,56 +202,6 @@ inline std::string error_str(int ec) {
           break;
       case DEX_ERROR_ACCEPT -105:
           ec_str = "Transaction fee too small";
-          break;
-
-      case PKT_ERROR_METADEX -21:
-          ec_str = "Ecosystem is invalid";
-          break;
-      case PKT_ERROR_METADEX -22:
-          ec_str = "Transaction type or version not permitted";
-          break;
-      case PKT_ERROR_METADEX -25:
-          ec_str = "Sender has insufficient balance";
-          break;
-      case PKT_ERROR_METADEX -29:
-          ec_str = "Property for sale and desired property are not be equal";
-          break;
-      case PKT_ERROR_METADEX -30:
-          ec_str = "Property for sale and desired property are not in the same ecosystem";
-          break;
-      case PKT_ERROR_METADEX -31:
-          ec_str = "Property for sale does not exist";
-          break;
-      case PKT_ERROR_METADEX -32:
-          ec_str = "Property desired does not exist";
-          break;
-      case PKT_ERROR_METADEX -33:
-          ec_str = "Amount for sale out of range or zero";
-          break;
-      case PKT_ERROR_METADEX -34:
-          ec_str = "Amount desired out of range or zero";
-          break;
-      case PKT_ERROR_METADEX -35:
-          ec_str = "One side of the trade must be OMN or TOMN";
-          break;
-
-      case METADEX_ERROR -1:
-          ec_str = "Unknown MetaDEx (Add) error";
-          break;
-      case METADEX_ERROR -20:
-          ec_str = "Unknown MetaDEx (Cancel Price) error";
-          break;
-      case METADEX_ERROR -30:
-          ec_str = "Unknown MetaDEx (Cancel Pair) error";
-          break;
-      case METADEX_ERROR -40:
-          ec_str = "Unknown MetaDEx (Cancel Everything) error";
-          break;
-      case METADEX_ERROR -66:
-          ec_str = "Trade has a unit price of zero";
-          break;
-      case METADEX_ERROR -70:
-          ec_str = "Trade already exists";
           break;
 
       case PKT_ERROR_SP -20:

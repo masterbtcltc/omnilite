@@ -332,10 +332,6 @@ void BitcoinGUI::createActions()
     connect(receiveCoinsMenuAction, &QAction::triggered, this, &BitcoinGUI::gotoReceiveCoinsPage);
     connect(historyAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
     connect(historyAction, &QAction::triggered, this, &BitcoinGUI::gotoHistoryPage);
-    /** Trading UI is disabled in this version
-    connect(exchangeAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
-    connect(exchangeAction, &QAction::triggered, [this]{ gotoExchangePage(); });
-    **/
     connect(toolboxAction, &QAction::triggered, [this]{ showNormalIfMinimized(); });
     connect(toolboxAction, &QAction::triggered, [this]{ gotoToolboxPage(); });
 #endif // ENABLE_WALLET
@@ -929,12 +925,6 @@ void BitcoinGUI::gotoReceiveCoinsPage()
 {
     receiveCoinsAction->setChecked(true);
     if (walletFrame) walletFrame->gotoReceiveCoinsPage();
-}
-
-void BitcoinGUI::gotoExchangePage()
-{
-    exchangeAction->setChecked(true);
-    if (walletFrame) walletFrame->gotoExchangePage();
 }
 
 void BitcoinGUI::gotoSendCoinsPage(QString addr)

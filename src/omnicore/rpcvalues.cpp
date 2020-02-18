@@ -161,15 +161,6 @@ uint8_t ParseIssuerBonus(const UniValue& value)
     return static_cast<uint8_t>(percentage);
 }
 
-uint8_t ParseMetaDExAction(const UniValue& value)
-{
-    int64_t action = value.get_int64();
-    if (action <= 0 || 4 < action) {
-        throw JSONRPCError(RPC_TYPE_ERROR, "Invalid action (1, 2, 3, 4 only)");
-    }
-    return static_cast<uint8_t>(action);
-}
-
 CTransaction ParseTransaction(const UniValue& value)
 {
     CMutableTransaction tx;

@@ -415,129 +415,6 @@ static UniValue omni_createpayload_changeissuer(const JSONRPCRequest& request)
     return HexStr(payload.begin(), payload.end());
 }
 
-static UniValue omni_createpayload_trade(const JSONRPCRequest& request)
-{
-    if (request.fHelp || request.params.size() != 4)
-        throw runtime_error(
-            RPCHelpMan{"omni_createpayload_trade",
-               "\nCreates the payload to place a trade offer on the distributed token exchange.\n"
-               "\nNote: if the server is not synchronized, amounts are considered as divisible, even if the token may have indivisible units!\n",
-               {
-                   {"propertyidforsale", RPCArg::Type::NUM, RPCArg::Optional::NO, "the identifier of the tokens to list for sale\n"},
-                   {"amountforsale", RPCArg::Type::STR, RPCArg::Optional::NO, "the amount of tokens to list for sale\n"},
-                   {"propertiddesired", RPCArg::Type::NUM, RPCArg::Optional::NO, "the identifier of the tokens desired in exchange\n"},
-                   {"amountdesired", RPCArg::Type::STR, RPCArg::Optional::NO, "the amount of tokens desired in exchange\n"},
-               },
-               RPCResult{
-                   "\"payload\"             (string) the hex-encoded payload\n"
-               },
-               RPCExamples{
-                   HelpExampleCli("omni_createpayload_trade", "31 \"250.0\" 1 \"10.0\"")
-                   + HelpExampleRpc("omni_createpayload_trade", "31, \"250.0\", 1, \"10.0\"")
-               }
-            }.ToString());
-
-    uint32_t propertyIdForSale = ParsePropertyId(request.params[0]);
-    int64_t amountForSale = ParseAmount(request.params[1], isPropertyDivisible(propertyIdForSale));
-    uint32_t propertyIdDesired = ParsePropertyId(request.params[2]);
-    int64_t amountDesired = ParseAmount(request.params[3], isPropertyDivisible(propertyIdDesired));
-    RequireSameEcosystem(propertyIdForSale, propertyIdDesired);
-    RequireDifferentIds(propertyIdForSale, propertyIdDesired);
-    RequireDifferentIds(propertyIdForSale, propertyIdDesired);
-
-    std::vector<unsigned char> payload = CreatePayload_MetaDExTrade(propertyIdForSale, amountForSale, propertyIdDesired, amountDesired);
-
-    return HexStr(payload.begin(), payload.end());
-}
-
-static UniValue omni_createpayload_canceltradesbyprice(const JSONRPCRequest& request)
-{
-    if (request.fHelp || request.params.size() != 4)
-        throw runtime_error(
-            RPCHelpMan{"omni_createpayload_canceltradesbyprice",
-               "\nCreates the payload to cancel offers on the distributed token exchange with the specified price.\n"
-               "\nNote: if the server is not synchronized, amounts are considered as divisible, even if the token may have indivisible units!\n",
-               {
-                   {"propertyidforsale", RPCArg::Type::NUM, RPCArg::Optional::NO, "the identifier of the tokens listed for sale\n"},
-                   {"amountforsale", RPCArg::Type::STR, RPCArg::Optional::NO, "the amount of tokens to listed for sale\n"},
-                   {"propertiddesired", RPCArg::Type::NUM, RPCArg::Optional::NO, "the identifier of the tokens desired in exchange\n"},
-                   {"amountdesired", RPCArg::Type::STR, RPCArg::Optional::NO, "the amount of tokens desired in exchange\n"},
-               },
-               RPCResult{
-                   "\"payload\"             (string) the hex-encoded payload\n"
-               },
-               RPCExamples{
-                   HelpExampleCli("omni_createpayload_canceltradesbyprice", "31 \"100.0\" 1 \"5.0\"")
-                   + HelpExampleRpc("omni_createpayload_canceltradesbyprice", "31, \"100.0\", 1, \"5.0\"")
-               }
-            }.ToString());
-
-    uint32_t propertyIdForSale = ParsePropertyId(request.params[0]);
-    int64_t amountForSale = ParseAmount(request.params[1], isPropertyDivisible(propertyIdForSale));
-    uint32_t propertyIdDesired = ParsePropertyId(request.params[2]);
-    int64_t amountDesired = ParseAmount(request.params[3], isPropertyDivisible(propertyIdDesired));
-    RequireSameEcosystem(propertyIdForSale, propertyIdDesired);
-    RequireDifferentIds(propertyIdForSale, propertyIdDesired);
-
-    std::vector<unsigned char> payload = CreatePayload_MetaDExCancelPrice(propertyIdForSale, amountForSale, propertyIdDesired, amountDesired);
-
-    return HexStr(payload.begin(), payload.end());
-}
-
-static UniValue omni_createpayload_canceltradesbypair(const JSONRPCRequest& request)
-{
-    if (request.fHelp || request.params.size() != 2)
-        throw runtime_error(
-            RPCHelpMan{"omni_createpayload_canceltradesbypair",
-               "\nCreates the payload to cancel all offers on the distributed token exchange with the given currency pair.\n",
-               {
-                   {"propertyidforsale", RPCArg::Type::NUM, RPCArg::Optional::NO, "the identifier of the tokens listed for sale\n"},
-                   {"propertiddesired", RPCArg::Type::NUM, RPCArg::Optional::NO, "the identifier of the tokens desired in exchange\n"},
-               },
-               RPCResult{
-                   "\"payload\"             (string) the hex-encoded payload\n"
-               },
-               RPCExamples{
-                   HelpExampleCli("omni_createpayload_canceltradesbypair", "1 31")
-                   + HelpExampleRpc("omni_createpayload_canceltradesbypair", "1, 31")
-               }
-            }.ToString());
-
-    uint32_t propertyIdForSale = ParsePropertyId(request.params[0]);
-    uint32_t propertyIdDesired = ParsePropertyId(request.params[1]);
-    RequireSameEcosystem(propertyIdForSale, propertyIdDesired);
-    RequireDifferentIds(propertyIdForSale, propertyIdDesired);
-
-    std::vector<unsigned char> payload = CreatePayload_MetaDExCancelPair(propertyIdForSale, propertyIdDesired);
-
-    return HexStr(payload.begin(), payload.end());
-}
-
-static UniValue omni_createpayload_cancelalltrades(const JSONRPCRequest& request)
-{
-    if (request.fHelp || request.params.size() != 1)
-        throw runtime_error(
-            RPCHelpMan{"omni_createpayload_cancelalltrades",
-               "\nCreates the payload to cancel all offers on the distributed token exchange.\n",
-               {
-                   {"ecosystem", RPCArg::Type::NUM, RPCArg::Optional::NO, "the ecosystem of the offers to cancel (1 for main ecosystem, 2 for test ecosystem)\n"},
-               },
-               RPCResult{
-                   "\"payload\"             (string) the hex-encoded payload\n"
-               },
-               RPCExamples{
-                   HelpExampleCli("omni_createpayload_cancelalltrades", "1")
-                   + HelpExampleRpc("omni_createpayload_cancelalltrades", "1")
-               }
-            }.ToString());
-
-    uint8_t ecosystem = ParseEcosystem(request.params[0]);
-
-    std::vector<unsigned char> payload = CreatePayload_MetaDExCancelEcosystem(ecosystem);
-
-    return HexStr(payload.begin(), payload.end());
-}
-
 static UniValue omni_createpayload_enablefreezing(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 1)
@@ -660,14 +537,10 @@ static const CRPCCommand commands[] =
     { "omni layer (payload creation)", "omni_createpayload_grant",               &omni_createpayload_grant,               {"propertyid", "amount", "memo"} },
     { "omni layer (payload creation)", "omni_createpayload_revoke",              &omni_createpayload_revoke,              {"propertyid", "amount", "memo"} },
     { "omni layer (payload creation)", "omni_createpayload_changeissuer",        &omni_createpayload_changeissuer,        {"propertyid"} },
-    { "omni layer (payload creation)", "omni_createpayload_trade",               &omni_createpayload_trade,               {"propertyidforsale", "amountforsale", "propertiddesired", "amountdesired"} },
     { "omni layer (payload creation)", "omni_createpayload_issuancefixed",       &omni_createpayload_issuancefixed,       {"ecosystem", "type", "previousid", "category", "subcategory", "name", "url", "data", "amount"} },
     { "omni layer (payload creation)", "omni_createpayload_issuancecrowdsale",   &omni_createpayload_issuancecrowdsale,   {"ecosystem", "type", "previousid", "category", "subcategory", "name", "url", "data", "propertyiddesired", "tokensperunit", "deadline", "earlybonus", "issuerpercentage"} },
     { "omni layer (payload creation)", "omni_createpayload_issuancemanaged",     &omni_createpayload_issuancemanaged,     {"ecosystem", "type", "previousid", "category", "subcategory", "name", "url", "data"} },
     { "omni layer (payload creation)", "omni_createpayload_closecrowdsale",      &omni_createpayload_closecrowdsale,      {"propertyid"} },
-    { "omni layer (payload creation)", "omni_createpayload_canceltradesbyprice", &omni_createpayload_canceltradesbyprice, {"propertyidforsale", "amountforsale", "propertiddesired", "amountdesired"} },
-    { "omni layer (payload creation)", "omni_createpayload_canceltradesbypair",  &omni_createpayload_canceltradesbypair,  {"propertyidforsale", "propertiddesired"} },
-    { "omni layer (payload creation)", "omni_createpayload_cancelalltrades",     &omni_createpayload_cancelalltrades,     {"ecosystem"} },
     { "omni layer (payload creation)", "omni_createpayload_enablefreezing",      &omni_createpayload_enablefreezing,      {"propertyid"} },
     { "omni layer (payload creation)", "omni_createpayload_disablefreezing",     &omni_createpayload_disablefreezing,     {"propertyid"} },
     { "omni layer (payload creation)", "omni_createpayload_freeze",              &omni_createpayload_freeze,              {"toaddress", "propertyid", "amount"} },

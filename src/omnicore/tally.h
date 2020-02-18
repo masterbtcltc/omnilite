@@ -10,7 +10,6 @@ enum TallyType {
     SELLOFFER_RESERVE = 1,
     ACCEPT_RESERVE = 2,
     PENDING = 3,
-    METADEX_RESERVE = 4,
     TALLY_TYPE_COUNT
 };
 

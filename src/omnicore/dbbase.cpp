@@ -62,25 +62,3 @@ void CDBBase::Close()
         pdb = NULL;
     }
 }
-
-
-/**
-@todo  Move initialization and deinitialization of databases into this file (?)
-@todo  Move file based storage into this file
-@todo  Replace file based storage with LevelDB based storage
-@todo  Wrap global state objects and prevent direct access:
-
-static CMPTradeList* ptradedb = new CMPTradeList();
-
-CMPTradeList& TradeDB() {
-    assert(ptradedb);
-    return *ptradedb;
-}
-
-// before:
-t_tradelistdb->recordTrade();
-
-// after:
-TradeDB().recordTrade();
-
-*/

@@ -227,7 +227,6 @@ void BalancesDialog::PopulateBalances(unsigned int propertyId)
             available += tally.getMoney(propertyId, PENDING);
             int64_t reserved = tally.getMoney(propertyId, SELLOFFER_RESERVE);
             reserved += tally.getMoney(propertyId, ACCEPT_RESERVE);
-            reserved += tally.getMoney(propertyId, METADEX_RESERVE);
 
             // format the balances
             std::string reservedStr, availableStr;

@@ -68,8 +68,6 @@ public Q_SLOTS:
     void gotoOverviewPage();
     /** Switch to balances page */
     void gotoBalancesPage();
-    /** Switch to exchange page */
-    void gotoExchangePage();
     /** Switch to history (transactions) page */
     void gotoHistoryPage();
     /** Switch directory to Omni tx history tab */

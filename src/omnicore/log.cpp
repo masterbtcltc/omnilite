@@ -45,10 +45,6 @@ bool msc_debug_tradedb            = 1;
 bool msc_debug_persistence        = 0;
 bool msc_debug_ui                 = 0;
 bool msc_debug_pending            = 1;
-bool msc_debug_metadex1           = 0;
-bool msc_debug_metadex2           = 0;
-//! Print orderbook before and after each trade
-bool msc_debug_metadex3           = 0;
 //! Print transaction fields, when interpreting packets
 bool msc_debug_packets            = 1;
 //! Print transaction fields, when interpreting packets (in RPC mode)
@@ -217,7 +213,7 @@ int ConsolePrint(const std::string& str)
 /**
  * Determine whether to override compiled debug levels via enumerating startup option --omnidebug.
  *
- * Example usage (granular categories)    : --omnidebug=parser --omnidebug=metadex1 --omnidebug=ui
+ * Example usage (granular categories)    : --omnidebug=parser --omnidebug=ui
  * Example usage (enable all categories)  : --omnidebug=all
  * Example usage (disable all debugging)  : --omnidebug=none
  * Example usage (disable all except XYZ) : --omnidebug=none --omnidebug=parser --omnidebug=sto
@@ -253,9 +249,6 @@ void InitDebugLogLevels()
         if (*it == "persistence") msc_debug_persistence = true;
         if (*it == "ui") msc_debug_ui = true;
         if (*it == "pending") msc_debug_pending = true;
-        if (*it == "metadex1") msc_debug_metadex1 = true;
-        if (*it == "metadex2") msc_debug_metadex2 = true;
-        if (*it == "metadex3") msc_debug_metadex3 = true;
         if (*it == "packets") msc_debug_packets = true;
         if (*it == "packets_readonly") msc_debug_packets_readonly = true;
         if (*it == "walletcache") msc_debug_walletcache = true;
@@ -289,9 +282,6 @@ void InitDebugLogLevels()
             msc_debug_persistence = allDebugState;
             msc_debug_ui = allDebugState;
             msc_debug_pending = allDebugState;
-            msc_debug_metadex1 = allDebugState;
-            msc_debug_metadex2 = allDebugState;
-            msc_debug_metadex3 = allDebugState;
             msc_debug_packets =  allDebugState;
             msc_debug_packets_readonly =  allDebugState;
             msc_debug_walletcache = allDebugState;

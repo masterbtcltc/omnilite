@@ -110,16 +110,6 @@ if [ $RESULT == "true," ]
     printf "FAIL (result:%s)\\n" $RESULT
     FAIL=$((FAIL+1))
 fi
-printf "     # Checking the fee cache now has 0.00006000 fee cached for OMNI... "
-CACHEDFEE=$($SRCDIR/omnicore-cli --regtest omni_getfeecache 1 | grep cachedfee | cut -d '"' -f4)
-if [ $CACHEDFEE == "0.00006000" ]
-  then
-    printf "PASS\\n"
-    PASS=$((PASS+1))
-  else
-    printf "FAIL (result:%s)\\n" $CACHEDFEE
-    FAIL=$((FAIL+1))
-fi
 printf "     # Checking %s received 5%% of the distribution (50.00 SPT #4)... " ${ADDRESS[1]}
 BALANCE=$($SRCDIR/omnicore-cli --regtest omni_getbalance ${ADDRESS[1]} 4 | grep balance | cut -d '"' -f4)
 if [ $BALANCE == "50.00000000" ]

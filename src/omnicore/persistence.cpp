@@ -8,7 +8,6 @@
 
 #include <omnicore/dex.h>
 #include <omnicore/log.h>
-#include <omnicore/mdex.h>
 #include <omnicore/rules.h>
 #include <omnicore/sp.h>
 #include <omnicore/tally.h>
@@ -38,9 +37,6 @@
 
 using namespace mastercore;
 
-//! Number of "Dev Omni" of the last processed block (needed to save global state)
-extern int64_t exodus_prev;
-
 //! Path for file based persistence
 extern fs::path pathStateFiles;
 
@@ -50,7 +46,6 @@ enum FILETYPES {
   FILETYPE_ACCEPTS,
   FILETYPE_GLOBALS,
   FILETYPE_CROWDSALES,
-  FILETYPE_MDEXORDERS,
   NUM_FILETYPES
 };
 
@@ -59,8 +54,7 @@ static char const * const statePrefix[NUM_FILETYPES] = {
     "offers",
     "accepts",
     "globals",
-    "crowdsales",
-    "mdexorders",
+    "crowdsales"
 };
 
 static bool is_state_prefix(std::string const &str)
@@ -89,22 +83,20 @@ static int write_msc_balances(std::ofstream& file, SHA256_CTX* shaCtx)
             int64_t balance = (*iter).second.getMoney(propertyId, BALANCE);
             int64_t sellReserved = (*iter).second.getMoney(propertyId, SELLOFFER_RESERVE);
             int64_t acceptReserved = (*iter).second.getMoney(propertyId, ACCEPT_RESERVE);
-            int64_t metadexReserved = (*iter).second.getMoney(propertyId, METADEX_RESERVE);
 
             // we don't allow 0 balances to read in, so if we don't write them
             // it makes things match up better between persisted state and processed state
-            if (0 == balance && 0 == sellReserved && 0 == acceptReserved && 0 == metadexReserved) {
+            if (0 == balance && 0 == sellReserved && 0 == acceptReserved) {
                 continue;
             }
 
             emptyWallet = false;
 
-            lineOut.append(strprintf("%d:%d,%d,%d,%d;",
+            lineOut.append(strprintf("%d:%d,%d,%d;",
                     propertyId,
                     balance,
                     sellReserved,
-                    acceptReserved,
-                    metadexReserved));
+                    acceptReserved));
         }
 
         if (false == emptyWallet) {
@@ -151,8 +143,7 @@ static int write_globals_state(std::ofstream& file, SHA256_CTX* shaCtx)
 {
     uint32_t nextSPID = pDbSpInfo->peekNextSPID(OMNI_PROPERTY_MSC);
     uint32_t nextTestSPID = pDbSpInfo->peekNextSPID(OMNI_PROPERTY_TMSC);
-    std::string lineOut = strprintf("%d,%d,%d",
-            exodus_prev,
+    std::string lineOut = strprintf("%d,%d",
             nextSPID,
             nextTestSPID);
 
@@ -171,22 +162,6 @@ static int write_mp_crowdsales(std::ofstream& file, SHA256_CTX* shaCtx)
         // decompose the key for address
         const CMPCrowd& crowd = it->second;
         crowd.saveCrowdSale(file, shaCtx, it->first);
-    }
-
-    return 0;
-}
-
-static int write_mp_metadex(std::ofstream &file, SHA256_CTX* shaCtx)
-{
-    for (md_PropertiesMap::iterator my_it = metadex.begin(); my_it != metadex.end(); ++my_it) {
-        md_PricesMap& prices = my_it->second;
-        for (md_PricesMap::iterator it = prices.begin(); it != prices.end(); ++it) {
-            md_Set& indexes = (it->second);
-            for (md_Set::iterator it = indexes.begin(); it != indexes.end(); ++it) {
-                const CMPMetaDEx& meta = *it;
-                meta.saveOffer(file, shaCtx);
-            }
-        }
     }
 
     return 0;
@@ -216,7 +191,7 @@ static int input_msc_balances_string(const std::string& s)
         boost::split(curProperty, *iter, boost::is_any_of(":"), boost::token_compress_on);
         if (curProperty.size() != 2) return -1;
 
-        // "balance,sellreserved,acceptreserved,metadexreserved"
+        // "balance,sellreserved,acceptreserved"
         std::vector<std::string> curBalance;
         boost::split(curBalance, curProperty[1], boost::is_any_of(","), boost::token_compress_on);
         if (curBalance.size() != 4) return -1;
@@ -226,12 +201,10 @@ static int input_msc_balances_string(const std::string& s)
         int64_t balance = boost::lexical_cast<int64_t>(curBalance[0]);
         int64_t sellReserved = boost::lexical_cast<int64_t>(curBalance[1]);
         int64_t acceptReserved = boost::lexical_cast<int64_t>(curBalance[2]);
-        int64_t metadexReserved = boost::lexical_cast<int64_t>(curBalance[3]);
 
         if (balance) update_tally_map(strAddress, propertyId, balance, BALANCE);
         if (sellReserved) update_tally_map(strAddress, propertyId, sellReserved, SELLOFFER_RESERVE);
         if (acceptReserved) update_tally_map(strAddress, propertyId, acceptReserved, ACCEPT_RESERVE);
-        if (metadexReserved) update_tally_map(strAddress, propertyId, metadexReserved, METADEX_RESERVE);
     }
 
     return 0;
@@ -305,21 +278,17 @@ static int input_mp_accepts_string(const std::string& s)
     }
 }
 
-// exodus_prev
 static int input_globals_state_string(const std::string& s)
 {
-    int64_t exodusPrev;
     uint32_t nextSPID, nextTestSPID;
     std::vector<std::string> vstr;
     boost::split(vstr, s, boost::is_any_of(" ,="), boost::token_compress_on);
-    if (3 != vstr.size()) return -1;
+    if (2 != vstr.size()) return -1;
 
     int i = 0;
-    exodusPrev = boost::lexical_cast<int64_t>(vstr[i++]);
     nextSPID = boost::lexical_cast<uint32_t>(vstr[i++]);
     nextTestSPID = boost::lexical_cast<uint32_t>(vstr[i++]);
 
-    exodus_prev = exodusPrev;
     pDbSpInfo->init(nextSPID, nextTestSPID);
     return 0;
 }
@@ -371,35 +340,6 @@ static int input_mp_crowdsale_string(const std::string& s)
     return 0;
 }
 
-// address, block, amount for sale, property, amount desired, property desired, subaction, idx, txid, amount remaining
-static int input_mp_mdexorder_string(const std::string& s)
-{
-    std::vector<std::string> vstr;
-    boost::split(vstr, s, boost::is_any_of(" ,="), boost::token_compress_on);
-
-    if (10 != vstr.size()) return -1;
-
-    int i = 0;
-
-    std::string addr = vstr[i++];
-    int block = boost::lexical_cast<int>(vstr[i++]);
-    int64_t amount_forsale = boost::lexical_cast<int64_t>(vstr[i++]);
-    uint32_t property = boost::lexical_cast<uint32_t>(vstr[i++]);
-    int64_t amount_desired = boost::lexical_cast<int64_t>(vstr[i++]);
-    uint32_t desired_property = boost::lexical_cast<uint32_t>(vstr[i++]);
-    uint8_t subaction = boost::lexical_cast<unsigned int>(vstr[i++]); // lexical_cast can't handle char!
-    unsigned int idx = boost::lexical_cast<unsigned int>(vstr[i++]);
-    uint256 txid = uint256S(vstr[i++]);
-    int64_t amount_remaining = boost::lexical_cast<int64_t>(vstr[i++]);
-
-    CMPMetaDEx mdexObj(addr, block, property, amount_forsale, desired_property,
-            amount_desired, txid, idx, subaction, amount_remaining);
-
-    if (!MetaDEx_INSERT(mdexObj)) return -1;
-
-    return 0;
-}
-
 static int write_state_file(const CBlockIndex* pBlockIndex, int what)
 {
     fs::path path = pathStateFiles / strprintf("%s-%s.dat", statePrefix[what], pBlockIndex->GetBlockHash().ToString());
@@ -432,10 +372,6 @@ static int write_state_file(const CBlockIndex* pBlockIndex, int what)
 
         case FILETYPE_CROWDSALES:
             result = write_mp_crowdsales(file, &shaCtx);
-            break;
-
-        case FILETYPE_MDEXORDERS:
-            result = write_mp_metadex(file, &shaCtx);
             break;
     }
 
@@ -530,7 +466,6 @@ int PersistInMemoryState(const CBlockIndex* pBlockIndex)
     write_state_file(pBlockIndex, FILETYPE_ACCEPTS);
     write_state_file(pBlockIndex, FILETYPE_GLOBALS);
     write_state_file(pBlockIndex, FILETYPE_CROWDSALES);
-    write_state_file(pBlockIndex, FILETYPE_MDEXORDERS);
 
     // clean-up the directory
     prune_state_files(pBlockIndex);
@@ -574,15 +509,6 @@ int RestoreInMemoryState(const std::string& filename, int what, bool verifyHash)
         case FILETYPE_CROWDSALES:
             my_crowds.clear();
             inputLineFunc = input_mp_crowdsale_string;
-            break;
-
-        case FILETYPE_MDEXORDERS:
-            // FIXME
-            // memory leak ... gotta unallocate inner layers first....
-            // TODO
-            // ...
-            metadex.clear();
-            inputLineFunc = input_mp_mdexorder_string;
             break;
 
         default:

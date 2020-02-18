@@ -8,12 +8,10 @@
 
 #include <omnicore/dbspinfo.h>
 #include <omnicore/dbstolist.h>
-#include <omnicore/dbtradelist.h>
 #include <omnicore/dbtransaction.h>
 #include <omnicore/dbtxlist.h>
 #include <omnicore/dex.h>
 #include <omnicore/errors.h>
-#include <omnicore/mdex.h>
 #include <omnicore/omnicore.h>
 #include <omnicore/parsing.h>
 #include <omnicore/pending.h>
@@ -46,7 +44,7 @@ using namespace mastercore;
  * Function to standardize RPC output for transactions into a JSON object in either basic or extended mode.
  *
  * Use basic mode for generic calls (e.g. omni_gettransaction/omni_listtransaction etc.)
- * Use extended mode for transaction specific calls (e.g. omni_getsto, omni_gettrade etc.)
+ * Use extended mode for transaction specific calls (e.g. omni_getsto.)
  *
  * DEx payments and the extended mode are only available for confirmed transactions.
  */
@@ -122,7 +120,7 @@ int populateRPCTransactionObject(const CTransaction& tx, const uint256& blockHas
         return 0;
     }
 
-    // check if we're filtering from listtransactions_MP, and if so whether we have a non-match we want to skip
+    // check if we're filtering from omni_listtransactions, and if so whether we have a non-match we want to skip
     if (!filterAddress.empty() && mp_obj.getSender() != filterAddress && mp_obj.getReceiver() != filterAddress) return -1;
 
     // parse packet and populate mp_obj
@@ -191,18 +189,6 @@ void populateRPCTypeInfo(CMPTransaction& mp_obj, UniValue& txobj, uint32_t txTyp
         case MSC_TYPE_TRADE_OFFER:
             populateRPCTypeTradeOffer(mp_obj, txobj);
             break;
-        case MSC_TYPE_METADEX_TRADE:
-            populateRPCTypeMetaDExTrade(mp_obj, txobj, extendedDetails);
-            break;
-        case MSC_TYPE_METADEX_CANCEL_PRICE:
-            populateRPCTypeMetaDExCancelPrice(mp_obj, txobj, extendedDetails);
-            break;
-        case MSC_TYPE_METADEX_CANCEL_PAIR:
-            populateRPCTypeMetaDExCancelPair(mp_obj, txobj, extendedDetails);
-            break;
-        case MSC_TYPE_METADEX_CANCEL_ECOSYSTEM:
-            populateRPCTypeMetaDExCancelEcosystem(mp_obj, txobj, extendedDetails);
-            break;
         case MSC_TYPE_ACCEPT_OFFER_BTC:
             populateRPCTypeAcceptOffer(mp_obj, txobj);
             break;
@@ -253,10 +239,6 @@ bool showRefForTx(uint32_t txType)
         case MSC_TYPE_SIMPLE_SEND: return true;
         case MSC_TYPE_SEND_TO_OWNERS: return false;
         case MSC_TYPE_TRADE_OFFER: return false;
-        case MSC_TYPE_METADEX_TRADE: return false;
-        case MSC_TYPE_METADEX_CANCEL_PRICE: return false;
-        case MSC_TYPE_METADEX_CANCEL_PAIR: return false;
-        case MSC_TYPE_METADEX_CANCEL_ECOSYSTEM: return false;
         case MSC_TYPE_ACCEPT_OFFER_BTC: return true;
         case MSC_TYPE_CREATE_PROPERTY_FIXED: return false;
         case MSC_TYPE_CREATE_PROPERTY_VARIABLE: return false;
@@ -345,7 +327,7 @@ void populateRPCTypeTradeOffer(CMPTransaction& omniObj, UniValue& txobj)
     }
     {
         // Check levelDB to see if the amount for sale has been amended due to a partial purchase
-        // TODO: DEx phase 1 really needs an overhaul to work like MetaDEx with original amounts for sale and amounts remaining etc
+        // TODO: DEx phase 1 really needs an overhaul to work with original amounts for sale and amounts remaining etc
         int tmpblock = 0;
         unsigned int tmptype = 0;
         uint64_t amountNew = 0;
@@ -369,67 +351,13 @@ void populateRPCTypeTradeOffer(CMPTransaction& omniObj, UniValue& txobj)
     if (sellSubAction == 3) txobj.pushKV("action", "cancel");
 }
 
-void populateRPCTypeMetaDExTrade(CMPTransaction& omniObj, UniValue& txobj, bool extendedDetails)
-{
-    CMPMetaDEx metaObj(omniObj);
-
-    bool propertyIdForSaleIsDivisible = isPropertyDivisible(omniObj.getProperty());
-    bool propertyIdDesiredIsDivisible = isPropertyDivisible(metaObj.getDesProperty());
-    std::string unitPriceStr = metaObj.displayFullUnitPrice();
-
-    // populate
-    txobj.pushKV("propertyidforsale", (uint64_t)omniObj.getProperty());
-    txobj.pushKV("propertyidforsaleisdivisible", propertyIdForSaleIsDivisible);
-    txobj.pushKV("amountforsale", FormatMP(omniObj.getProperty(), omniObj.getAmount()));
-    txobj.pushKV("propertyiddesired", (uint64_t)metaObj.getDesProperty());
-    txobj.pushKV("propertyiddesiredisdivisible", propertyIdDesiredIsDivisible);
-    txobj.pushKV("amountdesired", FormatMP(metaObj.getDesProperty(), metaObj.getAmountDesired()));
-    txobj.pushKV("unitprice", unitPriceStr);
-    if (extendedDetails) populateRPCExtendedTypeMetaDExTrade(omniObj.getHash(), omniObj.getProperty(), omniObj.getAmount(), txobj);
-}
-
-void populateRPCTypeMetaDExCancelPrice(CMPTransaction& omniObj, UniValue& txobj, bool extendedDetails)
-{
-    CMPMetaDEx metaObj(omniObj);
-
-    bool propertyIdForSaleIsDivisible = isPropertyDivisible(omniObj.getProperty());
-    bool propertyIdDesiredIsDivisible = isPropertyDivisible(metaObj.getDesProperty());
-    std::string unitPriceStr = metaObj.displayFullUnitPrice();
-
-    // populate
-    txobj.pushKV("propertyidforsale", (uint64_t)omniObj.getProperty());
-    txobj.pushKV("propertyidforsaleisdivisible", propertyIdForSaleIsDivisible);
-    txobj.pushKV("amountforsale", FormatMP(omniObj.getProperty(), omniObj.getAmount()));
-    txobj.pushKV("propertyiddesired", (uint64_t)metaObj.getDesProperty());
-    txobj.pushKV("propertyiddesiredisdivisible", propertyIdDesiredIsDivisible);
-    txobj.pushKV("amountdesired", FormatMP(metaObj.getDesProperty(), metaObj.getAmountDesired()));
-    txobj.pushKV("unitprice", unitPriceStr);
-    if (extendedDetails) populateRPCExtendedTypeMetaDExCancel(omniObj.getHash(), txobj);
-}
-
-void populateRPCTypeMetaDExCancelPair(CMPTransaction& omniObj, UniValue& txobj, bool extendedDetails)
-{
-    CMPMetaDEx metaObj(omniObj);
-
-    // populate
-    txobj.pushKV("propertyidforsale", (uint64_t)omniObj.getProperty());
-    txobj.pushKV("propertyiddesired", (uint64_t)metaObj.getDesProperty());
-    if (extendedDetails) populateRPCExtendedTypeMetaDExCancel(omniObj.getHash(), txobj);
-}
-
-void populateRPCTypeMetaDExCancelEcosystem(CMPTransaction& omniObj, UniValue& txobj, bool extendedDetails)
-{
-    txobj.pushKV("ecosystem", strEcosystem(omniObj.getEcosystem()));
-    if (extendedDetails) populateRPCExtendedTypeMetaDExCancel(omniObj.getHash(), txobj);
-}
-
 void populateRPCTypeAcceptOffer(CMPTransaction& omniObj, UniValue& txobj)
 {
     uint32_t propertyId = omniObj.getProperty();
     int64_t amount = omniObj.getAmount();
 
     // Check levelDB to see if the amount accepted has been amended due to over accepting amount available
-    // TODO: DEx phase 1 really needs an overhaul to work like MetaDEx with original amounts for sale and amounts remaining etc
+    // TODO: DEx phase 1 really needs an overhaul to work with original amounts for sale and amounts remaining etc
     int tmpblock = 0;
     uint32_t tmptype = 0;
     uint64_t amountNew = 0;
@@ -581,54 +509,6 @@ void populateRPCExtendedTypeSendToOwners(const uint256 txid, std::string extende
     }
     txobj.pushKV("totalstofee", FormatDivisibleMP(stoFee)); // fee always OMNI so always divisible
     txobj.pushKV("recipients", receiveArray);
-}
-
-void populateRPCExtendedTypeMetaDExTrade(const uint256& txid, uint32_t propertyIdForSale, int64_t amountForSale, UniValue& txobj)
-{
-    UniValue tradeArray(UniValue::VARR);
-    int64_t totalReceived = 0, totalSold = 0;
-    LOCK(cs_tally);
-    pDbTradeList->getMatchingTrades(txid, propertyIdForSale, tradeArray, totalSold, totalReceived);
-    int tradeStatus = MetaDEx_getStatus(txid, propertyIdForSale, amountForSale, totalSold);
-    if (tradeStatus == TRADE_OPEN || tradeStatus == TRADE_OPEN_PART_FILLED) {
-        const CMPMetaDEx* tradeObj = MetaDEx_RetrieveTrade(txid);
-        if (tradeObj != nullptr) {
-            txobj.pushKV("amountremaining", FormatMP(tradeObj->getProperty(), tradeObj->getAmountRemaining()));
-            txobj.pushKV("amounttofill", FormatMP(tradeObj->getDesProperty(), tradeObj->getAmountToFill()));
-        }
-    }
-    txobj.pushKV("status", MetaDEx_getStatusText(tradeStatus));
-    if (tradeStatus == TRADE_CANCELLED || tradeStatus == TRADE_CANCELLED_PART_FILLED) {
-        txobj.pushKV("canceltxid", pDbTransactionList->findMetaDExCancel(txid).GetHex());
-    }
-    txobj.pushKV("matches", tradeArray);
-}
-
-void populateRPCExtendedTypeMetaDExCancel(const uint256& txid, UniValue& txobj)
-{
-    UniValue cancelArray(UniValue::VARR);
-    LOCK(cs_tally);
-    int numberOfCancels = pDbTransactionList->getNumberOfMetaDExCancels(txid);
-    if (0<numberOfCancels) {
-        for(int refNumber = 1; refNumber <= numberOfCancels; refNumber++) {
-            UniValue cancelTx(UniValue::VOBJ);
-            std::string strValue = pDbTransactionList->getKeyValue(txid.ToString() + "-C" + strprintf("%d",refNumber));
-            if (strValue.empty()) continue;
-            std::vector<std::string> vstr;
-            boost::split(vstr, strValue, boost::is_any_of(":"), boost::token_compress_on);
-            if (vstr.size() != 3) {
-                PrintToLog("TXListDB Error - trade cancel number of tokens is not as expected (%s)\n", strValue);
-                continue;
-            }
-            uint32_t propId = boost::lexical_cast<uint32_t>(vstr[1]);
-            int64_t amountUnreserved = boost::lexical_cast<int64_t>(vstr[2]);
-            cancelTx.pushKV("txid", vstr[0]);
-            cancelTx.pushKV("propertyid", (uint64_t) propId);
-            cancelTx.pushKV("amountunreserved", FormatMP(propId, amountUnreserved));
-            cancelArray.push_back(cancelTx);
-        }
-    }
-    txobj.pushKV("cancelledtransactions", cancelArray);
 }
 
 /* Function to enumerate sub sends for a given txid and add to supplied JSON array

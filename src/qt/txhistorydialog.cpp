@@ -245,8 +245,7 @@ int TXHistoryDialog::PopulateHistoryMap()
             htxo.amount = "-" + FormatShortMP(pending.prop, pending.amount) + getTokenLabel(pending.prop);
             bool fundsMoved = true;
             htxo.txType = shrinkTxType(pending.type, &fundsMoved);
-            if (pending.type == MSC_TYPE_METADEX_CANCEL_PRICE || pending.type == MSC_TYPE_METADEX_CANCEL_PAIR ||
-                pending.type == MSC_TYPE_METADEX_CANCEL_ECOSYSTEM || pending.type == MSC_TYPE_SEND_ALL) {
+            if (pending.type == MSC_TYPE_SEND_ALL) {
                 htxo.amount = "N/A";
             }
             txHistoryMap.insert(std::make_pair(txHash, htxo));
@@ -330,8 +329,7 @@ int TXHistoryDialog::PopulateHistoryMap()
             }
         }
         // override - hide display amount for cancels and unknown transactions as we can't display amount/property as no prop exists
-        if (type == MSC_TYPE_METADEX_CANCEL_PRICE || type == MSC_TYPE_METADEX_CANCEL_PAIR ||
-            type == MSC_TYPE_METADEX_CANCEL_ECOSYSTEM || type == MSC_TYPE_SEND_ALL || htxo.txType == "Unknown") {
+        if (type == MSC_TYPE_SEND_ALL || htxo.txType == "Unknown") {
             displayAmount = "N/A";
         }
         // override - display amount received not STO amount in packet (the total amount) for STOs I didn't send
@@ -522,11 +520,6 @@ std::string TXHistoryDialog::shrinkTxType(int txType, bool *fundsMoved)
         case MSC_TYPE_AUTOMATIC_DISPENSARY: displayType = "Auto Dispense"; break;
         case MSC_TYPE_TRADE_OFFER: displayType = "DEx Trade"; *fundsMoved = false; break;
         case MSC_TYPE_ACCEPT_OFFER_BTC: displayType = "DEx Accept"; *fundsMoved = false; break;
-        case MSC_TYPE_METADEX_TRADE: displayType = "MetaDEx Trade"; *fundsMoved = false; break;
-        case MSC_TYPE_METADEX_CANCEL_PRICE:
-        case MSC_TYPE_METADEX_CANCEL_PAIR:
-        case MSC_TYPE_METADEX_CANCEL_ECOSYSTEM:
-            displayType = "MetaDEx Cancel"; *fundsMoved = false; break;
         case MSC_TYPE_CREATE_PROPERTY_FIXED: displayType = "Create Property"; break;
         case MSC_TYPE_CREATE_PROPERTY_VARIABLE: displayType = "Create Property"; *fundsMoved = false; break;
         case MSC_TYPE_PROMOTE_PROPERTY: displayType = "Promo Property"; break;

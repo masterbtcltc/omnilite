@@ -120,7 +120,7 @@ std::map<std::string, uint256> FetchWalletOmniTransactions(interfaces::Wallet& i
     // LOCK(cs_pending);
     for (PendingMap::const_iterator it = my_pending.begin(); it != my_pending.end(); ++it) {
         const uint256& txHash = it->first;
-        int blockHeight = 999999;
+        int blockHeight = 9999999;
         if (blockHeight < startBlock || blockHeight > endBlock) continue;
         int blockPosition = 0;
         {

@@ -74,7 +74,7 @@ void COmniTransactionDB::RecordTransaction(const uint256& txid, uint32_t posInBl
  */
 uint32_t COmniTransactionDB::FetchTransactionPosition(const uint256& txid)
 {
-    uint32_t posInBlock = 999999; // setting an initial arbitrarily high value will ensure transaction is always "last" in event of bug/exploit
+    uint32_t posInBlock = 9999999; // setting an initial arbitrarily high value will ensure transaction is always "last" in event of bug/exploit
 
     std::vector<std::string> vTransactionDetails = FetchTransactionDetails(txid);
     if (vTransactionDetails.size() == 2) {

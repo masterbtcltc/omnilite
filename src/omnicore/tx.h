@@ -1,7 +1,6 @@
 #ifndef BITCOIN_OMNICORE_TX_H
 #define BITCOIN_OMNICORE_TX_H
 
-class CMPMetaDEx;
 class CMPOffer;
 class CTransaction;
 
@@ -24,7 +23,6 @@ using mastercore::strTransactionType;
  */
 class CMPTransaction
 {
-    friend class CMPMetaDEx;
     friend class CMPOffer;
 
 private:
@@ -44,12 +42,12 @@ private:
     unsigned int type;
     unsigned short version; // = MP_TX_PKT_V0;
 
-    // SimpleSend, SendToOwners, TradeOffer, MetaDEx, AcceptOfferBTC,
+    // SimpleSend, SendToOwners, TradeOffer, AcceptOfferBTC,
     // CreatePropertyFixed, CreatePropertyVariable, GrantTokens, RevokeTokens
     uint64_t nValue;
     uint64_t nNewValue;
 
-    // SimpleSend, SendToOwners, TradeOffer, MetaDEx, AcceptOfferBTC,
+    // SimpleSend, SendToOwners, TradeOffer, AcceptOfferBTC,
     // CreatePropertyFixed, CreatePropertyVariable, CloseCrowdsale,
     // CreatePropertyMananged, GrantTokens, RevokeTokens, ChangeIssuer
     unsigned int property;
@@ -57,7 +55,7 @@ private:
     // SendToOwners v1
     unsigned int distribution_property;
 
-    // CreatePropertyFixed, CreatePropertyVariable, CreatePropertyMananged, MetaDEx, SendAll
+    // CreatePropertyFixed, CreatePropertyVariable, CreatePropertyMananged, SendAll
     unsigned char ecosystem;
 
     // CreatePropertyFixed, CreatePropertyVariable, CreatePropertyMananged
@@ -71,11 +69,6 @@ private:
     uint64_t deadline;
     unsigned char early_bird;
     unsigned char percentage;
-
-    // MetaDEx
-    unsigned int desired_property;
-    uint64_t desired_value;
-    unsigned char action; // depreciated
 
     // TradeOffer
     uint64_t amount_desired;
@@ -107,10 +100,6 @@ private:
     bool interpret_SendToOwners();
     bool interpret_SendAll();
     bool interpret_TradeOffer();
-    bool interpret_MetaDExTrade();
-    bool interpret_MetaDExCancelPrice();
-    bool interpret_MetaDExCancelPair();
-    bool interpret_MetaDExCancelEcosystem();
     bool interpret_AcceptOfferBTC();
     bool interpret_CreatePropertyFixed();
     bool interpret_CreatePropertyVariable();
@@ -135,10 +124,6 @@ private:
     int logicMath_SendAll();
     int logicMath_TradeOffer();
     int logicMath_AcceptOffer_BTC();
-    int logicMath_MetaDExTrade();
-    int logicMath_MetaDExCancelPrice();
-    int logicMath_MetaDExCancelPair();
-    int logicMath_MetaDExCancelEcosystem();
     int logicMath_CreatePropertyFixed(CBlockIndex *pindex);
     int logicMath_CreatePropertyVariable(CBlockIndex *pindex);
     int logicMath_CloseCrowdsale(CBlockIndex *pindex);
@@ -160,7 +145,7 @@ private:
     int logicHelper_CrowdsaleParticipation(uint256& blockHash);
 
 public:
-    //! DEx and MetaDEx action values
+    //! DEx action values
     enum ActionTypes
     {
         INVALID = 0,
@@ -169,12 +154,6 @@ public:
         NEW = 1,
         UPDATE = 2,
         CANCEL = 3,
-
-        // MetaDEx
-        ADD                 = 1,
-        CANCEL_AT_PRICE     = 2,
-        CANCEL_ALL_FOR_PAIR = 3,
-        CANCEL_EVERYTHING   = 4,
     };
 
     uint256 getHash() const { return txid; }
@@ -246,9 +225,6 @@ public:
         deadline = 0;
         early_bird = 0;
         percentage = 0;
-        desired_property = 0;
-        desired_value = 0;
-        action = 0;
         amount_desired = 0;
         blocktimelimit = 0;
         min_fee = 0;

@@ -22,8 +22,4 @@ void RequireSaneDExPaymentWindow(const std::string& address, uint32_t propertyId
 void RequireSaneDExFee(const std::string& address, uint32_t propertyId);
 void RequireHeightInChain(int blockHeight);
 
-// TODO:
-// Checks for MetaDEx orders for cancel operations
-
-
 #endif // BITCOIN_OMNICORE_RPCREQUIREMENTS_H

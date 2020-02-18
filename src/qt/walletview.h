@@ -17,12 +17,9 @@ class PlatformStyle;
 class ReceiveCoinsDialog;
 class SendCoinsDialog;
 class SendMPDialog;
-class TradeHistoryDialog;
 class LookupSPDialog;
 class LookupTXDialog;
 class LookupAddressDialog;
-class MetaDExDialog;
-class MetaDExCancelDialog;
 class SendCoinsRecipient;
 class TransactionView;
 class TXHistoryDialog;
@@ -72,7 +69,6 @@ private:
     OverviewPage *overviewPage;
     BalancesDialog *balancesPage;
     QWidget *transactionsPage;
-    QWidget *exchangePage;
     QWidget *smartPropertyPage;
     QWidget *toolboxPage;
     ReceiveCoinsDialog *receiveCoinsPage;
@@ -84,9 +80,6 @@ private:
     LookupSPDialog *spLookupTab;
     LookupTXDialog *txLookupTab;
     LookupAddressDialog *addressLookupTab;
-    TradeHistoryDialog *tradeHistoryTab;
-    MetaDExDialog *metaDExTab;
-    MetaDExCancelDialog *cancelTab;
     TransactionView *transactionView;
     TXHistoryDialog *mpTXTab;
     QWidget *bitcoinTXTab;
@@ -102,8 +95,6 @@ public Q_SLOTS:
     void gotoOverviewPage();
     /** Switch to balances page */
     void gotoBalancesPage();
-    /** Switch to exchange page */
-    void gotoExchangePage();
     /** Switch to history (transactions) page */
     void gotoHistoryPage();
     /** Switch to receive coins page */

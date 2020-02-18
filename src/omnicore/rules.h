@@ -9,39 +9,6 @@
 
 namespace mastercore
 {
-//! Block to enable the Exodus fundraiser address in regtest mode
-const int MONEYMAN_REGTEST_BLOCK = 101;
-//! Block to enable the Exodus fundraiser address on testnet
-const int MONEYMAN_TESTNET_BLOCK = 270775;
-
-//! Feature identifier to enable Class C transaction parsing and processing
-const uint16_t FEATURE_CLASS_C = 1;
-//! Feature identifier to enable the distributed token exchange
-const uint16_t FEATURE_METADEX = 2;
-//! Feature identifier to enable betting transactions
-const uint16_t FEATURE_BETTING = 3;
-//! Feature identifier to disable crowdsale participations when "granting tokens"
-const uint16_t FEATURE_GRANTEFFECTS = 4;
-//! Feature identifier to disable DEx "over-offers" and to switch to plain integer math
-const uint16_t FEATURE_DEXMATH = 5;
-//! Feature identifier to enable Send All transactions
-const uint16_t FEATURE_SENDALL = 6;
-//! Feature identifier disable ecosystem crossovers in crowdsale logic
-const uint16_t FEATURE_SPCROWDCROSSOVER = 7;
-//! Feature identifier to enable non-Omni pairs on the distributed exchange
-const uint16_t FEATURE_TRADEALLPAIRS = 8;
-//! Feature identifier to enable the fee cache and strip 0.05% fees from non-Omni pairs
-const uint16_t FEATURE_FEES = 9;
-//! Feature identifier to enable cross property (v1) Send To Owners
-const uint16_t FEATURE_STOV1 = 10;
-//! Feature identifier to activate the waiting period for enabling managed property address freezing
-const uint16_t FEATURE_FREEZENOTICE = 14;
-//! Feature identifier to activate trading of any token on the distributed exchange
-const uint16_t FEATURE_FREEDEX = 15;
-
-//! When (propertyTotalTokens / OMNI_FEE_THRESHOLD) is reached fee distribution will occur
-const int64_t OMNI_FEE_THRESHOLD = 100000; // 0.001%
-
 /** A structure to represent transaction restrictions.
  */
 struct TransactionRestriction
@@ -73,33 +40,18 @@ struct TransactionCheckpoint
     uint256 txHash;
 };
 
-// TODO: rename allcaps variable names
-// TODO: remove remaining global heights
-// TODO: add Exodus addresses to params
-
 /** Base class for consensus parameters.
  */
 class CConsensusParams
 {
 public:
-    //! Earily bird bonus per week of Exodus crowdsale
-    double exodusBonusPerWeek;
-    //! Deadline of Exodus crowdsale as Unix timestamp
-    unsigned int exodusDeadline;
-    //! Number of MSC/TMSC generated per unit invested
-    int64_t exodusReward;
-    //! First block of the Exodus crowdsale
+    //! Omnifeather genesis block
     int GENESIS_BLOCK;
-    //! Last block of the Exodus crowdsale
-    int LAST_EXODUS_BLOCK;
 
     //! Minimum number of blocks to use for notice rules on activation
     int MIN_ACTIVATION_BLOCKS;
     //! Maximum number of blocks to use for notice rules on activation
     int MAX_ACTIVATION_BLOCKS;
-
-    //! Waiting period after enabling freezing before addresses may be frozen
-    int OMNI_FREEZE_WAIT_PERIOD;
 
     //! Block to enable pay-to-pubkey-hash support
     int PUBKEYHASH_BLOCK;
@@ -122,29 +74,8 @@ public:
     int MSC_MANUALSP_BLOCK;
     //! Block to enable send-to-owners transactions
     int MSC_STO_BLOCK;
-    //! Block to enable MetaDEx transactions
-    int MSC_METADEX_BLOCK;
     //! Block to enable "send all" transactions
     int MSC_SEND_ALL_BLOCK;
-    //! Block to enable betting transactions
-    int MSC_BET_BLOCK;
-    //! Block to enable cross property STO (v1)
-    int MSC_STOV1_BLOCK;
-
-    //! Block to deactivate crowdsale participations when "granting tokens"
-    int GRANTEFFECTS_FEATURE_BLOCK;
-    //! Block to disable DEx "over-offers" and to switch to plain integer math
-    int DEXMATH_FEATURE_BLOCK;
-    //! Block to disable ecosystem crossovers in crowdsale logic
-    int SPCROWDCROSSOVER_FEATURE_BLOCK;
-    //! Block to enable trading of non-Omni pairs
-    int TRADEALLPAIRS_FEATURE_BLOCK;
-    //! Block to enable the fee system & 0.05% fee for trading non-Omni pairs
-    int FEES_FEATURE_BLOCK;
-    //! Block to activate the waiting period for enabling managed property address freezing
-    int FREEZENOTICE_FEATURE_BLOCK;
-    //! Block to activate the waiting period to activate trading of any token on the distributed exchange
-    int FREEDEX_FEATURE_BLOCK;
 
     /** Returns a mapping of transaction types, and the blocks at which they are enabled. */
     virtual std::vector<TransactionRestriction> GetRestrictions() const;

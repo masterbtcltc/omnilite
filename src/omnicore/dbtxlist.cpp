@@ -122,49 +122,6 @@ void CMPTxList::recordPaymentTX(const uint256& txid, bool fValid, int nBlock, un
     subStatus = pdb->Put(writeoptions, subKey, subValue);
 }
 
-void CMPTxList::recordMetaDExCancelTX(const uint256& txidMaster, const uint256& txidSub, bool fValid, int nBlock, unsigned int propertyId, uint64_t nValue)
-{
-    if (!pdb) return;
-
-    // Prep - setup vars
-    unsigned int type = 99992104;
-    unsigned int refNumber = 1;
-    uint64_t existingAffectedTXCount = 0;
-    std::string txidMasterStr = txidMaster.ToString() + "-C";
-
-    // Step 1 - Check TXList to see if this cancel TXID exists
-    // Step 2a - If doesn't exist leave number of affected txs & ref set to 1
-    // Step 2b - If does exist add +1 to existing ref and set this ref as new number of affected
-    std::vector<std::string> vstr;
-    std::string strValue;
-    leveldb::Status status = pdb->Get(readoptions, txidMasterStr, &strValue);
-    if (status.ok()) {
-        // parse the string returned
-        boost::split(vstr, strValue, boost::is_any_of(":"), boost::token_compress_on);
-
-        // obtain the existing affected tx count
-        if (4 <= vstr.size()) {
-            existingAffectedTXCount = atoi(vstr[3]);
-            refNumber = existingAffectedTXCount + 1;
-        }
-    }
-
-    // Step 3 - Create new/update master record for cancel tx in TXList
-    const std::string key = txidMasterStr;
-    const std::string value = strprintf("%u:%d:%u:%lu", fValid ? 1 : 0, nBlock, type, refNumber);
-    PrintToLog("METADEXCANCELDEBUG : Writing master record %s(%s, valid=%s, block= %d, type= %d, number of affected transactions= %d)\n", __func__, txidMaster.ToString(), fValid ? "YES" : "NO", nBlock, type, refNumber);
-    status = pdb->Put(writeoptions, key, value);
-
-    // Step 4 - Write sub-record with cancel details
-    const std::string txidStr = txidMaster.ToString() + "-C";
-    const std::string subKey = STR_REF_SUBKEY_TXID_REF_COMBO(txidStr, refNumber);
-    const std::string subValue = strprintf("%s:%d:%lu", txidSub.ToString(), propertyId, nValue);
-    PrintToLog("METADEXCANCELDEBUG : Writing sub-record %s with value %s\n", subKey, subValue);
-    status = pdb->Put(writeoptions, subKey, subValue);
-    if (msc_debug_txdb) PrintToLog("%s(): store: %s=%s, status: %s\n", __func__, subKey, subValue, status.ToString());
-}
-
-
 /**
  * Records a "send all" sub record.
  */
@@ -191,32 +148,6 @@ std::string CMPTxList::getKeyValue(std::string key)
     }
 }
 
-uint256 CMPTxList::findMetaDExCancel(const uint256 txid)
-{
-    std::vector<std::string> vstr;
-    std::string txidStr = txid.ToString();
-    leveldb::Slice skey, svalue;
-    uint256 cancelTxid;
-    leveldb::Iterator* it = NewIterator();
-    for (it->SeekToFirst(); it->Valid(); it->Next()) {
-        skey = it->key();
-        svalue = it->value();
-        std::string svalueStr = svalue.ToString();
-        boost::split(vstr, svalueStr, boost::is_any_of(":"), boost::token_compress_on);
-        // obtain the existing affected tx count
-        if (3 <= vstr.size()) {
-            if (vstr[0] == txidStr) {
-                delete it;
-                cancelTxid.SetHex(skey.ToString());
-                return cancelTxid;
-            }
-        }
-    }
-
-    delete it;
-    return uint256();
-}
-
 /**
  * Returns the number of sub records.
  */
@@ -235,24 +166,6 @@ int CMPTxList::getNumberOfSubRecords(const uint256& txid)
     }
 
     return numberOfSubRecords;
-}
-
-int CMPTxList::getNumberOfMetaDExCancels(const uint256 txid)
-{
-    if (!pdb) return 0;
-    int numberOfCancels = 0;
-    std::vector<std::string> vstr;
-    std::string strValue;
-    leveldb::Status status = pdb->Get(readoptions, txid.ToString() + "-C", &strValue);
-    if (status.ok()) {
-        // parse the string returned
-        boost::split(vstr, strValue, boost::is_any_of(":"), boost::token_compress_on);
-        // obtain the number of cancels
-        if (4 <= vstr.size()) {
-            numberOfCancels = atoi(vstr[3]);
-        }
-    }
-    return numberOfCancels;
 }
 
 bool CMPTxList::getPurchaseDetails(const uint256 txid, int purchaseNumber, std::string* buyer, std::string* seller, uint64_t* vout, uint64_t* propertyId, uint64_t* nValue)
@@ -470,30 +383,6 @@ bool CMPTxList::getValidMPTX(const uint256& txid, int* block, unsigned int* type
     if ((int) 0 == validity) return false;
 
     return true;
-}
-
-std::set<int> CMPTxList::GetSeedBlocks(int startHeight, int endHeight)
-{
-    std::set<int> setSeedBlocks;
-
-    if (!pdb) return setSeedBlocks;
-
-    leveldb::Iterator* it = NewIterator();
-
-    for (it->SeekToFirst(); it->Valid(); it->Next()) {
-        std::string itData = it->value().ToString();
-        std::vector<std::string> vstr;
-        boost::split(vstr, itData, boost::is_any_of(":"), boost::token_compress_on);
-        if (4 != vstr.size()) continue; // unexpected number of tokens
-        int block = atoi(vstr[1]);
-        if (block >= startHeight && block <= endHeight) {
-            setSeedBlocks.insert(block);
-        }
-    }
-
-    delete it;
-
-    return setSeedBlocks;
 }
 
 void CMPTxList::LoadAlerts(int blockHeight)

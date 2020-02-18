@@ -33,15 +33,6 @@ CTxOut PayToPubKeyHash_Exodus()
     return CTxOut(amount, scriptPubKey);
 }
 
-CTxOut PayToPubKeyHash_ExodusCrowdsale(int nHeight)
-{
-    CTxDestination dest = ExodusCrowdsaleAddress(nHeight);
-    CScript scriptPubKey = GetScriptForDestination(dest);
-    int64_t amount = OmniGetDustThreshold(scriptPubKey);
-
-    return CTxOut(amount, scriptPubKey);
-}
-
 CTxOut PayToPubKeyHash_Unrelated()
 {
     CTxDestination address = DecodeDestination("1f2dj45pxYb8BCW5sSbCgJ5YvXBfSapeX");

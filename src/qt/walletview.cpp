@@ -19,10 +19,7 @@
 #include <qt/lookupspdialog.h>
 #include <qt/lookuptxdialog.h>
 #include <qt/lookupaddressdialog.h>
-#include <qt/metadexcanceldialog.h>
-#include <qt/metadexdialog.h>
 #include <qt/signverifymessagedialog.h>
-#include <qt/tradehistorydialog.h>
 #include <qt/transactiontablemodel.h>
 #include <qt/transactionview.h>
 #include <qt/txhistorydialog.h>
@@ -94,23 +91,6 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     svbox->addWidget(sendTabHolder);
     sendCoinsPage->setLayout(svbox);
 
-    /**
-     * exchange page is disabled in this version
-     *
-    exchangePage = new QWidget(this);
-    QVBoxLayout *exvbox = new QVBoxLayout();
-    metaDExTab = new MetaDExDialog();
-    cancelTab = new MetaDExCancelDialog();
-    QTabWidget *exTabHolder = new QTabWidget();
-    tradeHistoryTab = new TradeHistoryDialog;
-    // exTabHolder->addTab(new QWidget(),tr("Trade Bitcoin/Mastercoin")); not yet implemented
-    exTabHolder->addTab(metaDExTab,tr("Trade Omni Layer Properties"));
-    exTabHolder->addTab(tradeHistoryTab,tr("Trade History"));
-    exTabHolder->addTab(cancelTab,tr("Cancel Orders"));
-    exvbox->addWidget(exTabHolder);
-    exchangePage->setLayout(exvbox);
-    **/
-
     // toolbox page
     toolboxPage = new QWidget(this);
     QVBoxLayout *tvbox = new QVBoxLayout();
@@ -129,7 +109,6 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
     addWidget(transactionsPage);
     addWidget(receiveCoinsPage);
     addWidget(sendCoinsPage);
-    // addWidget(exchangePage);
     addWidget(toolboxPage);
 
     // Clicking on a transaction on the overview pre-selects the transaction on the transaction history page
@@ -185,9 +164,6 @@ void WalletView::setClientModel(ClientModel *_clientModel)
     balancesPage->setClientModel(clientModel);
     sendMPTab->setClientModel(clientModel);
     mpTXTab->setClientModel(clientModel);
-    // cancelTab->setClientModel(clientModel);
-    // tradeHistoryTab->setClientModel(clientModel);
-    // metaDExTab->setClientModel(clientModel);
 }
 
 void WalletView::setWalletModel(WalletModel *_walletModel)
@@ -205,9 +181,6 @@ void WalletView::setWalletModel(WalletModel *_walletModel)
     mpTXTab->setWalletModel(walletModel);
     addressLookupTab->setWalletModel(walletModel);
     txLookupTab->setWalletModel(walletModel);
-    // metaDExTab->setWalletModel(walletModel);
-    // tradeHistoryTab->setWalletModel(walletModel);
-    // cancelTab->setWalletModel(walletModel);
 
     if (_walletModel)
     {
@@ -282,11 +255,6 @@ void WalletView::gotoOmniHistoryTab()
 void WalletView::gotoReceiveCoinsPage()
 {
     setCurrentWidget(receiveCoinsPage);
-}
-
-void WalletView::gotoExchangePage()
-{
-    setCurrentWidget(exchangePage);
 }
 
 void WalletView::gotoToolboxPage()

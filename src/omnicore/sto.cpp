@@ -50,7 +50,6 @@ OwnerAddrType STO_GetReceivers(const std::string& sender, uint32_t property, int
             tokens += tally.getMoney(property, BALANCE);
             tokens += tally.getMoney(property, SELLOFFER_RESERVE);
             tokens += tally.getMoney(property, ACCEPT_RESERVE);
-            tokens += tally.getMoney(property, METADEX_RESERVE);
 
             // Do not include the sender
             if (address == sender) {

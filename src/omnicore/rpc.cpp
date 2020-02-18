@@ -9,15 +9,12 @@
 #include <omnicore/activation.h>
 #include <omnicore/consensushash.h>
 #include <omnicore/convert.h>
-#include <omnicore/dbfees.h>
 #include <omnicore/dbspinfo.h>
 #include <omnicore/dbstolist.h>
-#include <omnicore/dbtradelist.h>
 #include <omnicore/dbtxlist.h>
 #include <omnicore/dex.h>
 #include <omnicore/errors.h>
 #include <omnicore/log.h>
-#include <omnicore/mdex.h>
 #include <omnicore/notifications.h>
 #include <omnicore/omnicore.h>
 #include <omnicore/parsing.h>
@@ -102,42 +99,6 @@ void PropertyToJSON(const CMPSPInfo::Entry& sProperty, UniValue& property_obj)
     property_obj.pushKV("divisible", sProperty.isDivisible());
 }
 
-void MetaDexObjectToJSON(const CMPMetaDEx& obj, UniValue& metadex_obj)
-{
-    bool propertyIdForSaleIsDivisible = isPropertyDivisible(obj.getProperty());
-    bool propertyIdDesiredIsDivisible = isPropertyDivisible(obj.getDesProperty());
-    // add data to JSON object
-    metadex_obj.pushKV("address", obj.getAddr());
-    metadex_obj.pushKV("txid", obj.getHash().GetHex());
-    if (obj.getAction() == 4) metadex_obj.pushKV("ecosystem", isTestEcosystemProperty(obj.getProperty()) ? "test" : "main");
-    metadex_obj.pushKV("propertyidforsale", (uint64_t) obj.getProperty());
-    metadex_obj.pushKV("propertyidforsaleisdivisible", propertyIdForSaleIsDivisible);
-    metadex_obj.pushKV("amountforsale", FormatMP(obj.getProperty(), obj.getAmountForSale()));
-    metadex_obj.pushKV("amountremaining", FormatMP(obj.getProperty(), obj.getAmountRemaining()));
-    metadex_obj.pushKV("propertyiddesired", (uint64_t) obj.getDesProperty());
-    metadex_obj.pushKV("propertyiddesiredisdivisible", propertyIdDesiredIsDivisible);
-    metadex_obj.pushKV("amountdesired", FormatMP(obj.getDesProperty(), obj.getAmountDesired()));
-    metadex_obj.pushKV("amounttofill", FormatMP(obj.getDesProperty(), obj.getAmountToFill()));
-    metadex_obj.pushKV("action", (int) obj.getAction());
-    metadex_obj.pushKV("block", obj.getBlock());
-    metadex_obj.pushKV("blocktime", obj.getBlockTime());
-}
-
-void MetaDexObjectsToJSON(std::vector<CMPMetaDEx>& vMetaDexObjs, UniValue& response)
-{
-    MetaDEx_compare compareByHeight;
-
-    // sorts metadex objects based on block height and position in block
-    std::sort (vMetaDexObjs.begin(), vMetaDexObjs.end(), compareByHeight);
-
-    for (std::vector<CMPMetaDEx>::const_iterator it = vMetaDexObjs.begin(); it != vMetaDexObjs.end(); ++it) {
-        UniValue metadex_obj(UniValue::VOBJ);
-        MetaDexObjectToJSON(*it, metadex_obj);
-
-        response.push_back(metadex_obj);
-    }
-}
-
 bool BalanceToJSON(const std::string& address, uint32_t property, UniValue& balance_obj, bool divisible)
 {
     // confirmed balance minus unconfirmed, spent amounts
@@ -156,386 +117,6 @@ bool BalanceToJSON(const std::string& address, uint32_t property, UniValue& bala
     }
 
     return (nAvailable || nReserved || nFrozen);
-}
-
-// Obtains details of a fee distribution
-static UniValue omni_getfeedistribution(const JSONRPCRequest& request)
-{
-    if (request.fHelp || request.params.size() != 1)
-        throw runtime_error(
-            RPCHelpMan{"omni_getfeedistribution",
-               "\nGet the details for a fee distribution.\n",
-               {
-                   {"distributionid", RPCArg::Type::NUM, RPCArg::Optional::NO, "(number, required) the distribution to obtain details for\n"},
-               },
-               RPCResult{
-                   "{\n"
-                   "  \"distributionid\" : n,          (number) the distribution id\n"
-                   "  \"propertyid\" : n,              (number) the property id of the distributed tokens\n"
-                   "  \"block\" : n,                   (number) the block the distribution occurred\n"
-                   "  \"amount\" : \"n.nnnnnnnn\",     (string) the amount that was distributed\n"
-                   "  \"recipients\": [                (array of JSON objects) a list of recipients\n"
-                   "    {\n"
-                   "      \"address\" : \"address\",          (string) the address of the recipient\n"
-                   "      \"amount\" : \"n.nnnnnnnn\"         (string) the amount of fees received by the recipient\n"
-                   "    },\n"
-                   "    ...\n"
-                   "  ]\n"
-                   "}\n"
-               },
-               RPCExamples{
-                   HelpExampleCli("omni_getfeedistribution", "1")
-                   + HelpExampleRpc("omni_getfeedistribution", "1")
-               }
-            }.ToString());
-
-    int id = request.params[0].get_int();
-
-    int block = 0;
-    uint32_t propertyId = 0;
-    int64_t total = 0;
-
-    UniValue response(UniValue::VOBJ);
-
-    bool found = pDbFeeHistory->GetDistributionData(id, &propertyId, &block, &total);
-    if (!found) {
-        throw JSONRPCError(RPC_INTERNAL_ERROR, "Fee distribution ID does not exist");
-    }
-    response.pushKV("distributionid", id);
-    response.pushKV("propertyid", (uint64_t)propertyId);
-    response.pushKV("block", block);
-    response.pushKV("amount", FormatMP(propertyId, total));
-    UniValue recipients(UniValue::VARR);
-    std::set<std::pair<std::string,int64_t> > sRecipients = pDbFeeHistory->GetFeeDistribution(id);
-    bool divisible = isPropertyDivisible(propertyId);
-    if (!sRecipients.empty()) {
-        for (std::set<std::pair<std::string,int64_t> >::iterator it = sRecipients.begin(); it != sRecipients.end(); it++) {
-            std::string address = (*it).first;
-            int64_t amount = (*it).second;
-            UniValue recipient(UniValue::VOBJ);
-            recipient.pushKV("address", address);
-            if (divisible) {
-                recipient.pushKV("amount", FormatDivisibleMP(amount));
-            } else {
-                recipient.pushKV("amount", FormatIndivisibleMP(amount));
-            }
-            recipients.push_back(recipient);
-        }
-    }
-    response.pushKV("recipients", recipients);
-    return response;
-}
-
-// Obtains all fee distributions for a property
-// TODO : Split off code to populate a fee distribution object into a separate function
-static UniValue omni_getfeedistributions(const JSONRPCRequest& request)
-{
-    if (request.fHelp || request.params.size() != 1)
-        throw runtime_error(
-            RPCHelpMan{"omni_getfeedistributions",
-               "\nGet the details of all fee distributions for a property.\n",
-               {
-                   {"propertyid", RPCArg::Type::NUM, RPCArg::Optional::NO, "the property id to retrieve distributions for\n"},
-               },
-               RPCResult{
-                   "[                       (array of JSON objects)\n"
-                   "  {\n"
-                   "    \"distributionid\" : n,          (number) the distribution id\n"
-                   "    \"propertyid\" : n,              (number) the property id of the distributed tokens\n"
-                   "    \"block\" : n,                   (number) the block the distribution occurred\n"
-                   "    \"amount\" : \"n.nnnnnnnn\",     (string) the amount that was distributed\n"
-                   "    \"recipients\": [                (array of JSON objects) a list of recipients\n"
-                   "      {\n"
-                   "        \"address\" : \"address\",          (string) the address of the recipient\n"
-                   "        \"amount\" : \"n.nnnnnnnn\"         (string) the amount of fees received by the recipient\n"
-                   "      },\n"
-                   "      ...\n"
-                   "  }\n"
-                   "]\n"
-               },
-               RPCExamples{
-                   HelpExampleCli("omni_getfeedistributions", "1")
-                   + HelpExampleRpc("omni_getfeedistributions", "1")
-               }
-            }.ToString());
-
-    uint32_t prop = ParsePropertyId(request.params[0]);
-    RequireExistingProperty(prop);
-
-    UniValue response(UniValue::VARR);
-
-    std::set<int> sDistributions = pDbFeeHistory->GetDistributionsForProperty(prop);
-    if (!sDistributions.empty()) {
-        for (std::set<int>::iterator it = sDistributions.begin(); it != sDistributions.end(); it++) {
-            int id = *it;
-            int block = 0;
-            uint32_t propertyId = 0;
-            int64_t total = 0;
-            UniValue responseObj(UniValue::VOBJ);
-            bool found = pDbFeeHistory->GetDistributionData(id, &propertyId, &block, &total);
-            if (!found) {
-                PrintToLog("Fee History Error - Distribution data not found for distribution ID %d but it was included in GetDistributionsForProperty(prop %d)\n", id, prop);
-                continue;
-            }
-            responseObj.pushKV("distributionid", id);
-            responseObj.pushKV("propertyid", (uint64_t)propertyId);
-            responseObj.pushKV("block", block);
-            responseObj.pushKV("amount", FormatMP(propertyId, total));
-            UniValue recipients(UniValue::VARR);
-            std::set<std::pair<std::string,int64_t> > sRecipients = pDbFeeHistory->GetFeeDistribution(id);
-            bool divisible = isPropertyDivisible(propertyId);
-            if (!sRecipients.empty()) {
-                for (std::set<std::pair<std::string,int64_t> >::iterator it = sRecipients.begin(); it != sRecipients.end(); it++) {
-                    std::string address = (*it).first;
-                    int64_t amount = (*it).second;
-                    UniValue recipient(UniValue::VOBJ);
-                    recipient.pushKV("address", address);
-                    if (divisible) {
-                        recipient.pushKV("amount", FormatDivisibleMP(amount));
-                    } else {
-                        recipient.pushKV("amount", FormatIndivisibleMP(amount));
-                    }
-                    recipients.push_back(recipient);
-                }
-            }
-            responseObj.pushKV("recipients", recipients);
-            response.push_back(responseObj);
-        }
-    }
-    return response;
-}
-
-// Obtains the trigger value for fee distribution for a/all properties
-static UniValue omni_getfeetrigger(const JSONRPCRequest& request)
-{
-    if (request.fHelp || request.params.size() > 1)
-        throw runtime_error(
-            RPCHelpMan{"omni_getfeetrigger",
-               "\nReturns the amount of fees required in the cache to trigger distribution.\n",
-               {
-                   {"propertyid", RPCArg::Type::NUM, RPCArg::Optional::OMITTED, "filter the results on this property id\n"},
-               },
-               RPCResult{
-                   "[                       (array of JSON objects)\n"
-                   "  {\n"
-                   "    \"propertyid\" : nnnnnnn,          (number) the property id\n"
-                   "    \"feetrigger\" : \"n.nnnnnnnn\",   (string) the amount of fees required to trigger distribution\n"
-                   "  },\n"
-                   "  ...\n"
-                   "]\n"
-               },
-               RPCExamples{
-                   HelpExampleCli("omni_getfeetrigger", "3")
-                   + HelpExampleRpc("omni_getfeetrigger", "3")
-               }
-            }.ToString());
-
-    uint32_t propertyId = 0;
-    if (0 < request.params.size()) {
-        propertyId = ParsePropertyId(request.params[0]);
-    }
-
-    if (propertyId > 0) {
-        RequireExistingProperty(propertyId);
-    }
-
-    UniValue response(UniValue::VARR);
-
-    for (uint8_t ecosystem = 1; ecosystem <= 2; ecosystem++) {
-        uint32_t startPropertyId = (ecosystem == 1) ? 1 : TEST_ECO_PROPERTY_1;
-        for (uint32_t itPropertyId = startPropertyId; itPropertyId < pDbSpInfo->peekNextSPID(ecosystem); itPropertyId++) {
-            if (propertyId == 0 || propertyId == itPropertyId) {
-                int64_t feeTrigger = pDbFeeCache->GetDistributionThreshold(itPropertyId);
-                std::string strFeeTrigger = FormatMP(itPropertyId, feeTrigger);
-                UniValue cacheObj(UniValue::VOBJ);
-                cacheObj.pushKV("propertyid", (uint64_t)itPropertyId);
-                cacheObj.pushKV("feetrigger", strFeeTrigger);
-                response.push_back(cacheObj);
-            }
-        }
-    }
-
-    return response;
-}
-
-// Provides the fee share the wallet (or specific address) will receive from fee distributions
-static UniValue omni_getfeeshare(const JSONRPCRequest& request)
-{
-#ifdef ENABLE_WALLET
-    std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
-    std::unique_ptr<interfaces::Wallet> pWallet = interfaces::MakeWallet(wallet);
-#else
-    std::unique_ptr<interfaces::Wallet> pWallet = interfaces::MakeWallet(nullptr);
-#endif
-
-    if (request.fHelp || request.params.size() > 2)
-        throw runtime_error(
-            RPCHelpMan{"omni_getfeeshare",
-               "\nReturns the percentage share of fees distribution applied to the wallet (default) or address (if supplied).\n",
-               {
-                   {"address", RPCArg::Type::STR, RPCArg::Optional::OMITTED, "retrieve the fee share for the supplied address\n"},
-                   {"ecosystem", RPCArg::Type::NUM, RPCArg::Optional::OMITTED, "the ecosystem to check the fee share (1 for main ecosystem, 2 for test ecosystem)\n"},
-               },
-               RPCResult{
-                   "[                       (array of JSON objects)\n"
-                   "  {\n"
-                   "    \"address\" : nnnnnnn,          (number) the property id\n"
-                   "    \"feeshare\" : \"n.nnnnnnnn\",   (string) the percentage of fees this address will receive based on current state\n"
-                   "  },\n"
-                   "  ...\n"
-                   "]\n"
-               },
-               RPCExamples{
-                   HelpExampleCli("omni_getfeeshare", "\"1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P\" 1")
-                   + HelpExampleRpc("omni_getfeeshare", "\"1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P\", 1")
-               }
-            }.ToString());
-
-    std::string address;
-    uint8_t ecosystem = 1;
-    if (0 < request.params.size()) {
-        if ("*" != request.params[0].get_str()) { //ParseAddressOrEmpty doesn't take wildcards
-            address = ParseAddressOrEmpty(request.params[0]);
-        } else {
-            address = "*";
-        }
-    }
-    if (1 < request.params.size()) {
-        ecosystem = ParseEcosystem(request.params[1]);
-    }
-
-    UniValue response(UniValue::VARR);
-    bool addObj = false;
-
-    OwnerAddrType receiversSet;
-    if (ecosystem == 1) {
-        receiversSet = STO_GetReceivers("FEEDISTRIBUTION", OMNI_PROPERTY_MSC, COIN);
-    } else {
-        receiversSet = STO_GetReceivers("FEEDISTRIBUTION", OMNI_PROPERTY_TMSC, COIN);
-    }
-
-    for (OwnerAddrType::reverse_iterator it = receiversSet.rbegin(); it != receiversSet.rend(); ++it) {
-        addObj = false;
-        if (address.empty()) {
-            if (IsMyAddress(it->second, pWallet.get())) {
-                addObj = true;
-            }
-        } else if (address == it->second || address == "*") {
-            addObj = true;
-        }
-        if (addObj) {
-            UniValue feeShareObj(UniValue::VOBJ);
-            // NOTE: using float here as this is a display value only which isn't an exact percentage and
-            //       changes block to block (due to dev Omni) so high precision not required(?)
-            double feeShare = (double(it->first) / double(COIN)) * (double)100;
-            std::string strFeeShare = strprintf("%.4f", feeShare);
-            strFeeShare += "%";
-            feeShareObj.pushKV("address", it->second);
-            feeShareObj.pushKV("feeshare", strFeeShare);
-            response.push_back(feeShareObj);
-        }
-    }
-
-    return response;
-}
-
-// Provides the current values of the fee cache
-static UniValue omni_getfeecache(const JSONRPCRequest& request)
-{
-    if (request.fHelp || request.params.size() > 1)
-        throw runtime_error(
-            RPCHelpMan{"omni_getfeecache",
-               "\nReturns the amount of fees cached for distribution.\n",
-               {
-                   {"propertyid", RPCArg::Type::NUM, RPCArg::Optional::OMITTED, "filter the results on this property id\n"},
-               },
-               RPCResult{
-                   "[                       (array of JSON objects)\n"
-                   "  {\n"
-                   "    \"propertyid\" : nnnnnnn,          (number) the property id\n"
-                   "    \"cachedfees\" : \"n.nnnnnnnn\",   (string) the amount of fees cached for this property\n"
-                   "  },\n"
-                   "  ...\n"
-                   "]\n"
-               },
-               RPCExamples{
-                   HelpExampleCli("omni_getfeecache", "31")
-                   + HelpExampleRpc("omni_getfeecache", "31")
-               }
-            }.ToString());
-
-    uint32_t propertyId = 0;
-    if (0 < request.params.size()) {
-        propertyId = ParsePropertyId(request.params[0]);
-    }
-
-    if (propertyId > 0) {
-        RequireExistingProperty(propertyId);
-    }
-
-    UniValue response(UniValue::VARR);
-
-    for (uint8_t ecosystem = 1; ecosystem <= 2; ecosystem++) {
-        uint32_t startPropertyId = (ecosystem == 1) ? 1 : TEST_ECO_PROPERTY_1;
-        for (uint32_t itPropertyId = startPropertyId; itPropertyId < pDbSpInfo->peekNextSPID(ecosystem); itPropertyId++) {
-            if (propertyId == 0 || propertyId == itPropertyId) {
-                int64_t cachedFee = pDbFeeCache->GetCachedAmount(itPropertyId);
-                if (cachedFee == 0) {
-                    // filter empty results unless the call specifically requested this property
-                    if (propertyId != itPropertyId) continue;
-                }
-                std::string strFee = FormatMP(itPropertyId, cachedFee);
-                UniValue cacheObj(UniValue::VOBJ);
-                cacheObj.pushKV("propertyid", (uint64_t)itPropertyId);
-                cacheObj.pushKV("cachedfees", strFee);
-                response.push_back(cacheObj);
-            }
-        }
-    }
-
-    return response;
-}
-
-// generate a list of seed blocks based on the data in LevelDB
-static UniValue omni_getseedblocks(const JSONRPCRequest& request)
-{
-    if (request.fHelp || request.params.size() != 2)
-        throw runtime_error(
-            RPCHelpMan{"omni_getseedblocks",
-               "\nReturns a list of blocks containing Omni transactions for use in seed block filtering.\n",
-               {
-                   {"startblock", RPCArg::Type::NUM, RPCArg::Optional::NO, "the first block to look for Omni transactions (inclusive)\n"},
-                   {"endblock", RPCArg::Type::NUM, RPCArg::Optional::NO, "the last block to look for Omni transactions (inclusive)\n"},
-               },
-               RPCResult{
-                   "[                     (array of numbers) a list of seed blocks\n"
-                   "   nnnnnn,              (number) the block height of the seed block\n"
-                   "   ...\n"
-                   "]\n"
-               },
-               RPCExamples{
-                   HelpExampleCli("omni_getseedblocks", "290000 300000")
-                   + HelpExampleRpc("omni_getseedblocks", "290000, 300000")
-               }
-            }.ToString());
-
-    int startHeight = request.params[0].get_int();
-    int endHeight = request.params[1].get_int();
-
-    RequireHeightInChain(startHeight);
-    RequireHeightInChain(endHeight);
-
-    UniValue response(UniValue::VARR);
-
-    {
-        LOCK(cs_tally);
-        std::set<int> setSeedBlocks = pDbTransactionList->GetSeedBlocks(startHeight, endHeight);
-        for (std::set<int>::const_iterator it = setSeedBlocks.begin(); it != setSeedBlocks.end(); ++it) {
-            response.push_back(*it);
-        }
-    }
-
-    return response;
 }
 
 // obtain the payload for a transaction
@@ -717,26 +298,12 @@ static UniValue mscrpc(const JSONRPCRequest& request)
         case 6:
         {
             LOCK(cs_tally);
-            MetaDEx_debug_print(true, true);
-            break;
-        }
-        case 7:
-        {
-            LOCK(cs_tally);
-            // display the whole CMPTradeList (leveldb)
-            pDbTradeList->printAll();
-            pDbTradeList->printStats();
-            break;
-        }
-        case 8:
-        {
-            LOCK(cs_tally);
             // display the STO receive list
             pDbStoList->printAll();
             pDbStoList->printStats();
             break;
         }
-        case 9:
+        case 7:
         {
             PrintToConsole("Locking cs_tally for %d milliseconds..\n", extra2);
             LOCK(cs_tally);
@@ -744,7 +311,7 @@ static UniValue mscrpc(const JSONRPCRequest& request)
             PrintToConsole("Unlocking cs_tally now\n");
             break;
         }
-        case 10:
+        case 8:
         {
             PrintToConsole("Locking cs_main for %d milliseconds..\n", extra2);
             LOCK(cs_main);
@@ -753,7 +320,7 @@ static UniValue mscrpc(const JSONRPCRequest& request)
             break;
         }
 #ifdef ENABLE_WALLET
-        case 11:
+        case 9:
         {
             PrintToConsole("Locking pwallet->cs_wallet for %d milliseconds..\n", extra2);
             LOCK(pwallet->cs_wallet);
@@ -762,34 +329,6 @@ static UniValue mscrpc(const JSONRPCRequest& request)
             break;
         }
 #endif
-        case 14:
-        {
-            LOCK(cs_tally);
-            pDbFeeCache->printAll();
-            pDbFeeCache->printStats();
-
-            int64_t a = 1000;
-            int64_t b = 1999;
-            int64_t c = 2001;
-            int64_t d = 20001;
-            int64_t e = 19999;
-
-            int64_t z = 2000;
-
-            int64_t aa = a/z;
-            int64_t bb = b/z;
-            int64_t cc = c/z;
-            int64_t dd = d/z;
-            int64_t ee = e/z;
-
-            PrintToConsole("%d / %d = %d\n",a,z,aa);
-            PrintToConsole("%d / %d = %d\n",b,z,bb);
-            PrintToConsole("%d / %d = %d\n",c,z,cc);
-            PrintToConsole("%d / %d = %d\n",d,z,dd);
-            PrintToConsole("%d / %d = %d\n",e,z,ee);
-
-            break;
-        }
         default:
             break;
     }
@@ -1635,222 +1174,6 @@ static UniValue omni_getgrants(const JSONRPCRequest& request)
     return response;
 }
 
-static UniValue omni_getorderbook(const JSONRPCRequest& request)
-{
-    if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
-        throw runtime_error(
-            RPCHelpMan{"omni_getorderbook",
-               "\nList active offers on the distributed token exchange.\n",
-               {
-                   {"propertyid", RPCArg::Type::NUM, RPCArg::Optional::NO, "filter orders by property identifier for sale\n"},
-                   {"propertyiddesired", RPCArg::Type::NUM, RPCArg::Optional::OMITTED, "filter orders by property identifier desired\n"},
-               },
-               RPCResult{
-                   "[                                              (array of JSON objects)\n"
-                   "  {\n"
-                   "    \"address\" : \"address\",                         (string) the Bitcoin address of the trader\n"
-                   "    \"txid\" : \"hash\",                               (string) the hex-encoded hash of the transaction of the order\n"
-                   "    \"ecosystem\" : \"main\"|\"test\",                   (string) the ecosytem in which the order was made (if \"cancel-ecosystem\")\n"
-                   "    \"propertyidforsale\" : n,                       (number) the identifier of the tokens put up for sale\n"
-                   "    \"propertyidforsaleisdivisible\" : true|false,   (boolean) whether the tokens for sale are divisible\n"
-                   "    \"amountforsale\" : \"n.nnnnnnnn\",                (string) the amount of tokens initially offered\n"
-                   "    \"amountremaining\" : \"n.nnnnnnnn\",              (string) the amount of tokens still up for sale\n"
-                   "    \"propertyiddesired\" : n,                       (number) the identifier of the tokens desired in exchange\n"
-                   "    \"propertyiddesiredisdivisible\" : true|false,   (boolean) whether the desired tokens are divisible\n"
-                   "    \"amountdesired\" : \"n.nnnnnnnn\",                (string) the amount of tokens initially desired\n"
-                   "    \"amounttofill\" : \"n.nnnnnnnn\",                 (string) the amount of tokens still needed to fill the offer completely\n"
-                   "    \"action\" : n,                                  (number) the action of the transaction: (1) \"trade\", (2) \"cancel-price\", (3) \"cancel-pair\", (4) \"cancel-ecosystem\"\n"
-                   "    \"block\" : nnnnnn,                              (number) the index of the block that contains the transaction\n"
-                   "    \"blocktime\" : nnnnnnnnnn                       (number) the timestamp of the block that contains the transaction\n"
-                   "  },\n"
-                   "  ...\n"
-                   "]\n"
-               },
-               RPCExamples{
-                   HelpExampleCli("omni_getorderbook", "2")
-                   + HelpExampleRpc("omni_getorderbook", "2")
-               }
-            }.ToString());
-
-    bool filterDesired = (request.params.size() > 1);
-    uint32_t propertyIdForSale = ParsePropertyId(request.params[0]);
-    uint32_t propertyIdDesired = 0;
-
-    RequireExistingProperty(propertyIdForSale);
-
-    if (filterDesired) {
-        propertyIdDesired = ParsePropertyId(request.params[1]);
-
-        RequireExistingProperty(propertyIdDesired);
-        RequireSameEcosystem(propertyIdForSale, propertyIdDesired);
-        RequireDifferentIds(propertyIdForSale, propertyIdDesired);
-    }
-
-    std::vector<CMPMetaDEx> vecMetaDexObjects;
-    {
-        LOCK(cs_tally);
-        for (md_PropertiesMap::const_iterator my_it = metadex.begin(); my_it != metadex.end(); ++my_it) {
-            const md_PricesMap& prices = my_it->second;
-            for (md_PricesMap::const_iterator it = prices.begin(); it != prices.end(); ++it) {
-                const md_Set& indexes = it->second;
-                for (md_Set::const_iterator it = indexes.begin(); it != indexes.end(); ++it) {
-                    const CMPMetaDEx& obj = *it;
-                    if (obj.getProperty() != propertyIdForSale) continue;
-                    if (!filterDesired || obj.getDesProperty() == propertyIdDesired) vecMetaDexObjects.push_back(obj);
-                }
-            }
-        }
-    }
-
-    UniValue response(UniValue::VARR);
-    MetaDexObjectsToJSON(vecMetaDexObjects, response);
-    return response;
-}
-
-static UniValue omni_gettradehistoryforaddress(const JSONRPCRequest& request)
-{
-#ifdef ENABLE_WALLET
-    std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
-    std::unique_ptr<interfaces::Wallet> pWallet = interfaces::MakeWallet(wallet);
-#else
-    std::unique_ptr<interfaces::Wallet> pWallet = interfaces::MakeWallet(nullptr);
-#endif
-
-    if (request.fHelp || request.params.size() < 1 || request.params.size() > 3)
-        throw runtime_error(
-            RPCHelpMan{"omni_gettradehistoryforaddress",
-               "\nRetrieves the history of orders on the distributed exchange for the supplied address.\n",
-               {
-                   {"address", RPCArg::Type::STR, RPCArg::Optional::NO, "address to retrieve history for\n"},
-                   {"count", RPCArg::Type::NUM, /* default */ "10", "number of orders to retrieve\n"},
-                   {"propertyid", RPCArg::Type::NUM, /* default */ "no filter", "filter by property identifier transacted\n"},
-               },
-               RPCResult{
-                   "[                                              (array of JSON objects)\n"
-                   "  {\n"
-                   "    \"txid\" : \"hash\",                               (string) the hex-encoded hash of the transaction of the order\n"
-                   "    \"sendingaddress\" : \"address\",                  (string) the Bitcoin address of the trader\n"
-                   "    \"ismine\" : true|false,                         (boolean) whether the order involes an address in the wallet\n"
-                   "    \"confirmations\" : nnnnnnnnnn,                  (number) the number of transaction confirmations\n"
-                   "    \"fee\" : \"n.nnnnnnnn\",                          (string) the transaction fee in bitcoins\n"
-                   "    \"blocktime\" : nnnnnnnnnn,                      (number) the timestamp of the block that contains the transaction\n"
-                   "    \"valid\" : true|false,                          (boolean) whether the transaction is valid\n"
-                   "    \"version\" : n,                                 (number) the transaction version\n"
-                   "    \"type_int\" : n,                                (number) the transaction type as number\n"
-                   "    \"type\" : \"type\",                               (string) the transaction type as string\n"
-                   "    \"propertyidforsale\" : n,                       (number) the identifier of the tokens put up for sale\n"
-                   "    \"propertyidforsaleisdivisible\" : true|false,   (boolean) whether the tokens for sale are divisible\n"
-                   "    \"amountforsale\" : \"n.nnnnnnnn\",                (string) the amount of tokens initially offered\n"
-                   "    \"propertyiddesired\" : n,                       (number) the identifier of the tokens desired in exchange\n"
-                   "    \"propertyiddesiredisdivisible\" : true|false,   (boolean) whether the desired tokens are divisible\n"
-                   "    \"amountdesired\" : \"n.nnnnnnnn\",                (string) the amount of tokens initially desired\n"
-                   "    \"unitprice\" : \"n.nnnnnnnnnnn...\"               (string) the unit price (shown in the property desired)\n"
-                   "    \"status\" : \"status\"                            (string) the status of the order (\"open\", \"cancelled\", \"filled\", ...)\n"
-                   "    \"canceltxid\" : \"hash\",                         (string) the hash of the transaction that cancelled the order (if cancelled)\n"
-                   "    \"matches\": [                                   (array of JSON objects) a list of matched orders and executed trades\n"
-                   "      {\n"
-                   "        \"txid\" : \"hash\",                               (string) the hash of the transaction that was matched against\n"
-                   "        \"block\" : nnnnnn,                              (number) the index of the block that contains this transaction\n"
-                   "        \"address\" : \"address\",                         (string) the Bitcoin address of the other trader\n"
-                   "        \"amountsold\" : \"n.nnnnnnnn\",                   (string) the number of tokens sold in this trade\n"
-                   "        \"amountreceived\" : \"n.nnnnnnnn\"                (string) the number of tokens traded in exchange\n"
-                   "      },\n"
-                   "      ...\n"
-                   "    ]\n"
-                   "  },\n"
-                   "  ...\n"
-                   "]\n"
-                   "\nNote:\n"
-                   "The documentation only covers the output for a trade, but there are also cancel transactions with different properties.\n"
-               },
-               RPCExamples{
-                   HelpExampleCli("omni_gettradehistoryforaddress", "\"1MCHESTptvd2LnNp7wmr2sGTpRomteAkq8\"")
-                   + HelpExampleRpc("omni_gettradehistoryforaddress", "\"1MCHESTptvd2LnNp7wmr2sGTpRomteAkq8\"")
-               }
-            }.ToString());
-
-    std::string address = ParseAddress(request.params[0]);
-    uint64_t count = (request.params.size() > 1) ? request.params[1].get_int64() : 10;
-    uint32_t propertyId = 0;
-
-    if (request.params.size() > 2) {
-        propertyId = ParsePropertyId(request.params[2]);
-        RequireExistingProperty(propertyId);
-    }
-
-    // Obtain a sorted vector of txids for the address trade history
-    std::vector<uint256> vecTransactions;
-    {
-        LOCK(cs_tally);
-        pDbTradeList->getTradesForAddress(address, vecTransactions, propertyId);
-    }
-
-    // Populate the address trade history into JSON objects until we have processed count transactions
-    UniValue response(UniValue::VARR);
-    uint32_t processed = 0;
-    for(std::vector<uint256>::reverse_iterator it = vecTransactions.rbegin(); it != vecTransactions.rend(); ++it) {
-        UniValue txobj(UniValue::VOBJ);
-        int populateResult = populateRPCTransactionObject(*it, txobj, "", true, "", pWallet.get());
-        if (0 == populateResult) {
-            response.push_back(txobj);
-            processed++;
-            if (processed >= count) break;
-        }
-    }
-
-    return response;
-}
-
-static UniValue omni_gettradehistoryforpair(const JSONRPCRequest& request)
-{
-    if (request.fHelp || request.params.size() < 2 || request.params.size() > 3)
-        throw runtime_error(
-            RPCHelpMan{"omni_gettradehistoryforpair",
-               "\nRetrieves the history of trades on the distributed token exchange for the specified market.\n",
-               {
-                   {"propertyid", RPCArg::Type::NUM, RPCArg::Optional::NO, "the first side of the traded pair\n"},
-                   {"propertyidsecond", RPCArg::Type::NUM, RPCArg::Optional::NO, "the second side of the traded pair\n"},
-                   {"count", RPCArg::Type::NUM, /* default */ "10", "number of trades to retrieve\n"},
-               },
-               RPCResult{
-                   "[                                      (array of JSON objects)\n"
-                   "  {\n"
-                   "    \"block\" : nnnnnn,                      (number) the index of the block that contains the trade match\n"
-                   "    \"unitprice\" : \"n.nnnnnnnnnnn...\" ,     (string) the unit price used to execute this trade (received/sold)\n"
-                   "    \"inverseprice\" : \"n.nnnnnnnnnnn...\",   (string) the inverse unit price (sold/received)\n"
-                   "    \"sellertxid\" : \"hash\",                 (string) the hash of the transaction of the seller\n"
-                   "    \"address\" : \"address\",                 (string) the Bitcoin address of the seller\n"
-                   "    \"amountsold\" : \"n.nnnnnnnn\",           (string) the number of tokens sold in this trade\n"
-                   "    \"amountreceived\" : \"n.nnnnnnnn\",       (string) the number of tokens traded in exchange\n"
-                   "    \"matchingtxid\" : \"hash\",               (string) the hash of the transaction that was matched against\n"
-                   "    \"matchingaddress\" : \"address\"          (string) the Bitcoin address of the other party of this trade\n"
-                   "  },\n"
-                   "  ...\n"
-                   "]\n"
-               },
-               RPCExamples{
-                   HelpExampleCli("omni_gettradehistoryforpair", "1 12 500")
-                   + HelpExampleRpc("omni_gettradehistoryforpair", "1, 12, 500")
-               }
-            }.ToString());
-
-    // obtain property identifiers for pair & check valid parameters
-    uint32_t propertyIdSideA = ParsePropertyId(request.params[0]);
-    uint32_t propertyIdSideB = ParsePropertyId(request.params[1]);
-    uint64_t count = (request.params.size() > 2) ? request.params[2].get_int64() : 10;
-
-    RequireExistingProperty(propertyIdSideA);
-    RequireExistingProperty(propertyIdSideB);
-    RequireSameEcosystem(propertyIdSideA, propertyIdSideB);
-    RequireDifferentIds(propertyIdSideA, propertyIdSideB);
-
-    // request pair trade history from trade db
-    UniValue response(UniValue::VARR);
-    LOCK(cs_tally);
-    pDbTradeList->getTradesForPair(propertyIdSideA, propertyIdSideB, response, count);
-    return response;
-}
-
 static UniValue omni_getactivedexsells(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() > 1)
@@ -2022,7 +1345,7 @@ static UniValue omni_listblocktransactions(const JSONRPCRequest& request)
 
     for(const auto tx : block.vtx) {
         if (pDbTransactionList->exists(tx->GetHash())) {
-            // later we can add a verbose flag to decode here, but for now callers can send returned txids into gettransaction_MP
+            // later we can add a verbose flag to decode here, but for now callers can send returned txids into omni_gettransaction
             // add the txid into the response as it's an MP transaction
             response.push_back(tx->GetHash().GetHex());
         }
@@ -2279,7 +1602,6 @@ static UniValue omni_getinfo(const JSONRPCRequest& request)
                    "{\n"
                    "  \"omnicoreversion_int\" : xxxxxxx,       (number) client version as integer\n"
                    "  \"omnicoreversion\" : \"x.x.x.x-xxx\",     (string) client version\n"
-                   "  \"mastercoreversion\" : \"x.x.x.x-xxx\",   (string) client version (DEPRECIATED)\n"
                    "  \"bitcoincoreversion\" : \"x.x.x\",        (string) Bitcoin Core version\n"
                    "  \"block\" : nnnnnn,                      (number) index of the last processed block\n"
                    "  \"blocktime\" : nnnnnnnnnn,              (number) timestamp of the last processed block\n"
@@ -2307,7 +1629,6 @@ static UniValue omni_getinfo(const JSONRPCRequest& request)
     // provide the mastercore and bitcoin version
     infoResponse.pushKV("omnicoreversion_int", OMNICORE_VERSION);
     infoResponse.pushKV("omnicoreversion", OmniCoreVersion());
-    infoResponse.pushKV("mastercoreversion", OmniCoreVersion());
     infoResponse.pushKV("bitcoincoreversion", BitcoinCoreVersion());
 
     // provide the current block details
@@ -2318,13 +1639,10 @@ static UniValue omni_getinfo(const JSONRPCRequest& request)
 
     int blockMPTransactions = pDbTransactionList->getMPTransactionCountBlock(block);
     int totalMPTransactions = pDbTransactionList->getMPTransactionCountTotal();
-    int totalMPTrades = pDbTradeList->getMPTradeCountTotal();
     infoResponse.pushKV("block", block);
     infoResponse.pushKV("blocktime", blockTime);
     infoResponse.pushKV("blocktransactions", blockMPTransactions);
 
-    // provide the number of trades completed
-    infoResponse.pushKV("totaltrades", totalMPTrades);
     // provide the number of transactions parsed
     infoResponse.pushKV("totaltransactions", totalMPTransactions);
 
@@ -2481,72 +1799,6 @@ static UniValue omni_getsto(const JSONRPCRequest& request)
     return txobj;
 }
 
-static UniValue omni_gettrade(const JSONRPCRequest& request)
-{
-#ifdef ENABLE_WALLET
-    std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
-    std::unique_ptr<interfaces::Wallet> pWallet = interfaces::MakeWallet(wallet);
-#else
-    std::unique_ptr<interfaces::Wallet> pWallet = interfaces::MakeWallet(nullptr);
-#endif
-
-    if (request.fHelp || request.params.size() != 1)
-        throw runtime_error(
-            RPCHelpMan{"omni_gettrade",
-               "\nGet detailed information and trade matches for orders on the distributed token exchange.\n",
-               {
-                   {"txid", RPCArg::Type::STR, RPCArg::Optional::NO, "the hash of the order to lookup\n"},
-               },
-               RPCResult{
-                   "{\n"
-                   "  \"txid\" : \"hash\",                               (string) the hex-encoded hash of the transaction of the order\n"
-                   "  \"sendingaddress\" : \"address\",                  (string) the Bitcoin address of the trader\n"
-                   "  \"ismine\" : true|false,                         (boolean) whether the order involes an address in the wallet\n"
-                   "  \"confirmations\" : nnnnnnnnnn,                  (number) the number of transaction confirmations\n"
-                   "  \"fee\" : \"n.nnnnnnnn\",                          (string) the transaction fee in bitcoins\n"
-                   "  \"blocktime\" : nnnnnnnnnn,                      (number) the timestamp of the block that contains the transaction\n"
-                   "  \"valid\" : true|false,                          (boolean) whether the transaction is valid\n"
-                   "  \"version\" : n,                                 (number) the transaction version\n"
-                   "  \"type_int\" : n,                                (number) the transaction type as number\n"
-                   "  \"type\" : \"type\",                               (string) the transaction type as string\n"
-                   "  \"propertyidforsale\" : n,                       (number) the identifier of the tokens put up for sale\n"
-                   "  \"propertyidforsaleisdivisible\" : true|false,   (boolean) whether the tokens for sale are divisible\n"
-                   "  \"amountforsale\" : \"n.nnnnnnnn\",                (string) the amount of tokens initially offered\n"
-                   "  \"propertyiddesired\" : n,                       (number) the identifier of the tokens desired in exchange\n"
-                   "  \"propertyiddesiredisdivisible\" : true|false,   (boolean) whether the desired tokens are divisible\n"
-                   "  \"amountdesired\" : \"n.nnnnnnnn\",                (string) the amount of tokens initially desired\n"
-                   "  \"unitprice\" : \"n.nnnnnnnnnnn...\"               (string) the unit price (shown in the property desired)\n"
-                   "  \"status\" : \"status\"                            (string) the status of the order (\"open\", \"cancelled\", \"filled\", ...)\n"
-                   "  \"canceltxid\" : \"hash\",                         (string) the hash of the transaction that cancelled the order (if cancelled)\n"
-                   "  \"matches\": [                                   (array of JSON objects) a list of matched orders and executed trades\n"
-                   "    {\n"
-                   "      \"txid\" : \"hash\",                               (string) the hash of the transaction that was matched against\n"
-                   "      \"block\" : nnnnnn,                              (number) the index of the block that contains this transaction\n"
-                   "      \"address\" : \"address\",                         (string) the Bitcoin address of the other trader\n"
-                   "      \"amountsold\" : \"n.nnnnnnnn\",                   (string) the number of tokens sold in this trade\n"
-                   "      \"amountreceived\" : \"n.nnnnnnnn\"                (string) the number of tokens traded in exchange\n"
-                   "    },\n"
-                   "    ...\n"
-                   "  ]\n"
-                   "}\n"
-                   "\nNote:\n"
-                   "The documentation only covers the output for a trade, but there are also cancel transactions with different properties.\n"
-               },
-               RPCExamples{
-                   HelpExampleCli("omni_gettrade", "\"1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d\"")
-                   + HelpExampleRpc("omni_gettrade", "\"1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d\"")
-               }
-            }.ToString());
-
-    uint256 hash = ParseHashV(request.params[0], "txid");
-
-    UniValue txobj(UniValue::VOBJ);
-    int populateResult = populateRPCTransactionObject(hash, txobj, "", true, "", pWallet.get());
-    if (populateResult != 0) PopulateFailure(populateResult);
-
-    return txobj;
-}
-
 static UniValue omni_getcurrentconsensushash(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() != 0)
@@ -2580,52 +1832,6 @@ static UniValue omni_getcurrentconsensushash(const JSONRPCRequest& request)
     response.pushKV("block", block);
     response.pushKV("blockhash", blockHash.GetHex());
     response.pushKV("consensushash", consensusHash.GetHex());
-
-    return response;
-}
-
-static UniValue omni_getmetadexhash(const JSONRPCRequest& request)
-{
-    if (request.fHelp || request.params.size() > 1)
-        throw runtime_error(
-            RPCHelpMan{"omni_getmetadexhash",
-               "\nReturns a hash of the current state of the MetaDEx (default) or orderbook.\n",
-               {
-                   {"propertyid", RPCArg::Type::NUM, RPCArg::Optional::OMITTED, "hash orderbook (only trades selling propertyid)\n"},
-               },
-               RPCResult{
-                   "{\n"
-                   "  \"block\" : nnnnnn,          (number) the index of the block this hash applies to\n"
-                   "  \"blockhash\" : \"hash\",    (string) the hash of the corresponding block\n"
-                   "  \"propertyid\" : nnnnnn,     (number) the market this hash applies to (or 0 for all markets)\n"
-                   "  \"metadexhash\" : \"hash\"   (string) the hash for the state of the MetaDEx/orderbook\n"
-                   "}\n"
-               },
-               RPCExamples{
-                   HelpExampleCli("omni_getmetadexhash", "3")
-                   + HelpExampleRpc("omni_getmetadexhash", "3")
-               }
-            }.ToString());
-
-    LOCK(cs_main);
-
-    uint32_t propertyId = 0;
-    if (request.params.size() > 0) {
-        propertyId = ParsePropertyId(request.params[0]);
-        RequireExistingProperty(propertyId);
-    }
-
-    int block = GetHeight();
-    CBlockIndex* pblockindex = chainActive[block];
-    uint256 blockHash = pblockindex->GetBlockHash();
-
-    uint256 metadexHash = GetMetaDExHash(propertyId);
-
-    UniValue response(UniValue::VOBJ);
-    response.pushKV("block", block);
-    response.pushKV("blockhash", blockHash.GetHex());
-    response.pushKV("propertyid", (uint64_t)propertyId);
-    response.pushKV("metadexhash", metadexHash.GetHex());
 
     return response;
 }
@@ -2687,52 +1893,21 @@ static const CRPCCommand commands[] =
     { "omni layer (data retrieval)", "omni_getgrants",                 &omni_getgrants,                  {"propertyid"} },
     { "omni layer (data retrieval)", "omni_getactivedexsells",         &omni_getactivedexsells,          {"address"} },
     { "omni layer (data retrieval)", "omni_getactivecrowdsales",       &omni_getactivecrowdsales,        {} },
-    { "omni layer (data retrieval)", "omni_getorderbook",              &omni_getorderbook,               {"propertyid", "propertyid"} },
-    { "omni layer (data retrieval)", "omni_gettrade",                  &omni_gettrade,                   {"txid"} },
     { "omni layer (data retrieval)", "omni_getsto",                    &omni_getsto,                     {"txid", "recipientfilter"} },
     { "omni layer (data retrieval)", "omni_listblocktransactions",     &omni_listblocktransactions,      {"index"} },
     { "omni layer (data retrieval)", "omni_listblockstransactions",    &omni_listblockstransactions,     {"firstblock", "lastblock"} },
     { "omni layer (data retrieval)", "omni_listpendingtransactions",   &omni_listpendingtransactions,    {"address"} },
     { "omni layer (data retrieval)", "omni_getallbalancesforaddress",  &omni_getallbalancesforaddress,   {"address"} },
-    { "omni layer (data retrieval)", "omni_gettradehistoryforaddress", &omni_gettradehistoryforaddress,  {"address", "count", "propertyid"} },
-    { "omni layer (data retrieval)", "omni_gettradehistoryforpair",    &omni_gettradehistoryforpair,     {"propertyid", "propertyidsecond", "count"} },
     { "omni layer (data retrieval)", "omni_getcurrentconsensushash",   &omni_getcurrentconsensushash,    {} },
     { "omni layer (data retrieval)", "omni_getpayload",                &omni_getpayload,                 {"txid"} },
-    { "omni layer (data retrieval)", "omni_getseedblocks",             &omni_getseedblocks,              {"startblock", "endblock"} },
-    { "omni layer (data retrieval)", "omni_getmetadexhash",            &omni_getmetadexhash,             {"propertyid"} },
-    { "omni layer (data retrieval)", "omni_getfeecache",               &omni_getfeecache,                {"propertyid"} },
-    { "omni layer (data retrieval)", "omni_getfeetrigger",             &omni_getfeetrigger,              {"propertyid"} },
-    { "omni layer (data retrieval)", "omni_getfeedistribution",        &omni_getfeedistribution,         {"distributionid"} },
-    { "omni layer (data retrieval)", "omni_getfeedistributions",       &omni_getfeedistributions,        {"propertyid"} },
     { "omni layer (data retrieval)", "omni_getbalanceshash",           &omni_getbalanceshash,            {"propertyid"} },
 #ifdef ENABLE_WALLET
     { "omni layer (data retrieval)", "omni_listtransactions",          &omni_listtransactions,           {"address", "count", "skip", "startblock", "endblock"} },
-    { "omni layer (data retrieval)", "omni_getfeeshare",               &omni_getfeeshare,                {"address", "ecosystem"} },
     { "omni layer (configuration)",  "omni_setautocommit",             &omni_setautocommit,              {"flag"}  },
     { "omni layer (data retrieval)", "omni_getwalletbalances",         &omni_getwalletbalances,          {"includewatchonly"} },
     { "omni layer (data retrieval)", "omni_getwalletaddressbalances",  &omni_getwalletaddressbalances,   {"includewatchonly"} },
 #endif
     { "hidden",                      "mscrpc",                         &mscrpc,                          {"extra", "extra2", "extra3"}  },
-
-    /* depreciated: */
-    { "hidden",                      "getinfo_MP",                     &omni_getinfo,                    {}  },
-    { "hidden",                      "getbalance_MP",                  &omni_getbalance,                 {"address", "propertyid"} },
-    { "hidden",                      "getallbalancesforaddress_MP",    &omni_getallbalancesforaddress,   {"address"} },
-    { "hidden",                      "getallbalancesforid_MP",         &omni_getallbalancesforid,        {"propertyid"} },
-    { "hidden",                      "getproperty_MP",                 &omni_getproperty,                {"propertyid"} },
-    { "hidden",                      "listproperties_MP",              &omni_listproperties,             {} },
-    { "hidden",                      "getcrowdsale_MP",                &omni_getcrowdsale,               {"propertyid", "verbose"} },
-    { "hidden",                      "getgrants_MP",                   &omni_getgrants,                  {"propertyid"} },
-    { "hidden",                      "getactivedexsells_MP",           &omni_getactivedexsells,          {"address"} },
-    { "hidden",                      "getactivecrowdsales_MP",         &omni_getactivecrowdsales,        {} },
-    { "hidden",                      "getsto_MP",                      &omni_getsto,                     {"txid", "recipientfilter"} },
-    { "hidden",                      "getorderbook_MP",                &omni_getorderbook,               {"propertyid", "propertyiddesired"} },
-    { "hidden",                      "gettrade_MP",                    &omni_gettrade,                   {"txid"} },
-    { "hidden",                      "gettransaction_MP",              &omni_gettransaction,             {"txid"} },
-    { "hidden",                      "listblocktransactions_MP",       &omni_listblocktransactions,      {"index"} },
-#ifdef ENABLE_WALLET
-    { "hidden",                      "listtransactions_MP",            &omni_listtransactions,           {"address", "count", "skip", "startblock", "endblock"} },
-#endif
 };
 
 void RegisterOmniDataRetrievalRPCCommands(CRPCTable &tableRPC)

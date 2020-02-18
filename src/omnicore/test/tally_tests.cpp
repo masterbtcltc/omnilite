@@ -15,7 +15,6 @@ BOOST_AUTO_TEST_CASE(empty_tally)
     BOOST_CHECK_EQUAL(0, tally.getMoney(0, SELLOFFER_RESERVE));
     BOOST_CHECK_EQUAL(0, tally.getMoney(0, ACCEPT_RESERVE));
     BOOST_CHECK_EQUAL(0, tally.getMoney(0, PENDING));
-    BOOST_CHECK_EQUAL(0, tally.getMoney(0, METADEX_RESERVE));
     // TallyType out of range:
     BOOST_CHECK_EQUAL(0, tally.getMoney(0, static_cast<TallyType>(5)));
     BOOST_CHECK_EQUAL(0, tally.getMoney(0, static_cast<TallyType>(6)));
@@ -39,13 +38,11 @@ BOOST_AUTO_TEST_CASE(filled_tally)
     BOOST_CHECK(!tally.updateMoney(0, 0, SELLOFFER_RESERVE));
     BOOST_CHECK(!tally.updateMoney(0, 0, ACCEPT_RESERVE));
     BOOST_CHECK(!tally.updateMoney(0, 0, PENDING));
-    BOOST_CHECK(!tally.updateMoney(0, 0, METADEX_RESERVE));
 
     BOOST_CHECK_EQUAL(0, tally.getMoney(0, BALANCE));
     BOOST_CHECK_EQUAL(0, tally.getMoney(0, SELLOFFER_RESERVE));
     BOOST_CHECK_EQUAL(0, tally.getMoney(0, ACCEPT_RESERVE));
     BOOST_CHECK_EQUAL(0, tally.getMoney(0, PENDING));
-    BOOST_CHECK_EQUAL(0, tally.getMoney(0, METADEX_RESERVE));
 
     BOOST_CHECK_EQUAL(0, tally.getMoneyAvailable(0));
     BOOST_CHECK_EQUAL(0, tally.getMoneyReserved(0));
@@ -54,13 +51,11 @@ BOOST_AUTO_TEST_CASE(filled_tally)
     BOOST_CHECK(tally.updateMoney(0, 100, SELLOFFER_RESERVE));
     BOOST_CHECK(tally.updateMoney(1, int64_t(9223372036854775807LL), ACCEPT_RESERVE));
     BOOST_CHECK(tally.updateMoney(2, (-int64_t(9223372036854775807LL)-1), PENDING));
-    BOOST_CHECK(tally.updateMoney(5, int64_t(4294967296L), METADEX_RESERVE));
 
     BOOST_CHECK_EQUAL(tally.getMoney(0, BALANCE), 1);
     BOOST_CHECK_EQUAL(tally.getMoney(0, SELLOFFER_RESERVE), 100);
     BOOST_CHECK_EQUAL(tally.getMoney(0, ACCEPT_RESERVE), 0);
     BOOST_CHECK_EQUAL(tally.getMoney(0, PENDING), 0);
-    BOOST_CHECK_EQUAL(tally.getMoney(0, METADEX_RESERVE), 0);
 
     BOOST_CHECK_EQUAL(tally.getMoneyAvailable(0), 1);
     BOOST_CHECK_EQUAL(tally.getMoneyReserved(0), 100);
@@ -69,7 +64,6 @@ BOOST_AUTO_TEST_CASE(filled_tally)
     BOOST_CHECK_EQUAL(tally.getMoney(1, SELLOFFER_RESERVE), 0);
     BOOST_CHECK_EQUAL(tally.getMoney(1, ACCEPT_RESERVE), int64_t(9223372036854775807LL));
     BOOST_CHECK_EQUAL(tally.getMoney(1, PENDING), 0);
-    BOOST_CHECK_EQUAL(tally.getMoney(1, METADEX_RESERVE), 0);
 
     BOOST_CHECK_EQUAL(tally.getMoneyAvailable(1), 0);
     BOOST_CHECK_EQUAL(tally.getMoneyReserved(1), int64_t(9223372036854775807LL));
@@ -78,19 +72,9 @@ BOOST_AUTO_TEST_CASE(filled_tally)
     BOOST_CHECK_EQUAL(tally.getMoney(2, SELLOFFER_RESERVE), 0);
     BOOST_CHECK_EQUAL(tally.getMoney(2, ACCEPT_RESERVE), 0);
     BOOST_CHECK_EQUAL(tally.getMoney(2, PENDING), (-int64_t(9223372036854775807LL)-1));
-    BOOST_CHECK_EQUAL(tally.getMoney(2, METADEX_RESERVE), 0);
 
     BOOST_CHECK_EQUAL(tally.getMoneyAvailable(2), (-int64_t(9223372036854775807LL)-1));
     BOOST_CHECK_EQUAL(tally.getMoneyReserved(2), 0);
-
-    BOOST_CHECK_EQUAL(tally.getMoney(5, BALANCE), 0);
-    BOOST_CHECK_EQUAL(tally.getMoney(5, SELLOFFER_RESERVE), 0);
-    BOOST_CHECK_EQUAL(tally.getMoney(5, ACCEPT_RESERVE), 0);
-    BOOST_CHECK_EQUAL(tally.getMoney(5, PENDING), 0);
-    BOOST_CHECK_EQUAL(tally.getMoney(5, METADEX_RESERVE), int64_t(4294967296L));
-
-    BOOST_CHECK_EQUAL(tally.getMoneyAvailable(5), 0);
-    BOOST_CHECK_EQUAL(tally.getMoneyReserved(5), int64_t(4294967296L));
 
     /**
      * Note:
@@ -101,7 +85,6 @@ BOOST_AUTO_TEST_CASE(filled_tally)
     BOOST_CHECK_EQUAL(0, tally.next());
     BOOST_CHECK_EQUAL(1, tally.next());
     BOOST_CHECK_EQUAL(2, tally.next());
-    BOOST_CHECK_EQUAL(5, tally.next());
     BOOST_CHECK_EQUAL(0, tally.init());
     BOOST_CHECK_EQUAL(0, tally.next());
     BOOST_CHECK_EQUAL(1, tally.next());
@@ -116,7 +99,7 @@ BOOST_AUTO_TEST_CASE(tally_entry_order)
     BOOST_CHECK(tally.updateMoney(3, 1, ACCEPT_RESERVE));
     BOOST_CHECK(tally.updateMoney(9, 1, BALANCE));
     BOOST_CHECK(tally.updateMoney(2, -1, PENDING));
-    BOOST_CHECK(tally.updateMoney(5, 1, METADEX_RESERVE));
+    //BOOST_CHECK(tally.updateMoney(5, 1, METADEX_RESERVE));
     BOOST_CHECK(tally.updateMoney(9, 3, BALANCE));
     BOOST_CHECK(tally.updateMoney(9, -6, PENDING));
     BOOST_CHECK(tally.updateMoney(8, 1, SELLOFFER_RESERVE));
@@ -124,8 +107,8 @@ BOOST_AUTO_TEST_CASE(tally_entry_order)
     BOOST_CHECK(tally.updateMoney(6, 3, BALANCE));
     BOOST_CHECK(tally.updateMoney(9, 1, SELLOFFER_RESERVE));
     BOOST_CHECK(tally.updateMoney(9, 2, ACCEPT_RESERVE));
-    BOOST_CHECK(tally.updateMoney(9, 3, METADEX_RESERVE));
-    BOOST_CHECK(tally.updateMoney(9, 4, METADEX_RESERVE));
+    //BOOST_CHECK(tally.updateMoney(9, 3, METADEX_RESERVE));
+    //BOOST_CHECK(tally.updateMoney(9, 4, METADEX_RESERVE));
     BOOST_CHECK(tally.updateMoney(8, 1, BALANCE));
     BOOST_CHECK(tally.updateMoney(70, 1, BALANCE));
     BOOST_CHECK(tally.updateMoney(4, 1, SELLOFFER_RESERVE));
@@ -133,7 +116,7 @@ BOOST_AUTO_TEST_CASE(tally_entry_order)
     BOOST_CHECK(tally.updateMoney(1, 1, BALANCE));
     BOOST_CHECK(tally.updateMoney(6, -2, PENDING));
     BOOST_CHECK(tally.updateMoney(3, 1, ACCEPT_RESERVE));
-    BOOST_CHECK(tally.updateMoney(2, 1, METADEX_RESERVE));
+    //BOOST_CHECK(tally.updateMoney(2, 1, METADEX_RESERVE));
     BOOST_CHECK(tally.updateMoney(4, -1, PENDING));
     BOOST_CHECK(tally.updateMoney(2, -1, PENDING));
 
@@ -183,7 +166,7 @@ BOOST_AUTO_TEST_CASE(tally_equality)
     BOOST_CHECK(tally2 == tally1);
 
     BOOST_CHECK(tally1.updateMoney(4, 5, ACCEPT_RESERVE));
-    BOOST_CHECK(tally1.updateMoney(3, 3, METADEX_RESERVE));
+    //BOOST_CHECK(tally1.updateMoney(3, 3, METADEX_RESERVE));
     BOOST_CHECK(tally1.updateMoney(3, 7, SELLOFFER_RESERVE));
     BOOST_CHECK(tally1.updateMoney(1, 5, BALANCE));
     BOOST_CHECK(tally1.updateMoney(9, 4, BALANCE));
@@ -197,7 +180,7 @@ BOOST_AUTO_TEST_CASE(tally_equality)
     BOOST_CHECK(tally2.updateMoney(9, 4, BALANCE));
     BOOST_CHECK(tally2.updateMoney(3, 3, SELLOFFER_RESERVE));
     BOOST_CHECK(tally2.updateMoney(1, 5, BALANCE));
-    BOOST_CHECK(tally2.updateMoney(3, 3, METADEX_RESERVE));
+    //BOOST_CHECK(tally2.updateMoney(3, 3, METADEX_RESERVE));
     BOOST_CHECK(tally2.updateMoney(1, 5, BALANCE));
     BOOST_CHECK(tally2.updateMoney(1, 28, BALANCE));
     BOOST_CHECK(tally2.updateMoney(1, -6, BALANCE));
@@ -237,15 +220,15 @@ BOOST_AUTO_TEST_CASE(tally_equality)
     BOOST_CHECK(tally1 == tally2);
     BOOST_CHECK(tally1.getMoneyAvailable(9) == 0);
 
-    BOOST_CHECK(tally1.updateMoney(8, 3, METADEX_RESERVE));
+    //BOOST_CHECK(tally1.updateMoney(8, 3, METADEX_RESERVE));
     BOOST_CHECK(tally1 != tally2);
     BOOST_CHECK(tally1.getMoneyReserved(8) == 3);
 
-    BOOST_CHECK(tally2.updateMoney(8, 4, METADEX_RESERVE));
+    //BOOST_CHECK(tally2.updateMoney(8, 4, METADEX_RESERVE));
     BOOST_CHECK(tally1 != tally2);
     BOOST_CHECK(tally2.getMoneyReserved(8) == 4);
 
-    BOOST_CHECK(tally2.updateMoney(8, -1, METADEX_RESERVE));
+    //BOOST_CHECK(tally2.updateMoney(8, -1, METADEX_RESERVE));
     BOOST_CHECK(tally1 == tally2);
     BOOST_CHECK(tally1.getMoneyReserved(8) == 3);
 
@@ -270,7 +253,7 @@ BOOST_AUTO_TEST_CASE(tally_overflow)
     BOOST_CHECK(!tally.updateMoney(1, -1, BALANCE));
     BOOST_CHECK(!tally.updateMoney(2, -34242, SELLOFFER_RESERVE));
     BOOST_CHECK(!tally.updateMoney(2, (-int64_t(9223372036854775807LL)-1), ACCEPT_RESERVE));
-    BOOST_CHECK(!tally.updateMoney(3, -int64_t(1099511627777L), METADEX_RESERVE));
+    //BOOST_CHECK(!tally.updateMoney(3, -int64_t(1099511627777L), METADEX_RESERVE));
 
     BOOST_CHECK(tally.updateMoney(1, int64_t(9223372036854775807LL), BALANCE));
     BOOST_CHECK_EQUAL(tally.getMoney(1, BALANCE), int64_t(9223372036854775807LL));
@@ -306,7 +289,7 @@ BOOST_AUTO_TEST_CASE(tally_overflow)
     BOOST_CHECK(tally.updateMoney(1, 20000001, SELLOFFER_RESERVE));
     BOOST_CHECK(tally.updateMoney(1, 30000001, SELLOFFER_RESERVE));
     BOOST_CHECK(tally.updateMoney(1, 40000001, SELLOFFER_RESERVE));
-    BOOST_CHECK(tally.updateMoney(1, 50000001, METADEX_RESERVE));
+    //BOOST_CHECK(tally.updateMoney(1, 50000001, METADEX_RESERVE));
     BOOST_CHECK_EQUAL(tally.getMoneyReserved(1), 150000005);
 
     BOOST_CHECK(!tally.updateMoney(1, 1, BALANCE));

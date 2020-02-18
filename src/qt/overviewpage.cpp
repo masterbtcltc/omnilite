@@ -129,8 +129,7 @@ public:
                     omniAmountStr = QString::fromStdString(FormatIndivisibleMP(p_pending->amount) + getTokenLabel(p_pending->prop));
                 }
                 // override amount for cancels
-                if (p_pending->type == MSC_TYPE_METADEX_CANCEL_PRICE || p_pending->type == MSC_TYPE_METADEX_CANCEL_PAIR ||
-                    p_pending->type == MSC_TYPE_METADEX_CANCEL_ECOSYSTEM || p_pending->type == MSC_TYPE_SEND_ALL) {
+                if (p_pending->type == MSC_TYPE_SEND_ALL) {
                     omniAmountStr = QString::fromStdString("N/A");
                 }
             }
@@ -206,8 +205,7 @@ public:
                             }
 
                             // override amount for cancels
-                            if (mp_obj.getType() == MSC_TYPE_METADEX_CANCEL_PRICE || mp_obj.getType() == MSC_TYPE_METADEX_CANCEL_PAIR ||
-                                mp_obj.getType() == MSC_TYPE_METADEX_CANCEL_ECOSYSTEM || mp_obj.getType() == MSC_TYPE_SEND_ALL) {
+                            if (mp_obj.getType() == MSC_TYPE_SEND_ALL) {
                                 omniAmountStr = QString::fromStdString("N/A");
                             }
 
