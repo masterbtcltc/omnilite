@@ -19,8 +19,6 @@
 #include <string>
 #include <vector>
 
-#include <openssl/sha.h>
-
 namespace mastercore
 {
 bool ShouldConsensusHashBlock(int block) {
@@ -133,9 +131,7 @@ std::string GenerateConsensusString(const uint32_t propertyId, const std::string
  */
 uint256 GetConsensusHash()
 {
-    // allocate and init a SHA256_CTX
-    SHA256_CTX shaCtx;
-    SHA256_Init(&shaCtx);
+    CSHA256 hasher;
 
     LOCK(cs_tally);
 
@@ -157,7 +153,7 @@ uint256 GetConsensusHash()
             std::string dataStr = GenerateConsensusString(tally, address, propertyId);
             if (dataStr.empty()) continue; // skip empty balances
             if (msc_debug_consensus_hash) PrintToLog("Adding balance data to consensus hash: %s\n", dataStr);
-            SHA256_Update(&shaCtx, dataStr.c_str(), dataStr.length());
+            hasher.Write((unsigned char*)dataStr.c_str(), dataStr.length());
         }
     }
 
@@ -175,7 +171,7 @@ uint256 GetConsensusHash()
     for (std::vector<std::pair<arith_uint256, std::string> >::iterator it = vecDExOffers.begin(); it != vecDExOffers.end(); ++it) {
         const std::string& dataStr = it->second;
         if (msc_debug_consensus_hash) PrintToLog("Adding DEx offer data to consensus hash: %s\n", dataStr);
-        SHA256_Update(&shaCtx, dataStr.c_str(), dataStr.length());
+        hasher.Write((unsigned char*)dataStr.c_str(), dataStr.length());
     }
 
     // DEx accepts - loop through the accepts map and add each accept to the consensus hash (ordered by matchedtxid then buyer)
@@ -193,7 +189,7 @@ uint256 GetConsensusHash()
     for (std::vector<std::pair<std::string, std::string> >::iterator it = vecAccepts.begin(); it != vecAccepts.end(); ++it) {
         const std::string& dataStr = it->second;
         if (msc_debug_consensus_hash) PrintToLog("Adding DEx accept to consensus hash: %s\n", dataStr);
-        SHA256_Update(&shaCtx, dataStr.c_str(), dataStr.length());
+        hasher.Write((unsigned char*)dataStr.c_str(), dataStr.length());
     }
 
     // Crowdsales - loop through open crowdsales and add to the consensus hash (ordered by property ID)
@@ -211,7 +207,7 @@ uint256 GetConsensusHash()
     for (std::vector<std::pair<uint32_t, std::string> >::iterator it = vecCrowds.begin(); it != vecCrowds.end(); ++it) {
         std::string dataStr = (*it).second;
         if (msc_debug_consensus_hash) PrintToLog("Adding Crowdsale entry to consensus hash: %s\n", dataStr);
-        SHA256_Update(&shaCtx, dataStr.c_str(), dataStr.length());
+        hasher.Write((unsigned char*)dataStr.c_str(), dataStr.length());
     }
 
     // Properties - loop through each property and store the issuer (to capture state changes via change issuer transactions)
@@ -228,13 +224,13 @@ uint256 GetConsensusHash()
             }
             std::string dataStr = GenerateConsensusString(propertyId, sp.issuer);
             if (msc_debug_consensus_hash) PrintToLog("Adding property to consensus hash: %s\n", dataStr);
-            SHA256_Update(&shaCtx, dataStr.c_str(), dataStr.length());
+            hasher.Write((unsigned char*)dataStr.c_str(), dataStr.length());
         }
     }
 
     // extract the final result and return the hash
     uint256 consensusHash;
-    SHA256_Final((unsigned char*)&consensusHash, &shaCtx);
+    hasher.Finalize(consensusHash.begin());
     if (msc_debug_consensus_hash) PrintToLog("Finished generation of consensus hash.  Result: %s\n", consensusHash.GetHex());
 
     return consensusHash;
@@ -243,8 +239,7 @@ uint256 GetConsensusHash()
 /** Obtains a hash of the balances for a specific property. */
 uint256 GetBalancesHash(const uint32_t hashPropertyId)
 {
-    SHA256_CTX shaCtx;
-    SHA256_Init(&shaCtx);
+    CSHA256 hasher;
 
     LOCK(cs_tally);
 
@@ -262,12 +257,12 @@ uint256 GetBalancesHash(const uint32_t hashPropertyId)
             std::string dataStr = GenerateConsensusString(tally, address, propertyId);
             if (dataStr.empty()) continue;
             if (msc_debug_consensus_hash) PrintToLog("Adding data to balances hash: %s\n", dataStr);
-            SHA256_Update(&shaCtx, dataStr.c_str(), dataStr.length());
+            hasher.Write((unsigned char*)dataStr.c_str(), dataStr.length());
         }
     }
 
     uint256 balancesHash;
-    SHA256_Final((unsigned char*)&balancesHash, &shaCtx);
+    hasher.Finalize(balancesHash.begin());
 
     return balancesHash;
 }
