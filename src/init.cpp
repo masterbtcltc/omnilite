@@ -1203,12 +1203,6 @@ bool AppInitParameterInteraction()
         fEnableReplacement = (std::find(vstrReplacementModes.begin(), vstrReplacementModes.end(), "fee") != vstrReplacementModes.end());
     }
 
-    if (gArgs.IsArgSet("-checkpointkey")) // Checkpoint master priv key
-    {
-        if (!SetCheckpointPrivKey(gArgs.GetArg("-checkpointkey", "")))
-            return InitError(_("Unable to sign checkpoint, wrong checkpointkey?"));
-    }
-
     // Include NODE_ACP in services. Currently no arg to toggle this behaviour.
     nLocalServices = ServiceFlags(nLocalServices | NODE_ACP);
 
@@ -1242,6 +1236,13 @@ bool AppInitSanityChecks()
     // Sanity check
     if (!InitSanityCheck())
         return InitError(strprintf(_("Initialization sanity check failed. %s is shutting down."), _(PACKAGE_NAME)));
+
+    // Run after ECC_Start for mock key signing
+    if (gArgs.IsArgSet("-checkpointkey")) // Checkpoint master priv key
+    {
+        if (!SetCheckpointPrivKey(gArgs.GetArg("-checkpointkey", "")))
+            return InitError("Unable to sign checkpoint, wrong checkpointkey?");
+    }
 
     // Probe the data directory lock to give an early error message, if possible
     // We cannot hold the data directory lock here, as the forking for daemon() hasn't yet happened,
@@ -1616,6 +1617,15 @@ bool AppInitMain(InitInterfaces& interfaces)
                 }
             }
 
+            {
+                LOCK(cs_main);
+                uiInterface.InitMessage(_("Checking ACP ..."));
+                if (!CheckCheckpointPubKey()) {
+                    strLoadError = _("Checking ACP pubkey failed");
+                    break;
+                }
+            }
+
             try {
                 LOCK(cs_main);
                 if (!is_coinsview_empty) {
@@ -1623,12 +1633,6 @@ bool AppInitMain(InitInterfaces& interfaces)
                     if (fHavePruned && gArgs.GetArg("-checkblocks", DEFAULT_CHECKBLOCKS) > MIN_BLOCKS_TO_KEEP) {
                         LogPrintf("Prune: pruned datadir may not have more than %d blocks; only checking available blocks\n",
                             MIN_BLOCKS_TO_KEEP);
-                    }
-
-                    uiInterface.InitMessage(_("Checking ACP ..."));
-                    if (!CheckCheckpointPubKey()) {
-                        strLoadError = _("Checking ACP pubkey failed");
-                        break;
                     }
 
                     CBlockIndex* tip = chainActive.Tip();

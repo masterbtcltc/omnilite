@@ -1803,9 +1803,6 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             State(pfrom->GetId())->fHaveWitness = true;
         }
 
-        if((nServices & NODE_ACP))
-            pfrom->supportACPMessages = true;
-
         // Potentially mark this peer as a preferred download peer.
         {
         LOCK(cs_main);
@@ -1839,11 +1836,15 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             connman->MarkAddressGood(pfrom->addr);
         }
 
-        // Relay sync-checkpoint
-        {
-            LOCK(cs_main);
-            if (!checkpointMessage.IsNull())
-                checkpointMessage.RelayTo(pfrom);
+        if((nServices & NODE_ACP)) {
+            pfrom->supportACPMessages = true;
+
+            // Relay sync-checkpoint
+            {
+                LOCK(cs_hashSyncCheckpoint);
+                if (!checkpointMessage.IsNull())
+                    checkpointMessage.RelayTo(pfrom);
+            }
         }
 
         std::string remoteAddr;
@@ -1870,10 +1871,6 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             assert(pfrom->fInbound == false);
             pfrom->fDisconnect = true;
         }
-
-        // Ask for pending sync-checkpoint if any
-        if (!IsInitialBlockDownload())
-            AskForPendingSyncCheckpoint(pfrom);
 
         return true;
     }
@@ -2764,9 +2761,6 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         }
         bool fNewBlock = false;
         ProcessNewBlock(chainparams, pblock, forceProcessing, &fNewBlock);
-        // Ask for pending sync-checkpoint if any
-        if (!IsInitialBlockDownload())
-            AskForPendingSyncCheckpoint(pfrom);
         if (fNewBlock) {
             pfrom->nLastBlockTime = GetTime();
         } else {
@@ -2908,7 +2902,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         CSyncCheckpoint checkpoint;
         vRecv >> checkpoint;
 
-        if (checkpoint.ProcessSyncCheckpoint(pfrom))
+        if (checkpoint.ProcessSyncCheckpoint())
         {
             // Relay checkpoint
             pfrom->hashCheckpointKnown = checkpoint.hashCheckpoint;
