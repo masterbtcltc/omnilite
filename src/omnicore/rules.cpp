@@ -63,6 +63,8 @@ std::vector<TransactionRestriction> CConsensusParams::GetRestrictions() const
         { MSC_TYPE_SEND_TO_OWNERS,            MP_TX_PKT_V0,  false,   MSC_STO_BLOCK      },
 
         { MSC_TYPE_SEND_ALL,                  MP_TX_PKT_V0,  false,   MSC_SEND_ALL_BLOCK },
+        
+        { MSC_TYPE_ANYDATA,                   MP_TX_PKT_V0,  true,    MSC_ANYDATA_BLOCK },
     };
 
     const size_t nSize = sizeof(vTxRestrictions) / sizeof(vTxRestrictions[0]);
@@ -129,6 +131,7 @@ CMainConsensusParams::CMainConsensusParams()
     MSC_MANUALSP_BLOCK = 0;
     MSC_STO_BLOCK = 0;
     MSC_SEND_ALL_BLOCK = 0;
+    MSC_ANYDATA_BLOCK = 0;
 }
 
 /**
@@ -154,6 +157,7 @@ CTestNetConsensusParams::CTestNetConsensusParams()
     MSC_MANUALSP_BLOCK = 0;
     MSC_STO_BLOCK = 0;
     MSC_SEND_ALL_BLOCK = 0;
+    MSC_ANYDATA_BLOCK = 0;
 }
 
 /**
@@ -179,6 +183,7 @@ CRegTestConsensusParams::CRegTestConsensusParams()
     MSC_MANUALSP_BLOCK = 0;
     MSC_STO_BLOCK = 0;
     MSC_SEND_ALL_BLOCK = 0;
+    MSC_ANYDATA_BLOCK = 0;
 }
 
 //! Consensus parameters for mainnet

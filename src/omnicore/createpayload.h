@@ -25,6 +25,7 @@ std::vector<unsigned char> CreatePayload_EnableFreezing(uint32_t propertyId);
 std::vector<unsigned char> CreatePayload_DisableFreezing(uint32_t propertyId);
 std::vector<unsigned char> CreatePayload_FreezeTokens(uint32_t propertyId, uint64_t amount, const std::string& address);
 std::vector<unsigned char> CreatePayload_UnfreezeTokens(uint32_t propertyId, uint64_t amount, const std::string& address);
+std::vector<unsigned char> CreatePayload_AnyData(const std::vector<unsigned char>& data);
 std::vector<unsigned char> CreatePayload_OmniCoreAlert(uint16_t alertType, uint32_t expiryValue, const std::string& alertMessage);
 std::vector<unsigned char> CreatePayload_DeactivateFeature(uint16_t featureId);
 std::vector<unsigned char> CreatePayload_ActivateFeature(uint16_t featureId, uint32_t activationBlock, uint32_t minClientVersion);

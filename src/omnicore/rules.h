@@ -76,6 +76,8 @@ public:
     int MSC_STO_BLOCK;
     //! Block to enable "send all" transactions
     int MSC_SEND_ALL_BLOCK;
+    //! Block to enable any data payloads
+    int MSC_ANYDATA_BLOCK;
 
     /** Returns a mapping of transaction types, and the blocks at which they are enabled. */
     virtual std::vector<TransactionRestriction> GetRestrictions() const;
