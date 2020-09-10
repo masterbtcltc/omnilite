@@ -674,6 +674,7 @@ bool CMPTransaction::interpret_AnyData()
 
     if ((!rpcOnly && msc_debug_packets) || msc_debug_packets_readonly) {
         PrintToLog("\t       data: %s\n", "...");
+        PrintToLog("\t   receiver: %s\n", receiver);
     }
 
     return true;
