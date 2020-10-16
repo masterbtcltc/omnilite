@@ -511,6 +511,16 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
 
             for i in range(MAX_NODES):
                 os.rmdir(cache_path(i, 'wallets'))  # Remove empty wallets dir
+                # Remove Omni specific dirs
+                shutil.rmtree(cache_path(i, 'OMNI_feecache'))
+                shutil.rmtree(cache_path(i, 'OMNI_feehistory'))
+                shutil.rmtree(cache_path(i, 'Omni_TXDB'))
+                shutil.rmtree(cache_path(i, 'MP_persist'))
+                shutil.rmtree(cache_path(i, 'MP_spinfo'))
+                shutil.rmtree(cache_path(i, 'MP_stolist'))
+                shutil.rmtree(cache_path(i, 'MP_tradelist'))
+                shutil.rmtree(cache_path(i, 'MP_txlist'))
+                shutil.rmtree(cache_path(i, 'indexes')) # for txindex enabled by default in Omni
                 for entry in os.listdir(cache_path(i)):
                     if entry not in ['chainstate', 'blocks']:
                         os.remove(cache_path(i, entry))
