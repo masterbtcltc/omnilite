@@ -132,6 +132,7 @@ CMainConsensusParams::CMainConsensusParams()
     MSC_STO_BLOCK = 0;
     MSC_SEND_ALL_BLOCK = 0;
     MSC_ANYDATA_BLOCK = 0;
+    FREEDEX_FEATURE_BLOCK = std::numeric_limits<int>::max();
 }
 
 /**
@@ -158,6 +159,7 @@ CTestNetConsensusParams::CTestNetConsensusParams()
     MSC_STO_BLOCK = 0;
     MSC_SEND_ALL_BLOCK = 0;
     MSC_ANYDATA_BLOCK = 0;
+    FREEDEX_FEATURE_BLOCK = 0;
 }
 
 /**
@@ -184,6 +186,7 @@ CRegTestConsensusParams::CRegTestConsensusParams()
     MSC_STO_BLOCK = 0;
     MSC_SEND_ALL_BLOCK = 0;
     MSC_ANYDATA_BLOCK = 0;
+    FREEDEX_FEATURE_BLOCK = std::numeric_limits<int>::max();
 }
 
 //! Consensus parameters for mainnet
@@ -316,6 +319,9 @@ bool ActivateFeature(uint16_t featureId, int activationBlock, uint32_t minClient
     std::string featureName = GetFeatureName(featureId);
     bool supported = OMNICORE_VERSION >= minClientVersion;
     switch (featureId) {
+        case FEATURE_FREEDEX:
+            MutableConsensusParams().FREEDEX_FEATURE_BLOCK = activationBlock;
+            break;
         default:
             supported = false;
         break;
@@ -354,6 +360,9 @@ bool DeactivateFeature(uint16_t featureId, int transactionBlock)
 
     std::string featureName = GetFeatureName(featureId);
     switch (featureId) {
+        case FEATURE_FREEDEX:
+            MutableConsensusParams().FREEDEX_FEATURE_BLOCK = 999999;
+            break;
         default:
             return false;
         break;
@@ -374,6 +383,8 @@ bool DeactivateFeature(uint16_t featureId, int transactionBlock)
 std::string GetFeatureName(uint16_t featureId)
 {
     switch (featureId) {
+        case FEATURE_FREEDEX: return "Activate trading of any token on the distributed exchange";
+
         default: return "Unknown feature";
     }
 }
@@ -387,6 +398,9 @@ bool IsFeatureActivated(uint16_t featureId, int transactionBlock)
     int activationBlock = std::numeric_limits<int>::max();
 
     switch (featureId) {
+        case FEATURE_FREEDEX:
+            activationBlock = params.FREEDEX_FEATURE_BLOCK;
+            break;
         default:
             return false;
     }

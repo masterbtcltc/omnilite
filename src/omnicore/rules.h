@@ -9,6 +9,10 @@
 
 namespace mastercore
 {
+
+//! Feature identifier to activate trading of any token on the distributed exchange
+const uint16_t FEATURE_FREEDEX = 15;
+
 /** A structure to represent transaction restrictions.
  */
 struct TransactionRestriction
@@ -78,6 +82,9 @@ public:
     int MSC_SEND_ALL_BLOCK;
     //! Block to enable any data payloads
     int MSC_ANYDATA_BLOCK;
+
+    //! Block to activate the waiting period to activate trading of any token on the distributed exchange
+    int FREEDEX_FEATURE_BLOCK;
 
     /** Returns a mapping of transaction types, and the blocks at which they are enabled. */
     virtual std::vector<TransactionRestriction> GetRestrictions() const;

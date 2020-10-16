@@ -343,6 +343,11 @@ static UniValue omni_senddexsell(const JSONRPCRequest& request)
         minAcceptFee = ParseDExFee(request.params[5]);
     }
 
+    // perform checks
+    if (!IsFeatureActivated(FEATURE_FREEDEX, GetHeight())) {
+        RequirePrimaryToken(propertyIdForSale);
+    }
+
     switch (action) {
         case CMPTransaction::NEW:
         {

@@ -204,8 +204,10 @@ int DEx_offerCreate(const std::string& addressSeller, uint32_t propertyId, int64
     }
 
     // Ensure further there can only be one active offer
-    if (DEx_hasOffer(addressSeller)) {
-        return (DEX_ERROR_SELLOFFER -10); // offer already exists
+    if (IsFeatureActivated(FEATURE_FREEDEX, block)) {
+        if (DEx_hasOffer(addressSeller)) {
+            return (DEX_ERROR_SELLOFFER -10); // offer already exists
+        }
     }
 
     const std::string key = STR_SELLOFFER_ADDR_PROP_COMBO(addressSeller, propertyId);
@@ -469,9 +471,27 @@ int DEx_payment(const uint256& txid, unsigned int vout, const std::string& addre
     uint32_t propertyId;
     CMPAccept* p_accept = nullptr;
 
-    // Retrieve and get the token for sale for that seller
-    if (DEx_getTokenForSale(addressSeller, propertyId)) {
+    /**
+     * When the feature is not activated, first check, if there is an open offer
+     * for OMNI, and if not, check if there is an open offer for TOMNI.
+     *
+     * If the feature is activated, simply retrieve the token identifier of the
+     * token for sale.
+     */
+    if (!IsFeatureActivated(FEATURE_FREEDEX, block)) {
+        propertyId = OMNI_PROPERTY_MSC;  // test for OMNI accept first
         p_accept = DEx_getAccept(addressSeller, propertyId, addressBuyer);
+
+        if (!p_accept) {
+            propertyId = OMNI_PROPERTY_TMSC; // test for TOMNI accept second
+            p_accept = DEx_getAccept(addressSeller, propertyId, addressBuyer);
+        }
+    } else {
+        // Retrieve and get the token for sale for that seller
+
+        if (DEx_getTokenForSale(addressSeller, propertyId)) {
+            p_accept = DEx_getAccept(addressSeller, propertyId, addressBuyer);
+        }
     }
 
     if (!p_accept) {
