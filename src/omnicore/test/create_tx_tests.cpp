@@ -138,8 +138,8 @@ BOOST_AUTO_TEST_CASE(txbuilder_add_change)
         78825000LL,
         CScript(scriptB.begin(), scriptB.end())));
     
-    CTxDestination addrA = DecodeDestination("174TgzbFFWiKg1VWt8Z55EVP7rJ54jQSar");
-    CTxDestination addrB = DecodeDestination("12gxzZL9g6tWsX6ut8srcgcUTQ4c9wWuGS");
+    CTxDestination addrA = DecodeDestination("6jnuUWmHC3Cb85SjE1DXrzJPvuuGvojN2V");
+    CTxDestination addrB = DecodeDestination("6fRQn5WBcdNnKb48E1YKQSRVGTfp6w2p7E");
 
     CCoinsView viewDummy;
     CCoinsViewCache viewTemp(&viewDummy);
@@ -178,7 +178,7 @@ BOOST_AUTO_TEST_CASE(txbuilder_add_change_position)
         500000000LL,
         CScript(script.begin(), script.end())));
 
-    CTxDestination addr = DecodeDestination("1DJFjEV9U7TgyDZVT1tcCGJDhDeRYSQGuD");
+    CTxDestination addr = DecodeDestination("6r2hWkfBQdwxRHWhntZ4z27EWHFdVhD74B");
 
     CMutableTransaction txBasis;
     BOOST_CHECK(DecodeHexTx(txBasis, rawTxBasis));
@@ -255,8 +255,8 @@ BOOST_AUTO_TEST_CASE(omnitxbuilder_op_return)
 
     tx = OmniTxBuilder(tx)
         .addOpReturn(payload)
-        .addReference("12faQbtHsD7ECFweehhHoRYxiRjyB1d1uy", 2730LL)
-        .addChange("1JovPp7XB8Tjc6E2fVPigxXtfmrFLBoMhK", viewTemp, 10000LL, 1)
+        .addReference("6fQ2C84KojbVeKtrzaMkbBMyXVMBACBK7t", 2730LL)
+        .addChange("6wYNBLHZ7ex14ABF1N4BUiLuUqTTDaKqzR", viewTemp, 10000LL, 1)
         .build();
 
     BOOST_CHECK_EQUAL(rawTx, EncodeHexTx(CTransaction(tx)));

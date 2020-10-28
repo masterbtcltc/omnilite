@@ -116,24 +116,6 @@ BOOST_AUTO_TEST_CASE(class_class_a)
         BOOST_CHECK_EQUAL(GetEncodingClass(tx, nBlock), OMNI_CLASS_A);
     }
     {
-        int nBlock = 0;
-
-        CMutableTransaction mutableTx;
-        mutableTx.vout.push_back(OpReturn_UnrelatedShort());
-        mutableTx.vout.push_back(PayToPubKeyHash_Exodus());
-        mutableTx.vout.push_back(OpReturn_Empty());
-        mutableTx.vout.push_back(PayToPubKey_Unrelated());
-        mutableTx.vout.push_back(OpReturn_PlainMarker());
-        mutableTx.vout.push_back(PayToPubKeyHash_Unrelated());
-        mutableTx.vout.push_back(NonStandardOutput());
-        mutableTx.vout.push_back(OpReturn_PlainMarker());
-        mutableTx.vout.push_back(PayToScriptHash_Unrelated());
-        mutableTx.vout.push_back(OpReturn_Unrelated());
-
-        CTransaction tx(mutableTx);
-        BOOST_CHECK_EQUAL(GetEncodingClass(tx, nBlock), OMNI_CLASS_A);
-    }
-    {
         int nBlock = std::numeric_limits<int>::max();
 
         CMutableTransaction mutableTx;
@@ -184,12 +166,10 @@ BOOST_AUTO_TEST_CASE(class_class_b)
         mutableTx.vout.push_back(PayToPubKey_Unrelated());
         mutableTx.vout.push_back(PayToBareMultisig_1of3());
         mutableTx.vout.push_back(OpReturn_UnrelatedShort());
-        mutableTx.vout.push_back(OpReturn_PlainMarker());
         mutableTx.vout.push_back(PayToPubKeyHash_Unrelated());
         mutableTx.vout.push_back(PayToBareMultisig_3of5());
         mutableTx.vout.push_back(OpReturn_Unrelated());
         mutableTx.vout.push_back(NonStandardOutput());
-        mutableTx.vout.push_back(OpReturn_SimpleSend());
         mutableTx.vout.push_back(PayToScriptHash_Unrelated());
         mutableTx.vout.push_back(PayToPubKeyHash_Exodus());
 

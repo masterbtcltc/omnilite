@@ -88,11 +88,11 @@ static bool GetFirstSender(const std::vector<CTxOut>& txInputs, std::string& str
 BOOST_AUTO_TEST_CASE(first_vin_is_sender)
 {
     std::vector<CTxOut> vouts;
-    vouts.push_back(createTxOut(100, "1CE8bBr1dYZRMnpmyYsFEoexa1YoPz2mfB")); // Winner
+    vouts.push_back(createTxOut(100, "6vChE3UAN8zjdhKNcv5CASiTfNpWLWvMyd")); // Winner
     vouts.push_back(createTxOut(999, "3KYen723gbjhJU69j8jRhZU6fDw8iVVWKy"));
-    vouts.push_back(createTxOut(200, "1471EHpnJ62MDxLw96dKcNT8sWPEbHrAUe"));
+    vouts.push_back(createTxOut(200, "6vAaT7p3PgRVSqz32Z63wUBwQF42ar7otM"));
 
-    std::string strExpected("1CE8bBr1dYZRMnpmyYsFEoexa1YoPz2mfB");
+    std::string strExpected("6vChE3UAN8zjdhKNcv5CASiTfNpWLWvMyd");
 
     std::string strSender;
     BOOST_CHECK(GetFirstSender(vouts, strSender));

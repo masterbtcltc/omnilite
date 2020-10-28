@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(consensus_string_property_issuer)
 BOOST_AUTO_TEST_CASE(get_checkpoints)
 {
     // There are consensus checkpoints for mainnet:
-    BOOST_CHECK(!ConsensusParams("main").GetCheckpoints().empty());
+    BOOST_CHECK(ConsensusParams("main").GetCheckpoints().empty()); // Empty for now, will fail when checkpoint added
     // ... but no checkpoints for regtest mode are defined:
     BOOST_CHECK(ConsensusParams("regtest").GetCheckpoints().empty());
 }

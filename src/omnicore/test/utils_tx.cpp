@@ -35,7 +35,7 @@ CTxOut PayToPubKeyHash_Exodus()
 
 CTxOut PayToPubKeyHash_Unrelated()
 {
-    CTxDestination address = DecodeDestination("1f2dj45pxYb8BCW5sSbCgJ5YvXBfSapeX");
+    CTxDestination address = DecodeDestination("6mYeGKje2Co6hQzgpxNCpuokjNhpBa1iB3");
     CScript scriptPubKey = GetScriptForDestination(address);
     int64_t amount = OmniGetDustThreshold(scriptPubKey);
 
@@ -44,7 +44,7 @@ CTxOut PayToPubKeyHash_Unrelated()
 
 CTxOut PayToScriptHash_Unrelated()
 {
-    CTxDestination address = DecodeDestination("3MbYQMMmSkC3AgWkj9FMo5LsPTW1zBTwXL");
+    CTxDestination address = DecodeDestination("38FbG5zMAXuYZGQ4Q9HdUfCYvnwssTqPHz");
     CScript scriptPubKey = GetScriptForDestination(address);
     int64_t amount = OmniGetDustThreshold(scriptPubKey);
 

@@ -115,26 +115,26 @@ std::vector<TransactionCheckpoint> CMainConsensusParams::GetTransactions() const
 CMainConsensusParams::CMainConsensusParams()
 {
     // Omnifeather genesis block
-    GENESIS_BLOCK = std::numeric_limits<int>::max();
+    GENESIS_BLOCK = 100000000;
     // Notice range for feature activations:
     MIN_ACTIVATION_BLOCKS = 20160;  // ~2 weeks
     MAX_ACTIVATION_BLOCKS = 120960; // ~12 weeks
     // Script related:
     PUBKEYHASH_BLOCK = 0;
-    SCRIPTHASH_BLOCK = 0;
+    SCRIPTHASH_BLOCK = GENESIS_BLOCK;
     MULTISIG_BLOCK = 0;
-    NULLDATA_BLOCK = 0;
+    NULLDATA_BLOCK = GENESIS_BLOCK;
     // Transaction restrictions:
     MSC_ALERT_BLOCK = 0;
-    MSC_SEND_BLOCK = 0;
-    MSC_DEX_BLOCK = 0;
-    MSC_SP_BLOCK = 0;
-    MSC_MANUALSP_BLOCK = 0;
-    MSC_STO_BLOCK = 0;
-    MSC_SEND_ALL_BLOCK = 0;
+    MSC_SEND_BLOCK = GENESIS_BLOCK;
+    MSC_DEX_BLOCK = GENESIS_BLOCK;
+    MSC_SP_BLOCK = GENESIS_BLOCK;
+    MSC_MANUALSP_BLOCK = GENESIS_BLOCK;
+    MSC_STO_BLOCK = GENESIS_BLOCK;
+    MSC_SEND_ALL_BLOCK = GENESIS_BLOCK;
     MSC_STOV1_BLOCK = 100000000;
     MSC_ANYDATA_BLOCK = 0;
-    FREEDEX_FEATURE_BLOCK = std::numeric_limits<int>::max();
+    FREEDEX_FEATURE_BLOCK = GENESIS_BLOCK;
 }
 
 /**
@@ -188,9 +188,9 @@ CRegTestConsensusParams::CRegTestConsensusParams()
     MSC_MANUALSP_BLOCK = 0;
     MSC_STO_BLOCK = 0;
     MSC_SEND_ALL_BLOCK = 0;
-    MSC_STOV1_BLOCK = 999999;
+    MSC_STOV1_BLOCK = 100000000;
     MSC_ANYDATA_BLOCK = 0;
-    FREEDEX_FEATURE_BLOCK = std::numeric_limits<int>::max();
+    FREEDEX_FEATURE_BLOCK = 100000000;
 }
 
 //! Consensus parameters for mainnet

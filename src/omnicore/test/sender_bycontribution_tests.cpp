@@ -74,17 +74,17 @@ BOOST_AUTO_TEST_CASE(invalid_inputs)
 BOOST_AUTO_TEST_CASE(p2pkh_contribution_by_sum_test)
 {
     std::vector<CTxOut> vouts;
-    vouts.push_back(createTxOut(100, "1471EHpnJ62MDxLw96dKcNT8sWPEbHrAUe"));
-    vouts.push_back(createTxOut(100, "1471EHpnJ62MDxLw96dKcNT8sWPEbHrAUe"));
-    vouts.push_back(createTxOut(100, "1471EHpnJ62MDxLw96dKcNT8sWPEbHrAUe"));
-    vouts.push_back(createTxOut(100, "168F7az8ACWxntNqL1FathoKTbgK17GVft"));
-    vouts.push_back(createTxOut(100, "168F7az8ACWxntNqL1FathoKTbgK17GVft"));
-    vouts.push_back(createTxOut(999, "16X6UDz6dMkVAAkWdY6HKe85o6EVAbzDtn")); // Winner
-    vouts.push_back(createTxOut(100, "1BYk8d1fWy1JLcNqHyNTEg2Jxu9EDb1BmY"));
-    vouts.push_back(createTxOut(100, "1BYk8d1fWy1JLcNqHyNTEg2Jxu9EDb1BmY"));
-    vouts.push_back(createTxOut(100, "1CE8bBr1dYZRMnpmyYsFEoexa1YoPz2mfB"));
+    vouts.push_back(createTxOut(100, "6ubcyde8TEK8pMdH9jsomWjN4o6c4rd3XP"));
+    vouts.push_back(createTxOut(100, "6ubcyde8TEK8pMdH9jsomWjN4o6c4rd3XP"));
+    vouts.push_back(createTxOut(100, "6ubcyde8TEK8pMdH9jsomWjN4o6c4rd3XP"));
+    vouts.push_back(createTxOut(100, "6n8xQfvpdHpk2QEZFFSMFbBBK7AQ4onTaj"));
+    vouts.push_back(createTxOut(100, "6n8xQfvpdHpk2QEZFFSMFbBBK7AQ4onTaj"));
+    vouts.push_back(createTxOut(999, "72RoHbQyAw5CjFEgCWPoPVvEjn66Fhqv2S")); // Winner
+    vouts.push_back(createTxOut(100, "6keajTZbhx9j8DfhpqFg93iLsY9tjjN5q3"));
+    vouts.push_back(createTxOut(100, "6keajTZbhx9j8DfhpqFg93iLsY9tjjN5q3"));
+    vouts.push_back(createTxOut(100, "6rZwZAB9zCvHA31ojKRknnESuuhMBTYmuA"));
 
-    std::string strExpected("16X6UDz6dMkVAAkWdY6HKe85o6EVAbzDtn");
+    std::string strExpected("72RoHbQyAw5CjFEgCWPoPVvEjn66Fhqv2S");
 
     for (int i = 0; i < 10; ++i) {
         std::random_shuffle(vouts.begin(), vouts.end(), GetRandInt);
@@ -102,15 +102,15 @@ BOOST_AUTO_TEST_CASE(p2pkh_contribution_by_sum_test)
 BOOST_AUTO_TEST_CASE(p2pkh_contribution_by_total_sum_test)
 {
     std::vector<CTxOut> vouts;
-    vouts.push_back(createTxOut(499, "1471EHpnJ62MDxLw96dKcNT8sWPEbHrAUe"));
-    vouts.push_back(createTxOut(501, "1471EHpnJ62MDxLw96dKcNT8sWPEbHrAUe"));
-    vouts.push_back(createTxOut(295, "1CE8bBr1dYZRMnpmyYsFEoexa1YoPz2mfB")); // Winner
-    vouts.push_back(createTxOut(310, "1CE8bBr1dYZRMnpmyYsFEoexa1YoPz2mfB")); // Winner
-    vouts.push_back(createTxOut(400, "1CE8bBr1dYZRMnpmyYsFEoexa1YoPz2mfB")); // Winner
-    vouts.push_back(createTxOut(500, "1Pr75FNvtoWHeocNfc4zTQCfK5kMVakWcn"));
-    vouts.push_back(createTxOut(500, "1Pr75FNvtoWHeocNfc4zTQCfK5kMVakWcn"));
+    vouts.push_back(createTxOut(499, "6ubcyde8TEK8pMdH9jsomWjN4o6c4rd3XP"));
+    vouts.push_back(createTxOut(501, "6ubcyde8TEK8pMdH9jsomWjN4o6c4rd3XP"));
+    vouts.push_back(createTxOut(295, "6rZwZAB9zCvHA31ojKRknnESuuhMBTYmuA")); // Winner
+    vouts.push_back(createTxOut(310, "6rZwZAB9zCvHA31ojKRknnESuuhMBTYmuA")); // Winner
+    vouts.push_back(createTxOut(400, "6rZwZAB9zCvHA31ojKRknnESuuhMBTYmuA")); // Winner
+    vouts.push_back(createTxOut(500, "6ugvLYj6jVQgkVQdRmEy2h6nEFfpwD5WgU"));
+    vouts.push_back(createTxOut(500, "6ugvLYj6jVQgkVQdRmEy2h6nEFfpwD5WgU"));
 
-    std::string strExpected("1CE8bBr1dYZRMnpmyYsFEoexa1YoPz2mfB");
+    std::string strExpected("6rZwZAB9zCvHA31ojKRknnESuuhMBTYmuA");
 
     for (int i = 0; i < 10; ++i) {
         std::random_shuffle(vouts.begin(), vouts.end(), GetRandInt);
@@ -131,17 +131,17 @@ BOOST_AUTO_TEST_CASE(p2pkh_contribution_by_total_sum_test)
 BOOST_AUTO_TEST_CASE(p2pkh_contribution_by_sum_order_test)
 {
     std::vector<CTxOut> vouts;
-    vouts.push_back(createTxOut(1000, "1471EHpnJ62MDxLw96dKcNT8sWPEbHrAUe")); // Winner
-    vouts.push_back(createTxOut(1000, "168F7az8ACWxntNqL1FathoKTbgK17GVft"));
-    vouts.push_back(createTxOut(1000, "16X6UDz6dMkVAAkWdY6HKe85o6EVAbzDtn"));
-    vouts.push_back(createTxOut(1000, "1BYk8d1fWy1JLcNqHyNTEg2Jxu9EDb1BmY"));
-    vouts.push_back(createTxOut(1000, "1CE8bBr1dYZRMnpmyYsFEoexa1YoPz2mfB"));    
-    vouts.push_back(createTxOut(1000, "1HG3s4Ext3sTqBTHrgftyUzG3cvx5ZbPCj"));
-    vouts.push_back(createTxOut(1000, "1K6JtSvrHtyFmxdtGZyZEF7ydytTGqasNc"));    
-    vouts.push_back(createTxOut(1000, "1Pa6zyqnhL6LDJtrkCMi9XmEDNHJ23ffEr"));
-    vouts.push_back(createTxOut(1000, "1Pr75FNvtoWHeocNfc4zTQCfK5kMVakWcn"));
+    vouts.push_back(createTxOut(1000, "6evoe611ycLth1j4upBmfXTKYyZmStNYXc")); // Winner
+    vouts.push_back(createTxOut(1000, "6n8xQfvpdHpk2QEZFFSMFbBBK7AQ4onTaj"));
+    vouts.push_back(createTxOut(1000, "72RoHbQyAw5CjFEgCWPoPVvEjn66Fhqv2S"));
+    vouts.push_back(createTxOut(1000, "6keajTZbhx9j8DfhpqFg93iLsY9tjjN5q3"));
+    vouts.push_back(createTxOut(1000, "6rZwZAB9zCvHA31ojKRknnESuuhMBTYmuA"));
+    vouts.push_back(createTxOut(1000, "6fMXzEFNpU7bFj6CPWeW2ZkAFQxUC67FSS"));
+    vouts.push_back(createTxOut(1000, "6jwowdiALwha6nkRSqANE5bDzMTrEABti7"));
+    vouts.push_back(createTxOut(1000, "6ubcyde8TEK8pMdH9jsomWjN4o6c4rd3XP"));
+    vouts.push_back(createTxOut(1000, "6ugvLYj6jVQgkVQdRmEy2h6nEFfpwD5WgU"));
 
-    std::string strExpected("1471EHpnJ62MDxLw96dKcNT8sWPEbHrAUe");
+    std::string strExpected("6evoe611ycLth1j4upBmfXTKYyZmStNYXc");
 
     for (int i = 0; i < 10; ++i) {
         std::random_shuffle(vouts.begin(), vouts.end(), GetRandInt);
@@ -159,12 +159,12 @@ BOOST_AUTO_TEST_CASE(p2pkh_contribution_by_sum_order_test)
 BOOST_AUTO_TEST_CASE(p2sh_contribution_by_sum_test)
 {
     std::vector<CTxOut> vouts;
-    vouts.push_back(createTxOut(100, "1471EHpnJ62MDxLw96dKcNT8sWPEbHrAUe"));
+    vouts.push_back(createTxOut(100, "6ubcyde8TEK8pMdH9jsomWjN4o6c4rd3XP"));
     vouts.push_back(createTxOut(150, "32LUY4obZmFGFVtJTs4o1qk4dxo1bYq9s8"));
     vouts.push_back(createTxOut(400, "34To5z7h35gQ54212gFRJSkwJUxGREr3SZ"));
-    vouts.push_back(createTxOut(100, "1471EHpnJ62MDxLw96dKcNT8sWPEbHrAUe"));
+    vouts.push_back(createTxOut(100, "6ubcyde8TEK8pMdH9jsomWjN4o6c4rd3XP"));
     vouts.push_back(createTxOut(400, "3HsMqdiWqaziUe9VExna46NbWBAFaioMrK"));
-    vouts.push_back(createTxOut(100, "1471EHpnJ62MDxLw96dKcNT8sWPEbHrAUe"));
+    vouts.push_back(createTxOut(100, "6ubcyde8TEK8pMdH9jsomWjN4o6c4rd3XP"));
     vouts.push_back(createTxOut(777, "3KYen723gbjhJU69j8jRhZU6fDw8iVVWKy")); // Winner
     vouts.push_back(createTxOut(100, "3KuUrmqdM7BWfHTsyyLyYnJ57HgnKurvkK"));
 
@@ -191,10 +191,10 @@ BOOST_AUTO_TEST_CASE(p2sh_contribution_by_total_sum_test)
     vouts.push_back(createTxOut(100, "34To5z7h35gQ54212gFRJSkwJUxGREr3SZ"));
     vouts.push_back(createTxOut(500, "34To5z7h35gQ54212gFRJSkwJUxGREr3SZ"));
     vouts.push_back(createTxOut(600, "3CD1QW6fjgTwKq3Pj97nty28WZAVkziNom")); // Winner
-    vouts.push_back(createTxOut(500, "1471EHpnJ62MDxLw96dKcNT8sWPEbHrAUe"));
-    vouts.push_back(createTxOut(100, "1471EHpnJ62MDxLw96dKcNT8sWPEbHrAUe"));
+    vouts.push_back(createTxOut(500, "6ubcyde8TEK8pMdH9jsomWjN4o6c4rd3XP"));
+    vouts.push_back(createTxOut(100, "6ubcyde8TEK8pMdH9jsomWjN4o6c4rd3XP"));
     vouts.push_back(createTxOut(350, "3CD1QW6fjgTwKq3Pj97nty28WZAVkziNom")); // Winner
-    vouts.push_back(createTxOut(110, "1471EHpnJ62MDxLw96dKcNT8sWPEbHrAUe"));
+    vouts.push_back(createTxOut(110, "6ubcyde8TEK8pMdH9jsomWjN4o6c4rd3XP"));
 
     std::string strExpected("3CD1QW6fjgTwKq3Pj97nty28WZAVkziNom");
 
@@ -247,6 +247,7 @@ BOOST_AUTO_TEST_CASE(p2sh_contribution_by_sum_order_test)
  *
  * Note: it reflects the behavior of Omni Core, but this edge case is not specified.
  */
+/* TODO replicate edge case
 BOOST_AUTO_TEST_CASE(sender_selection_string_based_test)
 {
     std::vector<CTxOut> vouts;
@@ -269,6 +270,7 @@ BOOST_AUTO_TEST_CASE(sender_selection_string_based_test)
         BOOST_CHECK_EQUAL(strExpected, strSender);
     }
 }
+*/
 
 /**
  * Tests order independence of the sender selection "by sum" for pay-to-pubkey-hash

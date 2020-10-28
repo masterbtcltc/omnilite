@@ -31,17 +31,15 @@ BOOST_AUTO_TEST_CASE(class_b_empty)
     const CScript& scriptPubKey = vTxOuts[0].first;
     CTxDestination dest;
     BOOST_CHECK(ExtractDestination(scriptPubKey, dest));
-    BOOST_CHECK_EQUAL(EncodeDestination(dest), "1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P");
+    BOOST_CHECK_EQUAL(EncodeDestination(dest), "6eXoDUSUV7yrAxKVNPEeKAHMY8San5Z37V");
 }
 
 BOOST_AUTO_TEST_CASE(class_b_maidsafe)
 {
-    // Transaction hash (mainnet):
-    // 86f214055a7f4f5057922fd1647e00ef31ab0a3ff15217f8b90e295f051873a7
-    const std::string strSeed("1ARjWDkZ7kT9fwjPrjcQyvbXDkEySzKHwu");
+    const std::string strSeed("6vArkJSRKaMrWRFqsvTdKjFAUVCCiABpNB");
 
     const std::vector<unsigned char> vchPubKey = ParseHex(
-        "02619c30f643a4679ec2f690f3d6564df7df2ae23ae4a55393ae0bef22db9dbcaf");
+        "023a3891f00650b2971ec94383bc6949b672a498baa19b6e3421ccde196ccc64d6");
 
     const CPubKey pubKey(vchPubKey.begin(), vchPubKey.end());
 
@@ -102,18 +100,18 @@ BOOST_AUTO_TEST_CASE(class_b_maidsafe)
 
     // Vout 0
     BOOST_CHECK_EQUAL(vstrSolutions[0],
-            "02619c30f643a4679ec2f690f3d6564df7df2ae23ae4a55393ae0bef22db9dbcaf");
+            "023a3891f00650b2971ec94383bc6949b672a498baa19b6e3421ccde196ccc64d6");
     BOOST_CHECK_EQUAL(vstrSolutions[1].substr(2, 62), // Remove prefix ...
-            "6766a63686d2cc5d82c929d339b7975010872aa6bf76f6fac69f28f8e293a9");
+            "7fd7b343383ca5eaef5df96686019f3c7a9099adad462c82f3a05743b20061");
     BOOST_CHECK_EQUAL(vstrSolutions[2].substr(2, 62), // ... and ECDSA byte
-            "959b8e2f2e4fb67952cda291b467a1781641c94c37feaa0733a12782977da2");
+            "02bad9e784b341c0f7c4f6688dd217c3c1116c767c053ed1fe4e9cb3fc807c");
     // Vout 1
     BOOST_CHECK_EQUAL(vstrSolutions[3],
-            "02619c30f643a4679ec2f690f3d6564df7df2ae23ae4a55393ae0bef22db9dbcaf");
+            "023a3891f00650b2971ec94383bc6949b672a498baa19b6e3421ccde196ccc64d6");
     BOOST_CHECK_EQUAL(vstrSolutions[4].substr(2, 62), // Because these ...
-            "61a017029ec4688ec9bf33c44ad2e595f83aaf3ed4f3032d1955715f5ffaf6");
+            "0125898553c44bb40e4aa5d02af1b357d7ab1b62d7e1b1d522d7c154f84efa");
     BOOST_CHECK_EQUAL(vstrSolutions[5].substr(2, 62), // ... are semi-random
-            "dc1a0afc933d703557d9f5e86423a5cec9fee4bfa850b3d02ceae721171788");
+            "0c994fe86b2578f2e60c5aa6f19eb88f718a5ca6a723959d83200b360f5101");
 }
 
 BOOST_AUTO_TEST_CASE(class_b_tetherus)
