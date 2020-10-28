@@ -9,7 +9,8 @@
 
 namespace mastercore
 {
-
+//! Feature identifier to enable cross property (v1) Send To Owners
+const uint16_t FEATURE_STOV1 = 10;
 //! Feature identifier to activate trading of any token on the distributed exchange
 const uint16_t FEATURE_FREEDEX = 15;
 
@@ -80,6 +81,8 @@ public:
     int MSC_STO_BLOCK;
     //! Block to enable "send all" transactions
     int MSC_SEND_ALL_BLOCK;
+    //! Block to enable cross property STO (v1)
+    int MSC_STOV1_BLOCK;
     //! Block to enable any data payloads
     int MSC_ANYDATA_BLOCK;
 

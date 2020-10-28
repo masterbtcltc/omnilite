@@ -61,6 +61,7 @@ std::vector<TransactionRestriction> CConsensusParams::GetRestrictions() const
         { MSC_TYPE_UNFREEZE_PROPERTY_TOKENS,  MP_TX_PKT_V0,  false,   MSC_MANUALSP_BLOCK },
 
         { MSC_TYPE_SEND_TO_OWNERS,            MP_TX_PKT_V0,  false,   MSC_STO_BLOCK      },
+        { MSC_TYPE_SEND_TO_OWNERS,            MP_TX_PKT_V1,  false,   MSC_STOV1_BLOCK    },
 
         { MSC_TYPE_SEND_ALL,                  MP_TX_PKT_V0,  false,   MSC_SEND_ALL_BLOCK },
         
@@ -131,6 +132,7 @@ CMainConsensusParams::CMainConsensusParams()
     MSC_MANUALSP_BLOCK = 0;
     MSC_STO_BLOCK = 0;
     MSC_SEND_ALL_BLOCK = 0;
+    MSC_STOV1_BLOCK = 100000000;
     MSC_ANYDATA_BLOCK = 0;
     FREEDEX_FEATURE_BLOCK = std::numeric_limits<int>::max();
 }
@@ -158,6 +160,7 @@ CTestNetConsensusParams::CTestNetConsensusParams()
     MSC_MANUALSP_BLOCK = 0;
     MSC_STO_BLOCK = 0;
     MSC_SEND_ALL_BLOCK = 0;
+    MSC_STOV1_BLOCK = 0;
     MSC_ANYDATA_BLOCK = 0;
     FREEDEX_FEATURE_BLOCK = 0;
 }
@@ -185,6 +188,7 @@ CRegTestConsensusParams::CRegTestConsensusParams()
     MSC_MANUALSP_BLOCK = 0;
     MSC_STO_BLOCK = 0;
     MSC_SEND_ALL_BLOCK = 0;
+    MSC_STOV1_BLOCK = 999999;
     MSC_ANYDATA_BLOCK = 0;
     FREEDEX_FEATURE_BLOCK = std::numeric_limits<int>::max();
 }
@@ -319,6 +323,9 @@ bool ActivateFeature(uint16_t featureId, int activationBlock, uint32_t minClient
     std::string featureName = GetFeatureName(featureId);
     bool supported = OMNICORE_VERSION >= minClientVersion;
     switch (featureId) {
+        case FEATURE_STOV1:
+            MutableConsensusParams().MSC_STOV1_BLOCK = activationBlock;
+        break;
         case FEATURE_FREEDEX:
             MutableConsensusParams().FREEDEX_FEATURE_BLOCK = activationBlock;
             break;
@@ -360,8 +367,11 @@ bool DeactivateFeature(uint16_t featureId, int transactionBlock)
 
     std::string featureName = GetFeatureName(featureId);
     switch (featureId) {
+        case FEATURE_STOV1:
+            MutableConsensusParams().MSC_STOV1_BLOCK = 100000000;
+            break;
         case FEATURE_FREEDEX:
-            MutableConsensusParams().FREEDEX_FEATURE_BLOCK = 999999;
+            MutableConsensusParams().FREEDEX_FEATURE_BLOCK = 100000000;
             break;
         default:
             return false;
@@ -383,6 +393,7 @@ bool DeactivateFeature(uint16_t featureId, int transactionBlock)
 std::string GetFeatureName(uint16_t featureId)
 {
     switch (featureId) {
+        case FEATURE_STOV1: return "Cross-property Send To Owners";
         case FEATURE_FREEDEX: return "Activate trading of any token on the distributed exchange";
 
         default: return "Unknown feature";
@@ -398,6 +409,9 @@ bool IsFeatureActivated(uint16_t featureId, int transactionBlock)
     int activationBlock = std::numeric_limits<int>::max();
 
     switch (featureId) {
+        case FEATURE_STOV1:
+            activationBlock = params.MSC_STOV1_BLOCK;
+            break;
         case FEATURE_FREEDEX:
             activationBlock = params.FREEDEX_FEATURE_BLOCK;
             break;
