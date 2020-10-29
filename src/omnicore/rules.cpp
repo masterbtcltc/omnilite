@@ -119,6 +119,8 @@ CMainConsensusParams::CMainConsensusParams()
     // Notice range for feature activations:
     MIN_ACTIVATION_BLOCKS = 20160;  // ~2 weeks
     MAX_ACTIVATION_BLOCKS = 120960; // ~12 weeks
+    // Waiting period for enabling freezing
+    OMNI_FREEZE_WAIT_PERIOD = 4096; // ~4 weeks
     // Script related:
     PUBKEYHASH_BLOCK = 0;
     SCRIPTHASH_BLOCK = GENESIS_BLOCK;
@@ -134,6 +136,8 @@ CMainConsensusParams::CMainConsensusParams()
     MSC_SEND_ALL_BLOCK = GENESIS_BLOCK;
     MSC_STOV1_BLOCK = 100000000;
     MSC_ANYDATA_BLOCK = 0;
+    // Other feature activations:
+    FREEZENOTICE_FEATURE_BLOCK = 100000000;
     FREEDEX_FEATURE_BLOCK = GENESIS_BLOCK;
 }
 
@@ -147,6 +151,8 @@ CTestNetConsensusParams::CTestNetConsensusParams()
     // Notice range for feature activations:
     MIN_ACTIVATION_BLOCKS = 0;
     MAX_ACTIVATION_BLOCKS = 9999999;
+    // Waiting period for enabling freezing
+    OMNI_FREEZE_WAIT_PERIOD = 0;
     // Script related:
     PUBKEYHASH_BLOCK = 0;
     SCRIPTHASH_BLOCK = 0;
@@ -162,6 +168,8 @@ CTestNetConsensusParams::CTestNetConsensusParams()
     MSC_SEND_ALL_BLOCK = 0;
     MSC_STOV1_BLOCK = 0;
     MSC_ANYDATA_BLOCK = 0;
+    // Other feature activations:
+    FREEZENOTICE_FEATURE_BLOCK = 0;
     FREEDEX_FEATURE_BLOCK = 0;
 }
 
@@ -175,6 +183,8 @@ CRegTestConsensusParams::CRegTestConsensusParams()
     // Notice range for feature activations:
     MIN_ACTIVATION_BLOCKS = 5;
     MAX_ACTIVATION_BLOCKS = 10;
+    // Waiting period for enabling freezing
+    OMNI_FREEZE_WAIT_PERIOD = 10;
     // Script related:
     PUBKEYHASH_BLOCK = 0;
     SCRIPTHASH_BLOCK = 0;
@@ -190,6 +200,8 @@ CRegTestConsensusParams::CRegTestConsensusParams()
     MSC_SEND_ALL_BLOCK = 0;
     MSC_STOV1_BLOCK = 100000000;
     MSC_ANYDATA_BLOCK = 0;
+    // Other feature activations:
+    FREEZENOTICE_FEATURE_BLOCK = 100000000;
     FREEDEX_FEATURE_BLOCK = 100000000;
 }
 
@@ -326,6 +338,9 @@ bool ActivateFeature(uint16_t featureId, int activationBlock, uint32_t minClient
         case FEATURE_STOV1:
             MutableConsensusParams().MSC_STOV1_BLOCK = activationBlock;
         break;
+        case FEATURE_FREEZENOTICE:
+            MutableConsensusParams().FREEZENOTICE_FEATURE_BLOCK = activationBlock;
+        break;
         case FEATURE_FREEDEX:
             MutableConsensusParams().FREEDEX_FEATURE_BLOCK = activationBlock;
             break;
@@ -370,6 +385,9 @@ bool DeactivateFeature(uint16_t featureId, int transactionBlock)
         case FEATURE_STOV1:
             MutableConsensusParams().MSC_STOV1_BLOCK = 100000000;
             break;
+        case FEATURE_FREEZENOTICE:
+            MutableConsensusParams().FREEZENOTICE_FEATURE_BLOCK = 100000000;
+        break;
         case FEATURE_FREEDEX:
             MutableConsensusParams().FREEDEX_FEATURE_BLOCK = 100000000;
             break;
@@ -394,6 +412,7 @@ std::string GetFeatureName(uint16_t featureId)
 {
     switch (featureId) {
         case FEATURE_STOV1: return "Cross-property Send To Owners";
+        case FEATURE_FREEZENOTICE: return "Activate the waiting period for enabling freezing";
         case FEATURE_FREEDEX: return "Activate trading of any token on the distributed exchange";
 
         default: return "Unknown feature";
@@ -411,6 +430,9 @@ bool IsFeatureActivated(uint16_t featureId, int transactionBlock)
     switch (featureId) {
         case FEATURE_STOV1:
             activationBlock = params.MSC_STOV1_BLOCK;
+            break;
+        case FEATURE_FREEZENOTICE:
+            activationBlock = params.FREEZENOTICE_FEATURE_BLOCK;
             break;
         case FEATURE_FREEDEX:
             activationBlock = params.FREEDEX_FEATURE_BLOCK;

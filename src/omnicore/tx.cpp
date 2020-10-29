@@ -1741,7 +1741,14 @@ int CMPTransaction::logicMath_EnableFreezing(CBlockIndex* pindex)
         return (PKT_ERROR_TOKENS -49);
     }
 
-    int liveBlock = block;
+    int liveBlock = 0;
+    if (!IsFeatureActivated(FEATURE_FREEZENOTICE, block)) {
+        liveBlock = block;
+    } else {
+        const CConsensusParams& params = ConsensusParams();
+        liveBlock = params.OMNI_FREEZE_WAIT_PERIOD + block;
+    }
+
     enableFreezing(property, liveBlock);
 
     return 0;

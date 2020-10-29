@@ -11,6 +11,8 @@ namespace mastercore
 {
 //! Feature identifier to enable cross property (v1) Send To Owners
 const uint16_t FEATURE_STOV1 = 10;
+//! Feature identifier to activate the waiting period for enabling managed property address freezing
+const uint16_t FEATURE_FREEZENOTICE = 14;
 //! Feature identifier to activate trading of any token on the distributed exchange
 const uint16_t FEATURE_FREEDEX = 15;
 
@@ -58,6 +60,9 @@ public:
     //! Maximum number of blocks to use for notice rules on activation
     int MAX_ACTIVATION_BLOCKS;
 
+    //! Waiting period after enabling freezing before addresses may be frozen
+    int OMNI_FREEZE_WAIT_PERIOD;
+
     //! Block to enable pay-to-pubkey-hash support
     int PUBKEYHASH_BLOCK;
     //! Block to enable pay-to-script-hash support
@@ -86,6 +91,8 @@ public:
     //! Block to enable any data payloads
     int MSC_ANYDATA_BLOCK;
 
+    //! Block to activate the waiting period for enabling managed property address freezing
+    int FREEZENOTICE_FEATURE_BLOCK;
     //! Block to activate the waiting period to activate trading of any token on the distributed exchange
     int FREEDEX_FEATURE_BLOCK;
 
