@@ -1780,7 +1780,6 @@ static UniValue omni_getsto(const JSONRPCRequest& request)
                    "  \"propertyid\" : n,               (number) the identifier of sent tokens\n"
                    "  \"divisible\" : true|false,       (boolean) whether the sent tokens are divisible\n"
                    "  \"amount\" : \"n.nnnnnnnn\",        (string) the number of tokens sent to owners\n"
-                   "  \"totalstofee\" : \"n.nnnnnnnn\",   (string) the fee paid by the sender, nominated in OMN or TOMN\n"
                    "  \"recipients\": [                 (array of JSON objects) a list of recipients\n"
                    "    {\n"
                    "      \"address\" : \"address\",          (string) the Bitcoin address of the recipient\n"
