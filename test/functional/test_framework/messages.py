@@ -49,7 +49,7 @@ NODE_NETWORK = (1 << 0)
 # NODE_BLOOM = (1 << 2) # Not used in Omni tests
 NODE_WITNESS = (1 << 3)
 # NODE_NETWORK_LIMITED = (1 << 10) # Not used in Omni tests
-NODE_ACP = (1 << 24)
+# NODE_ACP = (1 << 24) # Not used in Omni tests
 
 MSG_TX = 1
 MSG_BLOCK = 2
