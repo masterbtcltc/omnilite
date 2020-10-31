@@ -123,6 +123,7 @@ jobs:
         RUN_FUNCTIONAL_TESTS=true
         GOAL="install"
         BITCOIN_CONFIG="--with-gui=no --without-tests --without-bench"
+        NEOSCRYPT=1
 
     - stage: test
       name: 'x86_64 Linux  [GOAL: install]  [trusty]  [omni unit tests, no depends, only system libs]'
