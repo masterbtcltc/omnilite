@@ -68,7 +68,7 @@ SendMPDialog::SendMPDialog(const PlatformStyle *platformStyle, QWidget *parent) 
     }
 
 #if QT_VERSION >= 0x040700 // populate placeholder text
-    ui->sendToLineEdit->setPlaceholderText("Enter an Omni Layer address (e.g. 1oMn1LaYeRADDreSShef77z6A5S4P)");
+    ui->sendToLineEdit->setPlaceholderText("Enter an Omni Layer address (e.g. 71ajTX3giy7Pkt2PsMgKRGk1zWcAUMfqPV)");
     ui->amountLineEdit->setPlaceholderText("Enter Amount");
 #endif
 

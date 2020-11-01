@@ -396,7 +396,7 @@ void OverviewPage::UpdatePropertyBalance(unsigned int propertyId, uint64_t avail
     // property label
     std::string spName;
     if (propertyId == 0) {// Override for Overpageview init during GUI tests
-        spName = "Bitcoin";
+        spName = "Feathercoin";
     } else {
         spName = getPropertyName(propertyId).c_str();
     }
