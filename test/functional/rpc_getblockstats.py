@@ -45,7 +45,7 @@ class GetblockstatsTest(BitcoinTestFramework):
 
     def set_test_params(self):
         self.num_nodes = 2
-        self.extra_args = [['-txindex'], ['-paytxfee=0.003']]
+        self.extra_args = [['-paytxfee=0.003'], []]
         self.setup_clean_chain = True
 
     def get_stats(self):
