@@ -26,9 +26,3 @@ if [ "$RUN_FUZZ_TESTS" = "true" ]; then
   END_FOLD
 fi
 
-if [ "$RUN_OMNIJ_TESTS" = "true" ]; then
-  BEGIN_FOLD omnij-tests
-  DOCKER_EXEC source $TRAVIS_BUILD_DIR/test/pull-tester/omnicore-rpc-tests.sh
-  END_FOLD
-fi
-
