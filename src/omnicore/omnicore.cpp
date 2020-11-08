@@ -149,6 +149,8 @@ std::string mastercore::strMPProperty(uint32_t propertyId)
                 break;
             case OMNI_PROPERTY_TMSC: str = "TOMN";
                 break;
+            case OMNI_PROPERTY_FEATHER: str = "FEATHER";
+                break;
             default:
                 str = strprintf("SP token: %d", propertyId);
         }
@@ -390,11 +392,13 @@ bool mastercore::isAddressFrozen(const std::string& address, uint32_t propertyId
 std::string mastercore::getTokenLabel(uint32_t propertyId)
 {
     std::string tokenStr;
-    if (propertyId < 3) {
+    if (propertyId <= 3) {
         if (propertyId == 1) {
             tokenStr = " OMNI";
-        } else {
+        } else if (propertyId == 2) {
             tokenStr = " TOMNI";
+        } else {
+            tokenStr = " FEATHER";
         }
     } else {
         tokenStr = strprintf(" SPT#%d", propertyId);
@@ -1401,7 +1405,7 @@ static int msc_initial_scan(int nFirstBlock)
 
         unsigned int nTxNum = 0;
         unsigned int nTxsFoundInBlock = 0;
-        mastercore_handler_block_begin(nBlock, pblockindex);
+        nTxsFoundInBlock = mastercore_handler_block_begin(nBlock, pblockindex);
 
         CBlock block;
         if (!ReadBlockFromDisk(block, pblockindex, Params().GetConsensus())) break;
@@ -1813,6 +1817,21 @@ int mastercore_handler_block_begin(int nBlockPrev, CBlockIndex const * pBlockInd
         CheckLiveActivations(pBlockIndex->nHeight);
 
         eraseExpiredCrowdsale(pBlockIndex);
+    }
+
+    // Create property ID 3 FEATHER at one past OmniFeather genesis block
+    if (pBlockIndex->nHeight == ConsensusParams().GENESIS_BLOCK)
+    {
+        CMPSPInfo::Entry info;
+        uint32_t propertyId = OMNI_PROPERTY_FEATHER;
+
+        pDbSpInfo->getSP(propertyId, info);
+        info.creation_block = pBlockIndex->GetBlockHash();
+        pDbSpInfo->putSPGeneral(info, propertyId);
+
+        assert(update_tally_map(info.issuer, propertyId, info.num_tokens, BALANCE));
+
+        return 1;
     }
 
     return 0;

@@ -111,6 +111,7 @@ enum TransactionType {
 #define OMNI_PROPERTY_BTC   0
 #define OMNI_PROPERTY_MSC   1
 #define OMNI_PROPERTY_TMSC  2
+#define OMNI_PROPERTY_FEATHER  3
 
 /** Number formatting related functions. */
 std::string FormatDivisibleMP(int64_t amount, bool fSign = false);

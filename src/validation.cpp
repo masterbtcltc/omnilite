@@ -2576,11 +2576,17 @@ bool CChainState::ConnectTip(CValidationState& state, const CChainParams& chainp
     int64_t nTime5 = GetTimeMicros(); nTimeChainState += nTime5 - nTime4;
     LogPrint(BCLog::BENCH, "  - Writing chainstate: %.2fms [%.2fs (%.2fms/blk)]\n", (nTime5 - nTime4) * MILLI, nTimeChainState * MICRO, nTimeChainState * MILLI / nBlocksTotal);
 
+    //! Omni Core: transaction position within the block
+    unsigned int nTxIdx = 0;
+
+    //! Omni Core: number of meta transactions found
+    unsigned int nNumMetaTxs = 0;
+
     //! Omni Core: begin block connect notification
     {
         LOCK(cs_main);
         LogPrint(BCLog::HANDLER, "Omni Core handler: block connect begin [height: %d]\n", chainActive.Height());
-        mastercore_handler_block_begin(chainActive.Height(), pindexNew);
+        nNumMetaTxs = mastercore_handler_block_begin(chainActive.Height(), pindexNew);
     }
 
     mempool.removeForBlock(blockConnecting.vtx, pindexNew->nHeight);
@@ -2592,12 +2598,6 @@ bool CChainState::ConnectTip(CValidationState& state, const CChainParams& chainp
     int64_t nTime6 = GetTimeMicros(); nTimePostConnect += nTime6 - nTime5; nTimeTotal += nTime6 - nTime1;
     LogPrint(BCLog::BENCH, "  - Connect postprocess: %.2fms [%.2fs (%.2fms/blk)]\n", (nTime6 - nTime5) * MILLI, nTimePostConnect * MICRO, nTimePostConnect * MILLI / nBlocksTotal);
     LogPrint(BCLog::BENCH, "- Connect block: %.2fms [%.2fs (%.2fms/blk)]\n", (nTime6 - nTime1) * MILLI, nTimeTotal * MICRO, nTimeTotal * MILLI / nBlocksTotal);
-
-    //! Omni Core: transaction position within the block
-    unsigned int nTxIdx = 0;
-
-    //! Omni Core: number of meta transactions found
-    unsigned int nNumMetaTxs = 0;
 
     for (size_t i = 0; i < blockConnecting.vtx.size(); i++) {
         //! Omni Core: new confirmed transaction notification

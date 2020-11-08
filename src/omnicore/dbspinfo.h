@@ -134,6 +134,7 @@ private:
     // implied version of OMN and TOMN so they don't hit the leveldb
     Entry implied_omni;
     Entry implied_tomni;
+    Entry implied_feather;
 
     uint32_t next_spid;
     uint32_t next_test_spid;
@@ -145,11 +146,12 @@ public:
     /** Extends clearing of CDBBase. */
     void Clear();
 
-    void init(uint32_t nextSPID = 0x3UL, uint32_t nextTestSPID = TEST_ECO_PROPERTY_1);
+    void init(uint32_t nextSPID = 0x4UL, uint32_t nextTestSPID = TEST_ECO_PROPERTY_1);
 
     uint32_t peekNextSPID(uint8_t ecosystem) const;
     bool updateSP(uint32_t propertyId, const Entry& info);
     uint32_t putSP(uint8_t ecosystem, const Entry& info);
+    void putSPGeneral(const Entry& info, const uint32_t& propertyId);
     bool getSP(uint32_t propertyId, Entry& info) const;
     bool hasSP(uint32_t propertyId) const;
     uint32_t findSPByTX(const uint256& txid) const;
