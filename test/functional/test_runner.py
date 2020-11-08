@@ -197,6 +197,16 @@ BASE_SCRIPTS = [
     'omni_clientexpiry.py',
     'omni_stov1.py',
     'omni_freeze.py',
+    'omni_graceperiod.py',
+    'omni_createtoken.py',
+    'omni_freedexspec.py',
+    'omni_dexversionsspec.py',
+    'omni_basicspec.py',
+    'omni_reorgspec.py',
+    'omni_sendallspec.py',
+    'omni_crowdsalespec.py',
+    'omni_smartandmanagedspec.py',
+    'omni_stospec.py',
     # Don't append tests at the end to avoid merge conflicts
     # Put them in a random line within the section that fits their approximate run-time
 ]
