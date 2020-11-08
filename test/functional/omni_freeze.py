@@ -52,14 +52,22 @@ class OmniFreeze(BitcoinTestFramework):
         node.generatetoaddress(1, coinbase_address)
 
         # Creating a test (managed) property and granting 1000 tokens to the test address\
-        node.omni_sendissuancemanaged(address, 1, 1, 0, "TestCat", "TestSubCat", "TestProperty", "TestURL", "TestData")
+        txid = node.omni_sendissuancemanaged(address, 1, 1, 0, "TestCat", "TestSubCat", "TestProperty", "TestURL", "TestData")
         node.generatetoaddress(1, coinbase_address)
-        node.omni_sendgrant(address, freeze_address, 3, "1000")
+
+        # Checking the transaction was valid...
+        result = self.nodes[0].omni_gettransaction(txid)
+        assert_equal(result['valid'], True)
+
+        # Get currency ID
+        currencyID = result['propertyid']
+
+        node.omni_sendgrant(address, freeze_address, currencyID, "1000")
         node.generatetoaddress(1, coinbase_address)
 
         # Running the test scenario...
         # Sending a 'freeze' tranasction for the test address prior to enabling freezing
-        txid = node.omni_sendfreeze(address, freeze_address, 3, "1234")
+        txid = node.omni_sendfreeze(address, freeze_address, currencyID, "1234")
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'freeze' transaction was INVALID...
@@ -67,11 +75,11 @@ class OmniFreeze(BitcoinTestFramework):
         assert_equal(result['valid'], False)
 
         # Checking that freezing is currently disabled...
-        result = node.omni_getproperty(3)
+        result = node.omni_getproperty(currencyID)
         assert_equal(result['freezingenabled'], False)
 
         # Sending a 'enable freezing' transaction to ENABLE freezing
-        txid = node.omni_sendenablefreezing(address, 3)
+        txid = node.omni_sendenablefreezing(address, currencyID)
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'enable freezing' transaction was VALID...
@@ -79,11 +87,11 @@ class OmniFreeze(BitcoinTestFramework):
         assert_equal(result['valid'], True)
 
         # Checking that freezing is now enabled...
-        result = node.omni_getproperty(3)
+        result = node.omni_getproperty(currencyID)
         assert_equal(result['freezingenabled'], True)
 
         # Sending another 'freeze' tranasction for the test address
-        txid = node.omni_sendfreeze(address, freeze_address, 3, "1234")
+        txid = node.omni_sendfreeze(address, freeze_address, currencyID, "1234")
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'freeze' transaction was now VALID...
@@ -91,7 +99,7 @@ class OmniFreeze(BitcoinTestFramework):
         assert_equal(result['valid'], True)
 
         # Testing a send from the test address (should now be frozen)
-        txid = node.omni_send(freeze_address, address, 3, "50")
+        txid = node.omni_send(freeze_address, address, currencyID, "50")
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'send' transaction was INVALID...
@@ -99,11 +107,11 @@ class OmniFreeze(BitcoinTestFramework):
         assert_equal(result['valid'], False)
 
         # Checking the test address balance has not changed...
-        balance = node.omni_getbalance(freeze_address, 3)['balance']
+        balance = node.omni_getbalance(freeze_address, currencyID)['balance']
         assert_equal(balance, "1000")
 
         # Sending an 'unfreeze' tranasction for the test address
-        txid = node.omni_sendunfreeze(address, freeze_address, 3, "1234")
+        txid = node.omni_sendunfreeze(address, freeze_address, currencyID, "1234")
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'unfreeze' transaction was VALID...
@@ -111,7 +119,7 @@ class OmniFreeze(BitcoinTestFramework):
         assert_equal(result['valid'], True)
 
         # Testing a send from the test address (should now be unfrozen)
-        txid = node.omni_send(freeze_address, address, 3, "50")
+        txid = node.omni_send(freeze_address, address, currencyID, "50")
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'send' transaction was VALID...
@@ -119,11 +127,11 @@ class OmniFreeze(BitcoinTestFramework):
         assert_equal(result['valid'], True)
 
         # Checking the test address balance has reduced by the amount of the send...
-        balance = node.omni_getbalance(freeze_address, 3)['balance']
+        balance = node.omni_getbalance(freeze_address, currencyID)['balance']
         assert_equal(balance, "950")
 
         # Sending another 'freeze' tranasction for the test address
-        txid = node.omni_sendfreeze(address, freeze_address, 3, "1234")
+        txid = node.omni_sendfreeze(address, freeze_address, currencyID, "1234")
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'freeze' transaction was VALID...
@@ -131,7 +139,7 @@ class OmniFreeze(BitcoinTestFramework):
         assert_equal(result['valid'], True)
 
         # Sending a 'disable freezing' transaction to DISABLE freezing
-        txid = node.omni_senddisablefreezing(address, 3)
+        txid = node.omni_senddisablefreezing(address, currencyID)
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'disable freezing' transaction was VALID...
@@ -139,11 +147,11 @@ class OmniFreeze(BitcoinTestFramework):
         assert_equal(result['valid'], True)
 
         # Checking that freezing is now disabled...
-        result = node.omni_getproperty(3)
+        result = node.omni_getproperty(currencyID)
         assert_equal(result['freezingenabled'], False)
 
         # Testing a send from the test address (unfrozen when freezing was disabled)
-        txid = node.omni_send(freeze_address, address, 3, "30")
+        txid = node.omni_send(freeze_address, address, currencyID, "30")
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'send' transaction was VALID...
@@ -151,11 +159,11 @@ class OmniFreeze(BitcoinTestFramework):
         assert_equal(result['valid'], True)
 
         # Checking the test address balance has reduced by the amount of the send...
-        balance = node.omni_getbalance(freeze_address, 3)['balance']
+        balance = node.omni_getbalance(freeze_address, currencyID)['balance']
         assert_equal(balance, "920")
 
         # Sending a 'freeze' tranasction for the test address to test that freezing is now disabled
-        txid = node.omni_sendfreeze(address, freeze_address, 3, "1234")
+        txid = node.omni_sendfreeze(address, freeze_address, currencyID, "1234")
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'unfreeze' transaction was INVALID...
@@ -183,7 +191,7 @@ class OmniFreeze(BitcoinTestFramework):
         assert_equal(found, True)
 
         # Sending a 'enable freezing' transaction to ENABLE freezing
-        txid = node.omni_sendenablefreezing(address, 3)
+        txid = node.omni_sendenablefreezing(address, currencyID)
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'enable freezing' transaction was VALID...
@@ -191,11 +199,11 @@ class OmniFreeze(BitcoinTestFramework):
         assert_equal(result['valid'], True)
 
         # Checking that freezing is still disabled (due to wait period)...
-        result = node.omni_getproperty(3)
+        result = node.omni_getproperty(currencyID)
         assert_equal(result['freezingenabled'], False)
 
         # Sending a 'freeze' tranasction for the test address before waiting period expiry
-        txid = node.omni_sendfreeze(address, freeze_address, 3, "1234")
+        txid = node.omni_sendfreeze(address, freeze_address, currencyID, "1234")
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'freeze' transaction was INVALID...
@@ -206,11 +214,11 @@ class OmniFreeze(BitcoinTestFramework):
         node.generatetoaddress(10, coinbase_address)
 
         # Checking that freezing is now enabled...
-        result = node.omni_getproperty(3)
+        result = node.omni_getproperty(currencyID)
         assert_equal(result['freezingenabled'], True)
 
         # Sending a 'freeze' tranasction for the test address after waiting period expiry
-        txid = node.omni_sendfreeze(address, freeze_address, 3, "1234")
+        txid = node.omni_sendfreeze(address, freeze_address, currencyID, "1234")
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'freeze' transaction was VALID...
@@ -226,11 +234,11 @@ class OmniFreeze(BitcoinTestFramework):
         assert_equal(result['valid'], False)
 
         # Checking the test address balance has not changed...
-        balance = node.omni_getbalance(freeze_address, 3)['balance']
+        balance = node.omni_getbalance(freeze_address, currencyID)['balance']
         assert_equal(balance, "920")
 
         # Sending an 'unfreeze' tranasction for the test address
-        txid = node.omni_sendunfreeze(address, freeze_address, 3, "1234")
+        txid = node.omni_sendunfreeze(address, freeze_address, currencyID, "1234")
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'unfreeze' transaction was VALID...
@@ -243,7 +251,7 @@ class OmniFreeze(BitcoinTestFramework):
         rollback_chain(node, coinbase_address)
 
         # Testing a send from the test address (should now be frozen again as the block that unfroze the address was dc'd)
-        txid = node.omni_send(freeze_address, address, 3, "30")
+        txid = node.omni_send(freeze_address, address, currencyID, "30")
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'send' transaction was INVALID...
@@ -251,7 +259,7 @@ class OmniFreeze(BitcoinTestFramework):
         assert_equal(result['valid'], False)
 
         # Sending an 'unfreeze' tranasction for the test address
-        txid = node.omni_sendunfreeze(address, freeze_address, 3, "1234")
+        txid = node.omni_sendunfreeze(address, freeze_address, currencyID, "1234")
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'unfreeze' transaction was VALID...
@@ -260,7 +268,7 @@ class OmniFreeze(BitcoinTestFramework):
         node.generatetoaddress(3, coinbase_address)
 
         # Sending an 'freeze' tranasction for the test address
-        txid = node.omni_sendfreeze(address, freeze_address, 3, "1234")
+        txid = node.omni_sendfreeze(address, freeze_address, currencyID, "1234")
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'freeze' transaction was VALID...
@@ -271,7 +279,7 @@ class OmniFreeze(BitcoinTestFramework):
         rollback_chain(node, coinbase_address)
 
         # Testing a send from the test address (should now be unfrozen again as the block that froze the address was dc'd)
-        txid = node.omni_send(freeze_address, address, 3, "30")
+        txid = node.omni_send(freeze_address, address, currencyID, "30")
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'send' transaction was VALID...
@@ -279,7 +287,7 @@ class OmniFreeze(BitcoinTestFramework):
         assert_equal(result['valid'], True)
 
         # Sending a 'freeze' tranasction for the test address
-        txid = node.omni_sendfreeze(address, freeze_address, 3, "1234")
+        txid = node.omni_sendfreeze(address, freeze_address, currencyID, "1234")
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'freeze' transaction was VALID...
@@ -287,7 +295,7 @@ class OmniFreeze(BitcoinTestFramework):
         assert_equal(result['valid'], True)
 
         # Sending a 'disable freezing' transaction to DISABLE freezing
-        txid = node.omni_senddisablefreezing(address, 3)
+        txid = node.omni_senddisablefreezing(address, currencyID)
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'disable freezing' transaction was VALID...
@@ -295,18 +303,18 @@ class OmniFreeze(BitcoinTestFramework):
         assert_equal(result['valid'], True)
 
         # Checking that freezing is now disabled...
-        result = node.omni_getproperty(3)
+        result = node.omni_getproperty(currencyID)
         assert_equal(result['freezingenabled'], False)
 
         # Rolling back the chain to test reversing the last DISABLE FREEZEING tx\
         rollback_chain(node, coinbase_address)
 
         # Checking that freezing is now enabled (as the block that disabled it was dc'd)...
-        result = node.omni_getproperty(3)
+        result = node.omni_getproperty(currencyID)
         assert_equal(result['freezingenabled'], True)
 
         # Sending a 'disable freezing' transaction to DISABLE freezing
-        txid = node.omni_senddisablefreezing(address, 3)
+        txid = node.omni_senddisablefreezing(address, currencyID)
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'disable freezing' transaction was VALID...
@@ -314,12 +322,12 @@ class OmniFreeze(BitcoinTestFramework):
         assert_equal(result['valid'], True)
 
         # Checking that freezing is now disabled..
-        result = node.omni_getproperty(3)
+        result = node.omni_getproperty(currencyID)
         assert_equal(result['freezingenabled'], False)
         node.generatetoaddress(3, coinbase_address)
 
         # Sending a 'enable freezing' transaction to ENABLE freezing
-        txid = node.omni_sendenablefreezing(address, 3)
+        txid = node.omni_sendenablefreezing(address, currencyID)
         node.generatetoaddress(1, coinbase_address)
 
         # Checking the 'enable freezing' transaction was VALID...
@@ -327,7 +335,7 @@ class OmniFreeze(BitcoinTestFramework):
         assert_equal(result['valid'], True)
 
         # Checking that freezing is still disabled (due to waiting period)...
-        result = node.omni_getproperty(3)
+        result = node.omni_getproperty(currencyID)
         assert_equal(result['freezingenabled'], False)
 
         # Rolling back the chain to test reversing the last ENABLE FREEZEING tx
@@ -335,7 +343,7 @@ class OmniFreeze(BitcoinTestFramework):
 
         # Mining past prior activation period and checking that freezing is still disabled...
         node.generatetoaddress(20, coinbase_address)
-        result = node.omni_getproperty(3)
+        result = node.omni_getproperty(currencyID)
         assert_equal(result['freezingenabled'], False)
 
 if __name__ == '__main__':

@@ -36,12 +36,26 @@ class OmniSendToOwnersV1(BitcoinTestFramework):
         assert_equal(result['confirmations'], 10)
 
         # Creating an indivisible test property
-        self.nodes[0].omni_sendissuancefixed(address, 1, 1, 0, "Z_TestCat", "Z_TestSubCat", "Z_IndivisTestProperty", "Z_TestURL", "Z_TestData", "100")
+        txid = self.nodes[0].omni_sendissuancefixed(address, 1, 1, 0, "Z_TestCat", "Z_TestSubCat", "Z_IndivisTestProperty", "Z_TestURL", "Z_TestData", "100")
         self.nodes[0].generatetoaddress(1, coinbase_address)
 
+        # Checking the transaction was valid...
+        result = self.nodes[0].omni_gettransaction(txid)
+        assert_equal(result['valid'], True)
+
+        # Get currency ID
+        currencyA = result['propertyid']
+
         # Creating a divisible test property
-        self.nodes[0].omni_sendissuancefixed(address, 1, 2, 0, "Z_TestCat", "Z_TestSubCat", "Z_DivisTestProperty", "Z_TestURL", "Z_TestData", "10000")
+        txid = self.nodes[0].omni_sendissuancefixed(address, 1, 2, 0, "Z_TestCat", "Z_TestSubCat", "Z_DivisTestProperty", "Z_TestURL", "Z_TestData", "10000")
         self.nodes[0].generatetoaddress(1, coinbase_address)
+
+        # Checking the transaction was valid...
+        result = self.nodes[0].omni_gettransaction(txid)
+        assert_equal(result['valid'], True)
+
+        # Get currency ID
+        currencyB = result['propertyid']
 
         # Generating addresses to use as STO recipients
         addresses = []
@@ -51,31 +65,31 @@ class OmniSendToOwnersV1(BitcoinTestFramework):
         # Seeding a total of 100 SP#3
 
         # Seeding address 1 with 5% = 5 SP#3
-        self.nodes[0].omni_send(address, addresses[1], 3, "5")
+        self.nodes[0].omni_send(address, addresses[1], currencyA, "5")
         self.nodes[0].generatetoaddress(1, coinbase_address)
 
         # Seeding address 2 with 10% = 10 SP#3
-        self.nodes[0].omni_send(address, addresses[2], 3, "10")
+        self.nodes[0].omni_send(address, addresses[2], currencyA, "10")
         self.nodes[0].generatetoaddress(1, coinbase_address)
 
         # Seeding address 3 with 15% = 15 SP#3
-        self.nodes[0].omni_send(address, addresses[3], 3, "15")
+        self.nodes[0].omni_send(address, addresses[3], currencyA, "15")
         self.nodes[0].generatetoaddress(1, coinbase_address)
 
         # Seeding address 4 with 20% = 20 SP#3
-        self.nodes[0].omni_send(address, addresses[4], 3, "20")
+        self.nodes[0].omni_send(address, addresses[4], currencyA, "20")
         self.nodes[0].generatetoaddress(1, coinbase_address)
 
         # Seeding address 5 with 25% = 25 SP#3
-        self.nodes[0].omni_send(address, addresses[5], 3, "25")
+        self.nodes[0].omni_send(address, addresses[5], currencyA, "25")
         self.nodes[0].generatetoaddress(1, coinbase_address)
 
         # Seeding address 6 with 25% = 25 SP#3
-        self.nodes[0].omni_send(address, addresses[6], 3, "25")
+        self.nodes[0].omni_send(address, addresses[6], currencyA, "25")
         self.nodes[0].generatetoaddress(1, coinbase_address)
 
         # Testing a cross property (v1) STO, distributing 1000.00 SPT #4 to holders of SPT #3
-        txid = self.nodes[0].omni_sendsto(address, 4, "1000", "", 3)
+        txid = self.nodes[0].omni_sendsto(address, currencyB, "1000", "", currencyA)
         self.nodes[0].generatetoaddress(1, coinbase_address)
 
         # Checking the STO transaction was invalid (feature not yet activated)...
@@ -103,7 +117,7 @@ class OmniSendToOwnersV1(BitcoinTestFramework):
         assert_equal(allpairs, True)
 
         # Testing a cross property (v1) STO, distributing 1000.00 SPT #4 to holders of SPT #3
-        txid = self.nodes[0].omni_sendsto(address, 4, "1000", "", 3)
+        txid = self.nodes[0].omni_sendsto(address, currencyB, "1000", "", currencyA)
         self.nodes[0].generatetoaddress(1, coinbase_address)
 
         # Checking the STO transaction was valid...
@@ -111,27 +125,27 @@ class OmniSendToOwnersV1(BitcoinTestFramework):
         assert_equal(result['valid'], True)
 
         # Checking address 1 received 5% of the distribution (50.00 SPT #4)...
-        result = self.nodes[0].omni_getbalance(addresses[1], 4)
+        result = self.nodes[0].omni_getbalance(addresses[1], currencyB)
         assert_equal(result['balance'], "50.00000000")
 
         # Checking address 2 received 10% of the distribution (100.00 SPT #4)...
-        result = self.nodes[0].omni_getbalance(addresses[2], 4)
+        result = self.nodes[0].omni_getbalance(addresses[2], currencyB)
         assert_equal(result['balance'], "100.00000000")
 
         # Checking address 3 received 15% of the distribution (150.00 SPT #4)...
-        result = self.nodes[0].omni_getbalance(addresses[3], 4)
+        result = self.nodes[0].omni_getbalance(addresses[3], currencyB)
         assert_equal(result['balance'], "150.00000000")
 
         # Checking address 4 received 20% of the distribution (200.00 SPT #4)...
-        result = self.nodes[0].omni_getbalance(addresses[4], 4)
+        result = self.nodes[0].omni_getbalance(addresses[4], currencyB)
         assert_equal(result['balance'], "200.00000000")
 
         # Checking address 5 received 20% of the distribution (250.00 SPT #4)...
-        result = self.nodes[0].omni_getbalance(addresses[5], 4)
+        result = self.nodes[0].omni_getbalance(addresses[5], currencyB)
         assert_equal(result['balance'], "250.00000000")
 
         # Checking address 6 received 20% of the distribution (250.00 SPT #4)...
-        result = self.nodes[0].omni_getbalance(addresses[6], 4)
+        result = self.nodes[0].omni_getbalance(addresses[6], currencyB)
         assert_equal(result['balance'], "250.00000000")
 
 if __name__ == '__main__':
