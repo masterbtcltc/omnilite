@@ -175,7 +175,7 @@ void SendMPDialog::updateFrom()
         if (CheckFee(walletModel->wallet(), currentSetFromAddress, 16)) {
             ui->feeWarningLabel->setVisible(false);
         } else {
-            ui->feeWarningLabel->setText("WARNING: The sending address is low on BTC for transaction fees. Please topup the BTC balance for the sending address to send Omni Layer transactions.");
+            ui->feeWarningLabel->setText("WARNING: The sending address is low on FTC for transaction fees. Please topup the FTC balance for the sending address to send Omni Layer transactions.");
             ui->feeWarningLabel->setVisible(true);
         }
     }

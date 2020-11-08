@@ -72,7 +72,7 @@ void LookupTXDialog::searchTX()
         std::string strText = "The transaction hash entered is ";
         switch(populateResult) {
             case MP_TX_NOT_FOUND:
-                strText += "not a valid Bitcoin or Omni transaction.  Please check the transaction hash "
+                strText += "not a valid Feathercoin or Omni transaction.  Please check the transaction hash "
                            "entered and try again.";
             break;
             case MP_TX_UNCONFIRMED:
@@ -81,8 +81,8 @@ void LookupTXDialog::searchTX()
                            "transactions in the transactions tab.";
             break;
             case MP_TX_IS_NOT_OMNI_PROTOCOL:
-                strText += "a Bitcoin transaction only.\n\nTip: You can use the debug console "
-                           "'gettransaction' command to lookup specific Bitcoin transactions.";
+                strText += "a Feathercoin transaction only.\n\nTip: You can use the debug console "
+                           "'gettransaction' command to lookup specific Feathercoin transactions.";
             break;
 
             default:
