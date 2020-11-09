@@ -80,6 +80,8 @@ static std::string exodus_address = "6eXoDUSUV7yrAxKVNPEeKAHMY8San5Z37V";
 static const std::string exodus_mainnet = "6eXoDUSUV7yrAxKVNPEeKAHMY8San5Z37V";
 //! Testnet Exodus address
 static const std::string exodus_testnet = "mpEXodUS8LUsXUHm1Vyk7b1AzG9CkKw6Mp";
+//! Regtest Exodus address
+static const std::string exodus_regtest = "moPocgnrjjtnx8FWqLTQUxXmWvGiMmQUdo";
 
 static int nWaterlineBlock = 0;
 
@@ -1932,10 +1934,18 @@ void mastercore_handler_disc_begin(const int nHeight)
  */
 const CTxDestination ExodusAddress()
 {
-    if (isNonMainNet()) {
+    if (TestNet())
+    {
         static CTxDestination testAddress = DecodeDestination(exodus_testnet);
         return testAddress;
-    } else {
+    }
+    else if (RegTest())
+    {
+        static CTxDestination testAddress = DecodeDestination(exodus_regtest);
+        return testAddress;
+    }
+    else
+    {
         static CTxDestination mainAddress = DecodeDestination(exodus_mainnet);
         return mainAddress;
     }

@@ -513,9 +513,15 @@ void populateRPCTypeAnyData(CMPTransaction& omniObj, UniValue& txobj)
 void populateRPCExtendedTypeSendToOwners(const uint256 txid, std::string extendedDetailsFilter, UniValue& txobj, uint16_t version, interfaces::Wallet *iWallet)
 {
     UniValue receiveArray(UniValue::VARR);
-    uint64_t tmpAmount = 0, numRecipients = 0;
+    uint64_t tmpAmount = 0, stoFee = 0, numRecipients = 0;
     LOCK(cs_tally);
     pDbStoList->getRecipients(txid, extendedDetailsFilter, &receiveArray, &tmpAmount, &numRecipients, iWallet);
+    if (version == MP_TX_PKT_V0) {
+        stoFee = numRecipients * TRANSFER_FEE_PER_OWNER;
+    } else {
+        stoFee = numRecipients * TRANSFER_FEE_PER_OWNER_V1;
+    }
+    txobj.pushKV("totalstofee", FormatDivisibleMP(stoFee)); // fee always OMNI so always divisible
     txobj.pushKV("recipients", receiveArray);
 }
 

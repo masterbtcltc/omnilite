@@ -215,9 +215,22 @@ class OmniReorgSpec(BitcoinTestFramework):
         # Obtaining a new address to work with
         senderAddress = self.nodes[0].getnewaddress()
 
-        # Funding the senderAddress with some testnet BTC for fees
+        # Import exodus address
+        self.nodes[0].importprivkey("cSmREaastceq9QjMLKc2UGV6y7yXSyabEtDMfcWmNQt1jv6TBK3R")
+
+        # Funding the exodus and senderAddress
         txid = self.nodes[0].omni_send(address, senderAddress, currencyID, startOMNI)
+        self.nodes[0].sendtoaddress("moPocgnrjjtnx8FWqLTQUxXmWvGiMmQUdo", 1.0)
+        self.nodes[0].generatetoaddress(1, coinbase_address)
         self.nodes[0].sendtoaddress(senderAddress, 1.0)
+        self.nodes[0].generatetoaddress(1, coinbase_address)
+
+        # Checking the transaction was valid...
+        result = self.nodes[0].omni_gettransaction(txid)
+        assert_equal(result['valid'], True)
+
+        # Send some FEATHER to senderAddress to pay STO fees
+        txid = self.nodes[0].omni_send("moPocgnrjjtnx8FWqLTQUxXmWvGiMmQUdo", senderAddress, 3, "0.2")
         self.nodes[0].generatetoaddress(1, coinbase_address)
 
         # Checking the transaction was valid...
@@ -252,9 +265,14 @@ class OmniReorgSpec(BitcoinTestFramework):
         dummyOwnerB = self.nodes[0].getnewaddress()
         dummyOwnerC = self.nodes[0].getnewaddress()
 
-        # Funding the senderAddress with some testnet BTC for fees
+        # Funding the senderAddress with some FTC and FEATHER for fees
+        txid = self.nodes[0].omni_send("moPocgnrjjtnx8FWqLTQUxXmWvGiMmQUdo", senderAddress, 3, "0.2")
         self.nodes[0].sendtoaddress(senderAddress, 1.0)
         self.nodes[0].generatetoaddress(1, coinbase_address)
+
+        # Checking the transaction was valid...
+        result = self.nodes[0].omni_gettransaction(txid)
+        assert_equal(result['valid'], True)
 
         # Create a fixed property
         txid = self.nodes[0].omni_sendissuancefixed(senderAddress, 1, 1, 0, "Test Category", "Test Subcategory", "TST3", "http://www.omnilayer.org", "", "153")
@@ -287,6 +305,7 @@ class OmniReorgSpec(BitcoinTestFramework):
 
         # Checking the transaction was valid...
         result = self.nodes[0].omni_gettransaction(txid)
+        print(result)
         assert_equal(result['valid'], True)
 
         # the owners have some balance
@@ -334,6 +353,14 @@ class OmniReorgSpec(BitcoinTestFramework):
         ownerA = self.nodes[0].getnewaddress()
         ownerB = self.nodes[0].getnewaddress()
 
+        # Send some FEATHER to actorAddress to pay STO fees
+        txid = self.nodes[0].omni_send("moPocgnrjjtnx8FWqLTQUxXmWvGiMmQUdo", actorAddress, 3, "0.2")
+        self.nodes[0].generatetoaddress(1, coinbase_address)
+
+        # Checking the transaction was valid...
+        result = self.nodes[0].omni_gettransaction(txid)
+        assert_equal(result['valid'], True)
+
         # Funding the actorAddress with some testnet BTC for fees
         self.nodes[0].sendtoaddress(actorAddress, 1.0)
         self.nodes[0].generatetoaddress(1, coinbase_address)
@@ -372,6 +399,7 @@ class OmniReorgSpec(BitcoinTestFramework):
         assert_equal(result['type_int'], 3)
         assert_equal(result['propertyid'], newCurrencyID)
         assert_equal(result['divisible'], True)
+        assert_equal(result['totalstofee'], "0.00000002")
         assert_equal(result['amount'], "30.00000000")
         assert_equal(len(result['recipients']), 2)
         found = False

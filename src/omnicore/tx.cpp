@@ -1020,6 +1020,42 @@ int CMPTransaction::logicMath_SendToOwners()
         return (PKT_ERROR_STO -26);
     }
 
+    // determine which property the fee will be paid in
+    int64_t feePerOwner = (version == MP_TX_PKT_V0) ? TRANSFER_FEE_PER_OWNER : TRANSFER_FEE_PER_OWNER_V1;
+    int64_t transferFee = feePerOwner * numberOfReceivers;
+    PrintToLog("\t    Transfer fee: %s %s\n", FormatDivisibleMP(transferFee), strMPProperty(OMNI_PROPERTY_FEATHER));
+
+    // enough coins to pay the fee?
+    if (OMNI_PROPERTY_FEATHER != property) {
+        int64_t nBalanceFee = GetTokenBalance(sender, OMNI_PROPERTY_FEATHER, BALANCE);
+        if (nBalanceFee < transferFee) {
+            PrintToLog("%s(): rejected: sender %s has insufficient balance of property %d to pay for fee [%s < %s]\n",
+                    __func__,
+                    sender,
+                    OMNI_PROPERTY_FEATHER,
+                    FormatMP(property, nBalanceFee),
+                    FormatMP(property, transferFee));
+            return (PKT_ERROR_STO -27);
+        }
+    } else {
+        // special case check, only if distributing MSC or TMSC -- the property the fee will be paid in
+        int64_t nBalanceFee = GetTokenBalance(sender, OMNI_PROPERTY_FEATHER, BALANCE);
+        if (nBalanceFee < ((int64_t) nValue + transferFee)) {
+            PrintToLog("%s(): rejected: sender %s has insufficient balance of %d to pay for amount + fee [%s < %s + %s]\n",
+                    __func__,
+                    sender,
+                    OMNI_PROPERTY_FEATHER,
+                    FormatMP(property, nBalanceFee),
+                    FormatMP(property, nValue),
+                    FormatMP(property, transferFee));
+            return (PKT_ERROR_STO -28);
+        }
+    }
+
+    // ------------------------------------------
+
+    assert(update_tally_map(sender, OMNI_PROPERTY_FEATHER, -transferFee, BALANCE));
+
     // split up what was taken and distribute between all holders
     int64_t sent_so_far = 0;
     for (OwnerAddrType::reverse_iterator it = receiversSet.rbegin(); it != receiversSet.rend(); ++it) {

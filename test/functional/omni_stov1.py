@@ -23,17 +23,22 @@ class OmniSendToOwnersV1(BitcoinTestFramework):
         # Obtaining a master address to work with
         address = self.nodes[0].getnewaddress()
 
+        # Import and fund exodus address
+        self.nodes[0].importprivkey("cSmREaastceq9QjMLKc2UGV6y7yXSyabEtDMfcWmNQt1jv6TBK3R")
+        self.nodes[0].sendtoaddress("moPocgnrjjtnx8FWqLTQUxXmWvGiMmQUdo", 10)
+        self.nodes[0].generatetoaddress(1, coinbase_address)
+
+        # Funding the address with some FEATHER for fees
+        txid = self.nodes[0].omni_send("moPocgnrjjtnx8FWqLTQUxXmWvGiMmQUdo", address, 3, "0.2")
+        self.nodes[0].generatetoaddress(1, coinbase_address)
+
+        # Checking the transaction was valid...
+        result = self.nodes[0].omni_gettransaction(txid)
+        assert_equal(result['valid'], True)
+
         # Funding the address with some testnet BTC for fees
         self.nodes[0].sendtoaddress(address, 20)
         self.nodes[0].generatetoaddress(1, coinbase_address)
-
-        # Participating in the Exodus crowdsale to obtain some OMNI
-        txid = self.nodes[0].sendmany("", {"moneyqMan7uh8FqdCA2BV5yZ8qVrc9ikLP": 10, address: 4})
-        self.nodes[0].generatetoaddress(10, coinbase_address)
-
-        # Checking the transaction was valid.
-        result = self.nodes[0].gettransaction(txid)
-        assert_equal(result['confirmations'], 10)
 
         # Creating an indivisible test property
         txid = self.nodes[0].omni_sendissuancefixed(address, 1, 1, 0, "Z_TestCat", "Z_TestSubCat", "Z_IndivisTestProperty", "Z_TestURL", "Z_TestData", "100")
