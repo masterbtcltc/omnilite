@@ -71,11 +71,11 @@ static UniValue omni_createpayload_dexsell(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() != 6)
         throw runtime_error(
             RPCHelpMan{"omni_createpayload_dexsell",
-               "\nCreate a payload to place, update or cancel a sell offer on the traditional distributed OMNI/BTC exchange.\n",
+               "\nCreate a payload to place, update or cancel a sell offer on the distributed exchange.\n",
                {
-                   {"propertyidforsale", RPCArg::Type::NUM, RPCArg::Optional::NO, " the identifier of the tokens to list for sale (must be 1 for OMN or 2 for TOMN)\n"},
+                   {"propertyidforsale", RPCArg::Type::NUM, RPCArg::Optional::NO, " the identifier of the tokens to list for sale\n"},
                    {"amountforsale", RPCArg::Type::STR, RPCArg::Optional::NO, "the amount of tokens to list for sale\n"},
-                   {"amountdesired", RPCArg::Type::STR, RPCArg::Optional::NO, "the amount of bitcoins desired\n"},
+                   {"amountdesired", RPCArg::Type::STR, RPCArg::Optional::NO, "the amount of feathercoins desired\n"},
                    {"paymentwindow", RPCArg::Type::NUM, RPCArg::Optional::NO, "a time limit in blocks a buyer has to pay following a successful accepting order\n"},
                    {"minacceptfee", RPCArg::Type::STR, RPCArg::Optional::NO, "a minimum mining fee a buyer has to pay to accept the offer\n"},
                    {"action", RPCArg::Type::NUM, RPCArg::Optional::NO, "the action to take (1 for new offers, 2 to update\", 3 to cancel)\n"},
@@ -188,8 +188,8 @@ static UniValue omni_createpayload_issuancefixed(const JSONRPCRequest& request)
                    "\"payload\"             (string) the hex-encoded payload\n"
                },
                RPCExamples{
-                   HelpExampleCli("omni_createpayload_issuancefixed", "2 1 0 \"Companies\" \"Bitcoin Mining\" \"Quantum Miner\" \"\" \"\" \"1000000\"")
-                   + HelpExampleRpc("omni_createpayload_issuancefixed", "2, 1, 0, \"Companies\", \"Bitcoin Mining\", \"Quantum Miner\", \"\", \"\", \"1000000\"")
+                   HelpExampleCli("omni_createpayload_issuancefixed", "2 1 0 \"Companies\" \"Feathercoin Mining\" \"Quantum Miner\" \"\" \"\" \"1000000\"")
+                   + HelpExampleRpc("omni_createpayload_issuancefixed", "2, 1, 0, \"Companies\", \"Feathercoin Mining\", \"Quantum Miner\", \"\", \"\", \"1000000\"")
                }
             }.ToString());
 
@@ -235,8 +235,8 @@ static UniValue omni_createpayload_issuancecrowdsale(const JSONRPCRequest& reque
                    "\"payload\"             (string) the hex-encoded payload\n"
                },
                RPCExamples{
-                   HelpExampleCli("omni_createpayload_issuancecrowdsale", "2 1 0 \"Companies\" \"Bitcoin Mining\" \"Quantum Miner\" \"\" \"\" 2 \"100\" 1483228800 30 2")
-                   + HelpExampleRpc("omni_createpayload_issuancecrowdsale", "2, 1, 0, \"Companies\", \"Bitcoin Mining\", \"Quantum Miner\", \"\", \"\", 2, \"100\", 1483228800, 30, 2")
+                   HelpExampleCli("omni_createpayload_issuancecrowdsale", "2 1 0 \"Companies\" \"Feathercoin Mining\" \"Quantum Miner\" \"\" \"\" 2 \"100\" 1483228800 30 2")
+                   + HelpExampleRpc("omni_createpayload_issuancecrowdsale", "2, 1, 0, \"Companies\", \"Feathercoin Mining\", \"Quantum Miner\", \"\", \"\", 2, \"100\", 1483228800, 30, 2")
                }
             }.ToString());
 
@@ -282,8 +282,8 @@ static UniValue omni_createpayload_issuancemanaged(const JSONRPCRequest& request
                    "\"payload\"             (string) the hex-encoded payload\n"
                },
                RPCExamples{
-                   HelpExampleCli("omni_createpayload_issuancemanaged", "2 1 0 \"Companies\" \"Bitcoin Mining\" \"Quantum Miner\" \"\" \"\"")
-                   + HelpExampleRpc("omni_createpayload_issuancemanaged", "2, 1, 0, \"Companies\", \"Bitcoin Mining\", \"Quantum Miner\", \"\", \"\"")
+                   HelpExampleCli("omni_createpayload_issuancemanaged", "2 1 0 \"Companies\" \"Feathercoin Mining\" \"Quantum Miner\" \"\" \"\"")
+                   + HelpExampleRpc("omni_createpayload_issuancemanaged", "2, 1, 0, \"Companies\", \"Feathercoin Mining\", \"Quantum Miner\", \"\", \"\"")
                }
             }.ToString());
 

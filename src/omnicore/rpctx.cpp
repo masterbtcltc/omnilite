@@ -50,7 +50,7 @@ static UniValue omni_funded_send(const JSONRPCRequest& request)
         throw runtime_error(
             RPCHelpMan{"omni_funded_send",
                "\nCreates and sends a funded simple send transaction.\n"
-               "\nAll bitcoins from the sender are consumed and if there are bitcoins missing, they are taken from the specified fee source. Change is sent to the fee source!\n",
+               "\nAll feathercoins from the sender are consumed and if there are feathercoins missing, they are taken from the specified fee source. Change is sent to the fee source!\n",
                {
                    {"fromaddress", RPCArg::Type::STR, RPCArg::Optional::NO, "the address to send the tokens from\n"},
                    {"toaddress", RPCArg::Type::STR, RPCArg::Optional::NO, "the address of the receiver\n"},
@@ -100,7 +100,7 @@ static UniValue omni_funded_sendall(const JSONRPCRequest& request)
         throw runtime_error(
             RPCHelpMan{"omni_funded_sendall",
                "\nCreates and sends a transaction that transfers all available tokens in the given ecosystem to the recipient.\n"
-               "\nAll bitcoins from the sender are consumed and if there are bitcoins missing, they are taken from the specified fee source. Change is sent to the fee source!\n",
+               "\nAll feathercoins from the sender are consumed and if there are feathercoins missing, they are taken from the specified fee source. Change is sent to the fee source!\n",
                {
                    {"fromaddress", RPCArg::Type::STR, RPCArg::Optional::NO, "the address to the tokens send from\n"},
                    {"toaddress", RPCArg::Type::STR, RPCArg::Optional::NO, "the address of the receiver\n"},
@@ -149,7 +149,7 @@ static UniValue omni_sendrawtx(const JSONRPCRequest& request)
                    {"rawtransaction", RPCArg::Type::STR, RPCArg::Optional::NO, "the hex-encoded raw transaction"},
                    {"referenceaddress", RPCArg::Type::STR, RPCArg::Optional::OMITTED, "a reference address (none by default)\n"},
                    {"redeemaddress", RPCArg::Type::STR, RPCArg::Optional::OMITTED, "an address that can spent the transaction dust (sender by default)\n"},
-                   {"referenceamount", RPCArg::Type::STR, RPCArg::Optional::OMITTED, "a bitcoin amount that is sent to the receiver (minimal by default)\n"},
+                   {"referenceamount", RPCArg::Type::STR, RPCArg::Optional::OMITTED, "a feathercoin amount that is sent to the receiver (minimal by default)\n"},
                },
                RPCResult{
                    "\"hash\"                  (string) the hex-encoded transaction hash\n"
@@ -198,7 +198,7 @@ static UniValue omni_send(const JSONRPCRequest& request)
                    {"propertyid", RPCArg::Type::NUM, RPCArg::Optional::NO, "the identifier of the tokens to send\n"},
                    {"amount", RPCArg::Type::STR, RPCArg::Optional::NO, "the amount to send\n"},
                    {"redeemaddress", RPCArg::Type::STR, RPCArg::Optional::OMITTED, "an address that can spend the transaction dust (sender by default)\n"},
-                   {"referenceamount", RPCArg::Type::STR, RPCArg::Optional::OMITTED, "a bitcoin amount that is sent to the receiver (minimal by default)\n"},
+                   {"referenceamount", RPCArg::Type::STR, RPCArg::Optional::OMITTED, "a feathercoin amount that is sent to the receiver (minimal by default)\n"},
                },
                RPCResult{
                    "\"hash\"                  (string) the hex-encoded transaction hash\n"
@@ -257,7 +257,7 @@ static UniValue omni_sendall(const JSONRPCRequest& request)
                    {"toaddress", RPCArg::Type::STR, RPCArg::Optional::NO, "the address of the receiver\n"},
                    {"ecosystem", RPCArg::Type::NUM, RPCArg::Optional::NO, "the ecosystem of the tokens to send (1 for main ecosystem, 2 for test ecosystem)\n"},
                    {"redeemaddress", RPCArg::Type::STR, RPCArg::Optional::OMITTED, "an address that can spend the transaction dust (sender by default)\n"},
-                   {"referenceamount", RPCArg::Type::STR, RPCArg::Optional::OMITTED, "a bitcoin amount that is sent to the receiver (minimal by default)\n"},
+                   {"referenceamount", RPCArg::Type::STR, RPCArg::Optional::OMITTED, "a feathercoin amount that is sent to the receiver (minimal by default)\n"},
                },
                RPCResult{
                    "\"hash\"                  (string) the hex-encoded transaction hash\n"
@@ -307,12 +307,12 @@ static UniValue omni_senddexsell(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() != 7)
         throw runtime_error(
             RPCHelpMan{"omni_senddexsell",
-               "\nPlace, update or cancel a sell offer on the distributed token/BTC exchange.\n",
+               "\nPlace, update or cancel a sell offer on the distributed token/FTC exchange.\n",
                {
                    {"fromaddress", RPCArg::Type::STR, RPCArg::Optional::NO, "the address to send from\n"},
                    {"propertyidforsale", RPCArg::Type::NUM, RPCArg::Optional::NO, "the identifier of the tokens to list for sale\n"},
                    {"amountforsale", RPCArg::Type::STR, RPCArg::Optional::NO, "the amount of tokens to list for sale\n"},
-                   {"amountdesired", RPCArg::Type::STR, RPCArg::Optional::NO, "the amount of bitcoins desired\n"},
+                   {"amountdesired", RPCArg::Type::STR, RPCArg::Optional::NO, "the amount of feathercoins desired\n"},
                    {"paymentwindow", RPCArg::Type::NUM, RPCArg::Optional::NO, "a time limit in blocks a buyer has to pay following a successful accepting order\n"},
                    {"minacceptfee", RPCArg::Type::STR, RPCArg::Optional::NO, "a minimum mining fee a buyer has to pay to accept the offer\n"},
                    {"action", RPCArg::Type::NUM, RPCArg::Optional::NO, "the action to take (1 for new offers, 2 to update\", 3 to cancel)\n"},
@@ -469,12 +469,12 @@ static UniValue omni_sendnewdexorder(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() != 6)
         throw runtime_error(
             RPCHelpMan{"omni_sendnewdexorder",
-               "\nCreates a new sell offer on the distributed token/BTC exchange.\n",
+               "\nCreates a new sell offer on the distributed token/FTC exchange.\n",
                {
                    {"fromaddress", RPCArg::Type::STR, RPCArg::Optional::NO, "the address to send from\n"},
                    {"propertyidforsale", RPCArg::Type::NUM, RPCArg::Optional::NO, "the identifier of the tokens to list for sale\n"},
                    {"amountforsale", RPCArg::Type::STR, RPCArg::Optional::NO, "the amount of tokens to list for sale\n"},
-                   {"amountdesired", RPCArg::Type::STR, RPCArg::Optional::NO, "the amount of bitcoins desired\n"},
+                   {"amountdesired", RPCArg::Type::STR, RPCArg::Optional::NO, "the amount of feathercoins desired\n"},
                    {"paymentwindow", RPCArg::Type::NUM, RPCArg::Optional::NO, "a time limit in blocks a buyer has to pay following a successful accepting order\n"},
                    {"minacceptfee", RPCArg::Type::STR, RPCArg::Optional::NO, "a minimum mining fee a buyer has to pay to accept the offer\n"},
                },
@@ -537,12 +537,12 @@ static UniValue omni_sendupdatedexorder(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() != 6)
         throw runtime_error(
             RPCHelpMan{"omni_sendupdatedexorder",
-               "\nUpdates an existing sell offer on the distributed token/BTC exchange.\n",
+               "\nUpdates an existing sell offer on the distributed token/FTC exchange.\n",
                {
                    {"fromaddress", RPCArg::Type::STR, RPCArg::Optional::NO, "the address to send from\n"},
                    {"propertyidforsale", RPCArg::Type::NUM, RPCArg::Optional::NO, "the identifier of the tokens to update\n"},
                    {"amountforsale", RPCArg::Type::STR, RPCArg::Optional::NO, "the new amount of tokens to list for sale\n"},
-                   {"amountdesired", RPCArg::Type::STR, RPCArg::Optional::NO, "the new amount of bitcoins desired\n"},
+                   {"amountdesired", RPCArg::Type::STR, RPCArg::Optional::NO, "the new amount of feathercoins desired\n"},
                    {"paymentwindow", RPCArg::Type::NUM, RPCArg::Optional::NO, "a new time limit in blocks a buyer has to pay following a successful accepting order\n"},
                    {"minacceptfee", RPCArg::Type::STR, RPCArg::Optional::NO, "a new minimum mining fee a buyer has to pay to accept the offer\n"},
                },
@@ -605,7 +605,7 @@ static UniValue omni_sendcanceldexorder(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() != 2)
         throw runtime_error(
             RPCHelpMan{"omni_sendcanceldexorder",
-               "\nCancels existing sell offer on the distributed token/BTC exchange.\n",
+               "\nCancels existing sell offer on the distributed token/FTC exchange.\n",
                {
                    {"fromaddress", RPCArg::Type::STR, RPCArg::Optional::NO, "the address to send from\n"},
                    {"propertyidforsale", RPCArg::Type::NUM, RPCArg::Optional::NO, "the identifier of the tokens to cancel\n"},
@@ -673,7 +673,7 @@ static UniValue omni_senddexpay(const JSONRPCRequest& request)
                    {"fromaddress", RPCArg::Type::STR, RPCArg::Optional::NO, "the address to send from\n"},
                    {"toaddress", RPCArg::Type::STR, RPCArg::Optional::NO, "the address of the seller\n"},
                    {"propertyid", RPCArg::Type::NUM, RPCArg::Optional::NO, "the identifier of the token to purchase\n"},
-                   {"amount", RPCArg::Type::STR, RPCArg::Optional::NO, "the Bitcoin amount to send\n"},
+                   {"amount", RPCArg::Type::STR, RPCArg::Optional::NO, "the Feathercoin amount to send\n"},
                },
                RPCResult{
                    "\"hash\"                  (string) the hex-encoded transaction hash\n"
@@ -720,11 +720,11 @@ static UniValue omni_senddexpay(const JSONRPCRequest& request)
         const CAmount amountToPayInBTC = calculateDesiredBTC(acceptOffer->getOfferAmountOriginal(), acceptOffer->getBTCDesiredOriginal(), amountAccepted);
 
         if (nAmount > amountToPayInBTC) {
-            throw JSONRPCError(RPC_MISC_ERROR, strprintf("Paying more than required: %lld BTC to pay for %lld tokens", FormatMoney(amountToPayInBTC), FormatMP(propertyId, amountAccepted)));
+            throw JSONRPCError(RPC_MISC_ERROR, strprintf("Paying more than required: %lld FTC to pay for %lld tokens", FormatMoney(amountToPayInBTC), FormatMP(propertyId, amountAccepted)));
         }
 
         if (!isPropertyDivisible(propertyId) && nAmount < amountToPayInBTC) {
-            throw JSONRPCError(RPC_MISC_ERROR, strprintf("Paying less than required: %lld BTC to pay for %lld tokens", FormatMoney(amountToPayInBTC), FormatMP(propertyId, amountAccepted)));
+            throw JSONRPCError(RPC_MISC_ERROR, strprintf("Paying less than required: %lld FTC to pay for %lld tokens", FormatMoney(amountToPayInBTC), FormatMP(propertyId, amountAccepted)));
         }
     }
 
@@ -802,8 +802,8 @@ static UniValue omni_sendissuancecrowdsale(const JSONRPCRequest& request)
                    "\"hash\"                  (string) the hex-encoded transaction hash\n"
                },
                RPCExamples{
-                   HelpExampleCli("omni_sendissuancecrowdsale", "\"3JYd75REX3HXn1vAU83YuGfmiPXW7BpYXo\" 2 1 0 \"Companies\" \"Bitcoin Mining\" \"Quantum Miner\" \"\" \"\" 2 \"100\" 1483228800 30 2")
-                   + HelpExampleRpc("omni_sendissuancecrowdsale", "\"3JYd75REX3HXn1vAU83YuGfmiPXW7BpYXo\", 2, 1, 0, \"Companies\", \"Bitcoin Mining\", \"Quantum Miner\", \"\", \"\", 2, \"100\", 1483228800, 30, 2")
+                   HelpExampleCli("omni_sendissuancecrowdsale", "\"3JYd75REX3HXn1vAU83YuGfmiPXW7BpYXo\" 2 1 0 \"Companies\" \"Feathercoin Mining\" \"Quantum Miner\" \"\" \"\" 2 \"100\" 1483228800 30 2")
+                   + HelpExampleRpc("omni_sendissuancecrowdsale", "\"3JYd75REX3HXn1vAU83YuGfmiPXW7BpYXo\", 2, 1, 0, \"Companies\", \"Feathercoin Mining\", \"Quantum Miner\", \"\", \"\", 2, \"100\", 1483228800, 30, 2")
                }
             }.ToString());
 
@@ -873,8 +873,8 @@ static UniValue omni_sendissuancefixed(const JSONRPCRequest& request)
                    "\"hash\"                  (string) the hex-encoded transaction hash\n"
                },
                RPCExamples{
-                   HelpExampleCli("omni_sendissuancefixed", "\"3Ck2kEGLJtZw9ENj2tameMCtS3HB7uRar3\" 2 1 0 \"Companies\" \"Bitcoin Mining\" \"Quantum Miner\" \"\" \"\" \"1000000\"")
-                   + HelpExampleRpc("omni_sendissuancefixed", "\"3Ck2kEGLJtZw9ENj2tameMCtS3HB7uRar3\", 2, 1, 0, \"Companies\", \"Bitcoin Mining\", \"Quantum Miner\", \"\", \"\", \"1000000\"")
+                   HelpExampleCli("omni_sendissuancefixed", "\"3Ck2kEGLJtZw9ENj2tameMCtS3HB7uRar3\" 2 1 0 \"Companies\" \"Feathercoin Mining\" \"Quantum Miner\" \"\" \"\" \"1000000\"")
+                   + HelpExampleRpc("omni_sendissuancefixed", "\"3Ck2kEGLJtZw9ENj2tameMCtS3HB7uRar3\", 2, 1, 0, \"Companies\", \"Feathercoin Mining\", \"Quantum Miner\", \"\", \"\", \"1000000\"")
                }
             }.ToString());
 
@@ -937,8 +937,8 @@ static UniValue omni_sendissuancemanaged(const JSONRPCRequest& request)
                    "\"hash\"                  (string) the hex-encoded transaction hash\n"
                },
                RPCExamples{
-                   HelpExampleCli("omni_sendissuancemanaged", "\"3HsJvhr9qzgRe3ss97b1QHs38rmaLExLcH\" 2 1 0 \"Companies\" \"Bitcoin Mining\" \"Quantum Miner\" \"\" \"\"")
-                   + HelpExampleRpc("omni_sendissuancemanaged", "\"3HsJvhr9qzgRe3ss97b1QHs38rmaLExLcH\", 2, 1, 0, \"Companies\", \"Bitcoin Mining\", \"Quantum Miner\", \"\", \"\"")
+                   HelpExampleCli("omni_sendissuancemanaged", "\"3HsJvhr9qzgRe3ss97b1QHs38rmaLExLcH\" 2 1 0 \"Companies\" \"Feathercoin Mining\" \"Quantum Miner\" \"\" \"\"")
+                   + HelpExampleRpc("omni_sendissuancemanaged", "\"3HsJvhr9qzgRe3ss97b1QHs38rmaLExLcH\", 2, 1, 0, \"Companies\", \"Feathercoin Mining\", \"Quantum Miner\", \"\", \"\"")
                }
             }.ToString());
 

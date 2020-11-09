@@ -63,9 +63,9 @@ static UniValue omni_decodetransaction(const JSONRPCRequest& request)
                RPCResult{
                    "{\n"
                    "  \"txid\" : \"hash\",                  (string) the hex-encoded hash of the transaction\n"
-                   "  \"fee\" : \"n.nnnnnnnn\",             (string) the transaction fee in bitcoins\n"
-                   "  \"sendingaddress\" : \"address\",     (string) the Bitcoin address of the sender\n"
-                   "  \"referenceaddress\" : \"address\",   (string) a Bitcoin address used as reference (if any)\n"
+                   "  \"fee\" : \"n.nnnnnnnn\",             (string) the transaction fee in feathercoins\n"
+                   "  \"sendingaddress\" : \"address\",     (string) the Feathercoin address of the sender\n"
+                   "  \"referenceaddress\" : \"address\",   (string) a Feathercoin address used as reference (if any)\n"
                    "  \"ismine\" : true|false,            (boolean) whether the transaction involes an address in the wallet\n"
                    "  \"version\" : n,                    (number) the transaction version\n"
                    "  \"type_int\" : n,                   (number) the transaction type as number\n"

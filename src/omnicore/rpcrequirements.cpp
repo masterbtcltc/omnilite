@@ -134,7 +134,7 @@ void RequireMatchingDExAccept(const std::string& sellerAddress, uint32_t propert
 void RequireSaneReferenceAmount(int64_t amount)
 {
     if ((0.01 * COIN) < amount) {
-        throw JSONRPCError(RPC_TYPE_ERROR, "Reference amount higher is than 0.01 BTC");
+        throw JSONRPCError(RPC_TYPE_ERROR, "Reference amount higher is than 0.01 FTC");
     }
 }
 
@@ -158,7 +158,7 @@ void RequireSaneDExFee(const std::string& address, uint32_t propertyId)
         throw JSONRPCError(RPC_DATABASE_ERROR, "Unable to load sell offer from the distributed exchange");
     }
     if (poffer->getMinFee() > 1000000) {
-        throw JSONRPCError(RPC_TYPE_ERROR, "Minimum accept fee is higher than 0.01 BTC (use override = true to continue)");
+        throw JSONRPCError(RPC_TYPE_ERROR, "Minimum accept fee is higher than 0.01 FTC (use override = true to continue)");
     }
 }
 

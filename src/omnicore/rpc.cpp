@@ -751,7 +751,7 @@ static UniValue omni_getproperty(const JSONRPCRequest& request)
                    "  \"data\" : \"information\",          (string) additional information or a description\n"
                    "  \"url\" : \"uri\",                   (string) an URI, for example pointing to a website\n"
                    "  \"divisible\" : true|false,        (boolean) whether the tokens are divisible\n"
-                   "  \"issuer\" : \"address\",            (string) the Bitcoin address of the issuer on record\n"
+                   "  \"issuer\" : \"address\",            (string) the Feathercoin address of the issuer on record\n"
                    "  \"creationtxid\" : \"hash\",         (string) the hex-encoded creation transaction hash\n"
                    "  \"fixedissuance\" : true|false,    (boolean) whether the token supply is fixed\n"
                    "  \"managedissuance\" : true|false,    (boolean) whether the token supply is managed\n"
@@ -810,7 +810,7 @@ static UniValue omni_listproperties(const JSONRPCRequest& request)
                    "    \"data\" : \"information\",          (string) additional information or a description\n"
                    "    \"url\" : \"uri\",                   (string) an URI, for example pointing to a website\n"
                    "    \"divisible\" : true|false         (boolean) whether the tokens are divisible\n"
-                   "    \"issuer\" : \"address\",            (string) the Bitcoin address of the issuer on record\n"
+                   "    \"issuer\" : \"address\",            (string) the Feathercoin address of the issuer on record\n"
                    "    \"creationtxid\" : \"hash\",         (string) the hex-encoded creation transaction hash\n"
                    "    \"fixedissuance\" : true|false,    (boolean) whether the token supply is fixed\n"
                    "    \"managedissuance\" : true|false,    (boolean) whether the token supply is managed\n"
@@ -870,7 +870,7 @@ static UniValue omni_getcrowdsale(const JSONRPCRequest& request)
                    "  \"propertyid\" : n,                     (number) the identifier of the crowdsale\n"
                    "  \"name\" : \"name\",                      (string) the name of the tokens issued via the crowdsale\n"
                    "  \"active\" : true|false,                (boolean) whether the crowdsale is still active\n"
-                   "  \"issuer\" : \"address\",                 (string) the Bitcoin address of the issuer on record\n"
+                   "  \"issuer\" : \"address\",                 (string) the Feathercoin address of the issuer on record\n"
                    "  \"propertyiddesired\" : n,              (number) the identifier of the tokens eligible to participate in the crowdsale\n"
                    "  \"tokensperunit\" : \"n.nnnnnnnn\",       (string) the amount of tokens granted per unit invested in the crowdsale\n"
                    "  \"earlybonus\" : n,                     (number) an early bird bonus for participants in percent per week\n"
@@ -1027,7 +1027,7 @@ static UniValue omni_getactivecrowdsales(const JSONRPCRequest& request)
                    "  {\n"
                    "    \"propertyid\" : n,                 (number) the identifier of the crowdsale\n"
                    "    \"name\" : \"name\",                  (string) the name of the tokens issued via the crowdsale\n"
-                   "    \"issuer\" : \"address\",             (string) the Bitcoin address of the issuer on record\n"
+                   "    \"issuer\" : \"address\",             (string) the Feathercoin address of the issuer on record\n"
                    "    \"propertyiddesired\" : n,          (number) the identifier of the tokens eligible to participate in the crowdsale\n"
                    "    \"tokensperunit\" : \"n.nnnnnnnn\",   (string) the amount of tokens granted per unit invested in the crowdsale\n"
                    "    \"earlybonus\" : n,                 (number) an early bird bonus for participants in percent per week\n"
@@ -1108,7 +1108,7 @@ static UniValue omni_getgrants(const JSONRPCRequest& request)
                    "{\n"
                    "  \"propertyid\" : n,               (number) the identifier of the managed tokens\n"
                    "  \"name\" : \"name\",                (string) the name of the tokens\n"
-                   "  \"issuer\" : \"address\",           (string) the Bitcoin address of the issuer on record\n"
+                   "  \"issuer\" : \"address\",           (string) the Feathercoin address of the issuer on record\n"
                    "  \"creationtxid\" : \"hash\",        (string) the hex-encoded creation transaction hash\n"
                    "  \"totaltokens\" : \"n.nnnnnnnn\",   (string) the total number of tokens in existence\n"
                    "  \"issuances\": [                  (array of JSON objects) a list of the granted and revoked tokens\n"
@@ -1194,20 +1194,20 @@ static UniValue omni_getactivedexsells(const JSONRPCRequest& request)
                    "  {\n"
                    "    \"txid\" : \"hash\",                    (string) the hash of the transaction of this offer\n"
                    "    \"propertyid\" : n,                   (number) the identifier of the tokens for sale\n"
-                   "    \"seller\" : \"address\",               (string) the Bitcoin address of the seller\n"
+                   "    \"seller\" : \"address\",               (string) the Feathercoin address of the seller\n"
                    "    \"amountavailable\" : \"n.nnnnnnnn\",   (string) the number of tokens still listed for sale and currently available\n"
-                   "    \"bitcoindesired\" : \"n.nnnnnnnn\",    (string) the number of bitcoins desired in exchange\n"
-                   "    \"unitprice\" : \"n.nnnnnnnn\" ,        (string) the unit price (BTC/token)\n"
+                   "    \"feathercoindesired\" : \"n.nnnnnnnn\",    (string) the number of feathercoins desired in exchange\n"
+                   "    \"unitprice\" : \"n.nnnnnnnn\" ,        (string) the unit price (FTC/token)\n"
                    "    \"timelimit\" : nn,                   (number) the time limit in blocks a buyer has to pay following a successful accept\n"
                    "    \"minimumfee\" : \"n.nnnnnnnn\",        (string) the minimum mining fee a buyer has to pay to accept this offer\n"
                    "    \"amountaccepted\" : \"n.nnnnnnnn\",    (string) the number of tokens currently reserved for pending \"accept\" orders\n"
                    "    \"accepts\": [                        (array of JSON objects) a list of pending \"accept\" orders\n"
                    "      {\n"
-                   "        \"buyer\" : \"address\",                (string) the Bitcoin address of the buyer\n"
+                   "        \"buyer\" : \"address\",                (string) the Feathercoin address of the buyer\n"
                    "        \"block\" : nnnnnn,                   (number) the index of the block that contains the \"accept\" order\n"
                    "        \"blocksleft\" : nn,                  (number) the number of blocks left to pay\n"
                    "        \"amount\" : \"n.nnnnnnnn\"             (string) the amount of tokens accepted and reserved\n"
-                   "        \"amounttopay\" : \"n.nnnnnnnn\"        (string) the amount in bitcoins needed finalize the trade\n"
+                   "        \"amounttopay\" : \"n.nnnnnnnn\"        (string) the amount in feathercoins needed finalize the trade\n"
                    "      },\n"
                    "      ...\n"
                    "    ]\n"
@@ -1271,7 +1271,7 @@ static UniValue omni_getactivedexsells(const JSONRPCRequest& request)
         responseObj.pushKV("propertyid", (uint64_t) propertyId);
         responseObj.pushKV("seller", seller);
         responseObj.pushKV("amountavailable", FormatMP(propertyId, amountAvailable));
-        responseObj.pushKV("bitcoindesired", FormatDivisibleMP(bitcoinDesired));
+        responseObj.pushKV("feathercoindesired", FormatDivisibleMP(bitcoinDesired));
         responseObj.pushKV("unitprice", FormatDivisibleMP(unitPrice));
         responseObj.pushKV("timelimit", timeLimit);
         responseObj.pushKV("minimumfee", FormatDivisibleMP(minFee));
@@ -1423,11 +1423,11 @@ static UniValue omni_gettransaction(const JSONRPCRequest& request)
                RPCResult{
                    "{\n"
                    "  \"txid\" : \"hash\",                  (string) the hex-encoded hash of the transaction\n"
-                   "  \"sendingaddress\" : \"address\",     (string) the Bitcoin address of the sender\n"
-                   "  \"referenceaddress\" : \"address\",   (string) a Bitcoin address used as reference (if any)\n"
+                   "  \"sendingaddress\" : \"address\",     (string) the Feathercoin address of the sender\n"
+                   "  \"referenceaddress\" : \"address\",   (string) a Feathercoin address used as reference (if any)\n"
                    "  \"ismine\" : true|false,            (boolean) whether the transaction involes an address in the wallet\n"
                    "  \"confirmations\" : nnnnnnnnnn,     (number) the number of transaction confirmations\n"
-                   "  \"fee\" : \"n.nnnnnnnn\",             (string) the transaction fee in bitcoins\n"
+                   "  \"fee\" : \"n.nnnnnnnn\",             (string) the transaction fee in feathercoins\n"
                    "  \"blocktime\" : nnnnnnnnnn,         (number) the timestamp of the block that contains the transaction\n"
                    "  \"valid\" : true|false,             (boolean) whether the transaction is valid\n"
                    "  \"invalidreason\" : \"reason\",     (string) if a transaction is invalid, the reason \n"
@@ -1473,11 +1473,11 @@ static UniValue omni_listtransactions(const JSONRPCRequest& request)
                    "[                                 (array of JSON objects)\n"
                    "  {\n"
                    "    \"txid\" : \"hash\",                  (string) the hex-encoded hash of the transaction\n"
-                   "    \"sendingaddress\" : \"address\",     (string) the Bitcoin address of the sender\n"
-                   "    \"referenceaddress\" : \"address\",   (string) a Bitcoin address used as reference (if any)\n"
+                   "    \"sendingaddress\" : \"address\",     (string) the Feathercoin address of the sender\n"
+                   "    \"referenceaddress\" : \"address\",   (string) a Feathercoin address used as reference (if any)\n"
                    "    \"ismine\" : true|false,            (boolean) whether the transaction involes an address in the wallet\n"
                    "    \"confirmations\" : nnnnnnnnnn,     (number) the number of transaction confirmations\n"
-                   "    \"fee\" : \"n.nnnnnnnn\",             (string) the transaction fee in bitcoins\n"
+                   "    \"fee\" : \"n.nnnnnnnn\",             (string) the transaction fee in feathercoins\n"
                    "    \"blocktime\" : nnnnnnnnnn,         (number) the timestamp of the block that contains the transaction\n"
                    "    \"valid\" : true|false,             (boolean) whether the transaction is valid\n"
                    "    \"version\" : n,                    (number) the transaction version\n"
@@ -1558,10 +1558,10 @@ static UniValue omni_listpendingtransactions(const JSONRPCRequest& request)
                    "[                                 (array of JSON objects)\n"
                    "  {\n"
                    "    \"txid\" : \"hash\",                  (string) the hex-encoded hash of the transaction\n"
-                   "    \"sendingaddress\" : \"address\",     (string) the Bitcoin address of the sender\n"
-                   "    \"referenceaddress\" : \"address\",   (string) a Bitcoin address used as reference (if any)\n"
+                   "    \"sendingaddress\" : \"address\",     (string) the Feathercoin address of the sender\n"
+                   "    \"referenceaddress\" : \"address\",   (string) a Feathercoin address used as reference (if any)\n"
                    "    \"ismine\" : true|false,            (boolean) whether the transaction involes an address in the wallet\n"
-                   "    \"fee\" : \"n.nnnnnnnn\",             (string) the transaction fee in bitcoins\n"
+                   "    \"fee\" : \"n.nnnnnnnn\",             (string) the transaction fee in feathercoins\n"
                    "    \"version\" : n,                    (number) the transaction version\n"
                    "    \"type_int\" : n,                   (number) the transaction type as number\n"
                    "    \"type\" : \"type\",                  (string) the transaction type as string\n"
@@ -1610,7 +1610,7 @@ static UniValue omni_getinfo(const JSONRPCRequest& request)
                    "{\n"
                    "  \"omnicoreversion_int\" : xxxxxxx,       (number) client version as integer\n"
                    "  \"omnicoreversion\" : \"x.x.x.x-xxx\",     (string) client version\n"
-                   "  \"bitcoincoreversion\" : \"x.x.x\",        (string) Bitcoin Core version\n"
+                   "  \"feathercoincoreversion\" : \"x.x.x\",        (string) Feathercoin Core version\n"
                    "  \"block\" : nnnnnn,                      (number) index of the last processed block\n"
                    "  \"blocktime\" : nnnnnnnnnn,              (number) timestamp of the last processed block\n"
                    "  \"blocktransactions\" : nnnn,            (number) Omni transactions found in the last processed block\n"
@@ -1637,7 +1637,7 @@ static UniValue omni_getinfo(const JSONRPCRequest& request)
     // provide the mastercore and bitcoin version
     infoResponse.pushKV("omnicoreversion_int", OMNICORE_VERSION);
     infoResponse.pushKV("omnicoreversion", OmniCoreVersion());
-    infoResponse.pushKV("bitcoincoreversion", BitcoinCoreVersion());
+    infoResponse.pushKV("feathercoincoreversion", BitcoinCoreVersion());
 
     // provide the current block details
     int block = GetHeight();
@@ -1768,10 +1768,10 @@ static UniValue omni_getsto(const JSONRPCRequest& request)
                RPCResult{
                    "{\n"
                    "  \"txid\" : \"hash\",                (string) the hex-encoded hash of the transaction\n"
-                   "  \"sendingaddress\" : \"address\",   (string) the Bitcoin address of the sender\n"
+                   "  \"sendingaddress\" : \"address\",   (string) the Feathercoin address of the sender\n"
                    "  \"ismine\" : true|false,          (boolean) whether the transaction involes an address in the wallet\n"
                    "  \"confirmations\" : nnnnnnnnnn,   (number) the number of transaction confirmations\n"
-                   "  \"fee\" : \"n.nnnnnnnn\",           (string) the transaction fee in bitcoins\n"
+                   "  \"fee\" : \"n.nnnnnnnn\",           (string) the transaction fee in feathercoins\n"
                    "  \"blocktime\" : nnnnnnnnnn,       (number) the timestamp of the block that contains the transaction\n"
                    "  \"valid\" : true|false,           (boolean) whether the transaction is valid\n"
                    "  \"version\" : n,                  (number) the transaction version\n"
@@ -1783,7 +1783,7 @@ static UniValue omni_getsto(const JSONRPCRequest& request)
                    "  \"totalstofee\" : \"n.nnnnnnnn\",   (string) the fee paid by the sender, nominated in OMN or TOMN\n"
                    "  \"recipients\": [                 (array of JSON objects) a list of recipients\n"
                    "    {\n"
-                   "      \"address\" : \"address\",          (string) the Bitcoin address of the recipient\n"
+                   "      \"address\" : \"address\",          (string) the Feathercoin address of the recipient\n"
                    "      \"amount\" : \"n.nnnnnnnn\"         (string) the number of tokens sent to this recipient\n"
                    "    },\n"
                    "    ...\n"

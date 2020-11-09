@@ -352,7 +352,7 @@ void populateRPCTypeTradeOffer(CMPTransaction& omniObj, UniValue& txobj)
     txobj.pushKV("propertyid", (uint64_t)propertyId);
     txobj.pushKV("divisible", isPropertyDivisible(propertyId));
     txobj.pushKV("amount", FormatMP(propertyId, amountOffered));
-    txobj.pushKV("bitcoindesired", FormatDivisibleMP(amountDesired));
+    txobj.pushKV("feathercoindesired", FormatDivisibleMP(amountDesired));
     txobj.pushKV("timelimit",  temp_offer.getBlockTimeLimit());
     txobj.pushKV("feerequired", FormatDivisibleMP(temp_offer.getMinFee()));
     if (sellSubAction == 1) txobj.pushKV("action", "new");
