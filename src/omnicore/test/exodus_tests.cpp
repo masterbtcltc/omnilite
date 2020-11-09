@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(exodus_address_regtest)
 {
     SelectParams(CBaseChainParams::REGTEST);
 
-    BOOST_CHECK(CTxDestination(DecodeDestination("mpEXodUS8LUsXUHm1Vyk7b1AzG9CkKw6Mp")) ==
+    BOOST_CHECK(CTxDestination(DecodeDestination("moPocgnrjjtnx8FWqLTQUxXmWvGiMmQUdo")) ==
                 ExodusAddress());
     BOOST_CHECK(!(CTxDestination(DecodeDestination("moneyqMan7uh8FqdCA2BV5yZ8qVrc9ikLP")) ==
                 ExodusAddress()));
