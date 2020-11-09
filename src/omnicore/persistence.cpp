@@ -193,7 +193,7 @@ static int input_msc_balances_string(const std::string& s)
         // "balance,sellreserved,acceptreserved"
         std::vector<std::string> curBalance;
         boost::split(curBalance, curProperty[1], boost::is_any_of(","), boost::token_compress_on);
-        if (curBalance.size() != 4) return -1;
+        if (curBalance.size() != 3) return -1;
 
         uint32_t propertyId = boost::lexical_cast<uint32_t>(curProperty[0]);
 
