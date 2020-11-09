@@ -18,6 +18,8 @@
 #include <util/system.h>
 #include <version.h>
 
+#include <omnicore/version.h>
+
 #include <QApplication>
 #include <QCloseEvent>
 #include <QDesktopWidget>
@@ -40,7 +42,7 @@ SplashScreen::SplashScreen(interfaces::Node& node, Qt::WindowFlags f, const Netw
 
     // define text to place
     QString titleText       = tr(PACKAGE_NAME);
-    QString versionText     = QString("Version %1").arg(QString::fromStdString(FormatFullVersion()));
+    QString versionText     = QString("%1").arg(QString::fromStdString(OmniCoreVersion()));
     QString copyrightText   = QString::fromUtf8(CopyrightHolders(strprintf("\xc2\xA9 %u-%u ", 2013, COPYRIGHT_YEAR)).c_str());
     QString titleAddText    = networkStyle->getTitleAddText();
 
