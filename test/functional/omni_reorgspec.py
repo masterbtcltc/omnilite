@@ -216,11 +216,11 @@ class OmniReorgSpec(BitcoinTestFramework):
         senderAddress = self.nodes[0].getnewaddress()
 
         # Import exodus address
-        self.nodes[0].importprivkey("cSmREaastceq9QjMLKc2UGV6y7yXSyabEtDMfcWmNQt1jv6TBK3R")
+        self.nodes[0].importprivkey("cV35DD5QsWnFDF9B3tAaZjFgC8FRXBuTpLSE1wf734MgKiJFDLtx")
 
         # Funding the exodus and senderAddress
         txid = self.nodes[0].omni_send(address, senderAddress, currencyID, startOMNI)
-        self.nodes[0].sendtoaddress("moPocgnrjjtnx8FWqLTQUxXmWvGiMmQUdo", 1.0)
+        self.nodes[0].sendtoaddress("mgimY5b4MTXRdc9LgQk9KYQtB37W4UmKwT", 1.0)
         self.nodes[0].generatetoaddress(1, coinbase_address)
         self.nodes[0].sendtoaddress(senderAddress, 1.0)
         self.nodes[0].generatetoaddress(1, coinbase_address)
@@ -230,7 +230,7 @@ class OmniReorgSpec(BitcoinTestFramework):
         assert_equal(result['valid'], True)
 
         # Send some FEATHER to senderAddress to pay STO fees
-        txid = self.nodes[0].omni_send("moPocgnrjjtnx8FWqLTQUxXmWvGiMmQUdo", senderAddress, 3, "0.2")
+        txid = self.nodes[0].omni_send("mgimY5b4MTXRdc9LgQk9KYQtB37W4UmKwT", senderAddress, 3, "0.2")
         self.nodes[0].generatetoaddress(1, coinbase_address)
 
         # Checking the transaction was valid...
@@ -266,7 +266,7 @@ class OmniReorgSpec(BitcoinTestFramework):
         dummyOwnerC = self.nodes[0].getnewaddress()
 
         # Funding the senderAddress with some FTC and FEATHER for fees
-        txid = self.nodes[0].omni_send("moPocgnrjjtnx8FWqLTQUxXmWvGiMmQUdo", senderAddress, 3, "0.2")
+        txid = self.nodes[0].omni_send("mgimY5b4MTXRdc9LgQk9KYQtB37W4UmKwT", senderAddress, 3, "0.2")
         self.nodes[0].sendtoaddress(senderAddress, 1.0)
         self.nodes[0].generatetoaddress(1, coinbase_address)
 
@@ -354,7 +354,7 @@ class OmniReorgSpec(BitcoinTestFramework):
         ownerB = self.nodes[0].getnewaddress()
 
         # Send some FEATHER to actorAddress to pay STO fees
-        txid = self.nodes[0].omni_send("moPocgnrjjtnx8FWqLTQUxXmWvGiMmQUdo", actorAddress, 3, "0.2")
+        txid = self.nodes[0].omni_send("mgimY5b4MTXRdc9LgQk9KYQtB37W4UmKwT", actorAddress, 3, "0.2")
         self.nodes[0].generatetoaddress(1, coinbase_address)
 
         # Checking the transaction was valid...

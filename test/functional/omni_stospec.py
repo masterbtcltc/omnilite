@@ -28,8 +28,8 @@ class OmniSTOSpec(BitcoinTestFramework):
         self.nodes[0].generatetoaddress(1, coinbase_address)
 
         # Import and fund exodus address
-        self.nodes[0].importprivkey("cSmREaastceq9QjMLKc2UGV6y7yXSyabEtDMfcWmNQt1jv6TBK3R")
-        self.nodes[0].sendtoaddress("moPocgnrjjtnx8FWqLTQUxXmWvGiMmQUdo", 10)
+        self.nodes[0].importprivkey("cV35DD5QsWnFDF9B3tAaZjFgC8FRXBuTpLSE1wf734MgKiJFDLtx")
+        self.nodes[0].sendtoaddress("mgimY5b4MTXRdc9LgQk9KYQtB37W4UmKwT", 10)
         self.nodes[0].generatetoaddress(1, coinbase_address)
 
         stoFeePerAddress = "0.00000001"
@@ -73,7 +73,7 @@ class OmniSTOSpec(BitcoinTestFramework):
 
             # Create actor
             actorAddress = self.nodes[0].getnewaddress()
-            txid = self.nodes[0].omni_send("moPocgnrjjtnx8FWqLTQUxXmWvGiMmQUdo", actorAddress, FEATHER, "{:.8f}".format(actorMSC))
+            txid = self.nodes[0].omni_send("mgimY5b4MTXRdc9LgQk9KYQtB37W4UmKwT", actorAddress, FEATHER, "{:.8f}".format(actorMSC))
             self.nodes[0].sendtoaddress(actorAddress, "1")
             self.nodes[0].generatetoaddress(1, coinbase_address)
 

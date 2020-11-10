@@ -83,6 +83,13 @@ static const std::string exodus_testnet = "mpEXodUS8LUsXUHm1Vyk7b1AzG9CkKw6Mp";
 //! Regtest Exodus address
 static const std::string exodus_regtest = "moPocgnrjjtnx8FWqLTQUxXmWvGiMmQUdo";
 
+//! Mainnet FEATHER address
+static const std::string feather_mainnet = "6kkYNUiQFDbYoj7Pr8wc9oqJ1TjDNtxy77";
+//! Testnet FEATHER address
+static const std::string feather_testnet = "n1yVXkHgAuQ8bNtwMWVZkGMK76cUqWngP9";
+//! Regtest FEATHER address
+static const std::string feather_regtest = "mgimY5b4MTXRdc9LgQk9KYQtB37W4UmKwT";
+
 static int nWaterlineBlock = 0;
 
 /**
@@ -1529,8 +1536,10 @@ int mastercore_init()
         InitDebugLogLevels();
         ShrinkDebugLog();
 
-        if (isNonMainNet()) {
+        if (TestNet()) {
             exodus_address = exodus_testnet;
+        } else if (RegTest()) {
+            exodus_address = exodus_regtest;
         }
 
         // check for --autocommit option and set transaction commit flag accordingly
@@ -1924,12 +1933,6 @@ void mastercore_handler_disc_begin(const int nHeight)
 /**
  * Returns the Exodus address.
  *
- * Main network:
- *   1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P
- *
- * Test network:
- *   mpexoDuSkGGqvqrkrjiFng38QPkJQVFyqv
- *
  * @return The Exodus address
  */
 const CTxDestination ExodusAddress()
@@ -1947,6 +1950,30 @@ const CTxDestination ExodusAddress()
     else
     {
         static CTxDestination mainAddress = DecodeDestination(exodus_mainnet);
+        return mainAddress;
+    }
+}
+
+/**
+ * Returns the Feather address.
+ *
+ * @return The Exodus address
+ */
+const CTxDestination FeatherAddress()
+{
+    if (TestNet())
+    {
+        static CTxDestination testAddress = DecodeDestination(feather_testnet);
+        return testAddress;
+    }
+    else if (RegTest())
+    {
+        static CTxDestination testAddress = DecodeDestination(feather_regtest);
+        return testAddress;
+    }
+    else
+    {
+        static CTxDestination mainAddress = DecodeDestination(feather_mainnet);
         return mainAddress;
     }
 }

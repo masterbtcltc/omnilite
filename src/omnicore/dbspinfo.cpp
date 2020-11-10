@@ -110,7 +110,7 @@ CMPSPInfo::CMPSPInfo(const fs::path& path, bool fWipe)
     implied_tomni.url = "N/A";
     implied_tomni.data = "Reserved";
 
-    implied_feather.issuer = EncodeDestination(ExodusAddress());
+    implied_feather.issuer = EncodeDestination(FeatherAddress());
     implied_feather.updateIssuer(0, 0, implied_tomni.issuer);
     implied_feather.txid = Params().GenesisBlock().vtx[0]->GetHash(); // Use genesis coinbase as txid! Used for DB lookups
     implied_feather.prop_type = MSC_PROPERTY_TYPE_DIVISIBLE;
