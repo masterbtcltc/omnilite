@@ -115,7 +115,7 @@ std::vector<TransactionCheckpoint> CMainConsensusParams::GetTransactions() const
 CMainConsensusParams::CMainConsensusParams()
 {
     // Omnifeather genesis block
-    GENESIS_BLOCK = 100000000;
+    GENESIS_BLOCK = 3454000;
     // Notice range for feature activations:
     MIN_ACTIVATION_BLOCKS = 20160;  // ~2 weeks
     MAX_ACTIVATION_BLOCKS = 120960; // ~12 weeks
