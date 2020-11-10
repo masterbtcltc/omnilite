@@ -100,7 +100,7 @@ class OmniFreeDExSpec(BitcoinTestFramework):
         assert_equal(offerTx['propertyid'], currencyOffered)
         assert_equal(offerTx['divisible'], True)
         assert_equal(offerTx['amount'], amountOffered)
-        assert_equal(offerTx['bitcoindesired'], desiredBTC)
+        assert_equal(offerTx['feathercoindesired'], desiredBTC)
         assert_equal(offerTx['timelimit'], stdBlockSpan)
         assert_equal(offerTx['feerequired'], stdCommitFee)
         assert_equal(offerTx['action'], "new")
