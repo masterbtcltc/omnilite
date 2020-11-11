@@ -75,9 +75,9 @@ Section -Main SEC0000
     SetOutPath $INSTDIR
     SetOverwrite on
     File @abs_top_srcdir@/release/omnifeather-qt.exe
-    File /oname=copying.txt @abs_top_srcdir@/src/omnifeather/COPYING.md
-    File /oname=readme.txt @abs_top_srcdir@/src/omnifeather/README.md
-    File /oname=release-notes.txt @abs_top_srcdir@/src/omnifeather/doc/release-notes.md
+    File /oname=copying.txt @abs_top_srcdir@/src/omnicore/COPYING.md
+    File /oname=readme.txt @abs_top_srcdir@/src/omnicore/README.md
+    File /oname=release-notes.txt @abs_top_srcdir@/src/omnicore/doc/release-notes.md
     SetOutPath $INSTDIR\daemon
     File @abs_top_srcdir@/release/omnifeatherd.exe
     File @abs_top_srcdir@/release/omnifeather-cli.exe
