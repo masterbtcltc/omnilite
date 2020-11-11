@@ -1,27 +1,26 @@
 Configuration
 =============
 
-Omni Core can be configured by providing one or more optional command-line arguments:
+OmniFeather can be configured by providing one or more optional command-line arguments:
 ```bash
-$ omnicored -setting=value -setting=value
+$ omnifeatherd -setting=value -setting=value
 ```
 
-All settings can alternatively also be configured via the `bitcoin.conf`.
+All settings can alternatively also be configured via the `feathercoin.conf`.
 
 Depending on the operating system, the default locations for the configuration file are:
 
-- Unix systems: `$HOME/.bitcoin/bitcoin.conf`
-- Mac OS X: `$HOME/Library/Application Support/Bitcoin/bitcoin.conf`
-- Microsoft Windows: `%APPDATA%/Bitcoin/bitcoin.conf`
+- Unix systems: `$HOME/.feathercoin/feathercoin.conf`
+- Mac OS X: `$HOME/Library/Application Support/Feathercoin/feathercoin.conf`
+- Microsoft Windows: `%APPDATA%/Feathercoin/feathercoin.conf`
 
-A typical `bitcoin.conf` may include:
+A typical `feathercoin.conf` may include:
 ```
 server=1
 rpcuser=omnicorerpc
 rpcpassword=5hMTZI9iBGFqKxsWfOUF
 rpcallowip=127.0.0.1
-rpcport=8332
-txindex=1
+rpcport=9337
 datacarriersize=80
 logtimestamps=1
 omnidebug=tally
@@ -31,7 +30,7 @@ omnidebug=pending
 
 ## Optional settings
 
-To run and use Omni Core, no explicit configuration is necessary.
+To run and use OmniFeather, no explicit configuration is necessary.
 
 More information about the general configuration and Bitcoin Core specific options are available in the [Bitcoin wiki](https://en.bitcoin.it/wiki/Running_Bitcoin).
 

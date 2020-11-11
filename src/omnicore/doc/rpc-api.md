@@ -1,9 +1,9 @@
 JSON-RPC API
 ============
 
-Omni Core is a fork of Bitcoin Core, with Omni Protocol feature support added as a new layer of functionality on top. As such interacting with the API is done in the same manner (JSON-RPC) as Bitcoin Core, simply with additional RPCs available for utilizing Omni Protocol features.
+OmniFeather is a fork of Feathercoin, with the Omni Protocol feature support from OmniLayer for Bitcoin added as a new layer of functionality on top. As such interacting with the API is done in the same manner (JSON-RPC) as Feathercoin Core, simply with additional RPCs available for utilizing Omni Protocol features.
 
-As all existing Bitcoin Core functionality is inherent to Omni Core, the RPC port by default remains as `8332` as per Bitcoin Core.  If you wish to run Omni Core in tandem with Bitcoin Core (eg. via a separate datadir) you may utilize the `-rpcport<port>` option to nominate an alternative port number.
+As all existing Feathercoin functionality is inherent to OmniFeather, the RPC port by default remains as `9337` as per Feathercoin.  If you wish to run OmniFeather in tandem with Feathercoin (eg. via a separate datadir) you may utilize the `-rpcport<port>` option to nominate an alternative port number.
 
 All available commands can be listed with `"help"`, and information about a specific command can be retrieved with `"help <command>"`.
 
@@ -114,7 +114,7 @@ Create and broadcast a simple send transaction.
 | `propertyid`        | number  | required | the identifier of the tokens to send                                                         |
 | `amount`            | string  | required | the amount to send                                                                           |
 | `redeemaddress`     | string  | optional | an address that can spend the transaction dust (sender by default)                           |
-| `referenceamount`   | string  | optional | a bitcoin amount that is sent to the receiver (minimal by default)                           |
+| `referenceamount`   | string  | optional | a feathercoin amount that is sent to the receiver (minimal by default)                           |
 
 **Result:**
 ```js
@@ -131,7 +131,7 @@ $ omnicore-cli "omni_send" "3M9qvHKtgARhqcMtM5cRT9VaiDJ5PSfQGY" "37FaKponF7zqoML
 
 ### omni_senddexsell
 
-Place, update or cancel a sell offer on the distributed token/BTC exchange.
+Place, update or cancel a sell offer on the distributed token/FTC exchange.
 
 **Please note: this RPC is replaced by:**
 
@@ -146,7 +146,7 @@ Place, update or cancel a sell offer on the distributed token/BTC exchange.
 | `fromaddress`       | string  | required | the address to send from                                                                     |
 | `propertyidforsale` | number  | required | the identifier of the tokens to list for sale                                                |
 | `amountforsale`     | string  | required | the amount of tokens to list for sale                                                        |
-| `amountdesired`     | string  | required | the amount of bitcoins desired                                                               |
+| `amountdesired`     | string  | required | the amount of feathercoins desired                                                               |
 | `paymentwindow`     | number  | required | a time limit in blocks a buyer has to pay following a successful accepting order             |
 | `minacceptfee`      | string  | required | a minimum mining fee a buyer has to pay to accept the offer                                  |
 | `action`            | number  | required | the action to take (`1` for new offers, `2` to update, `3` to cancel)                        |
@@ -166,7 +166,7 @@ $ omnicore-cli "omni_senddexsell" "37FaKponF7zqoMLUjEiko25pDiuVH5YLEa" 1 "1.5" "
 
 ### omni_sendnewdexorder
 
-Creates a new sell offer on the distributed token/BTC exchange.
+Creates a new sell offer on the distributed token/FTC exchange.
 
 **Arguments:**
 
@@ -175,7 +175,7 @@ Creates a new sell offer on the distributed token/BTC exchange.
 | `fromaddress`       | string  | required | the address to send from                                                                     |
 | `propertyidforsale` | number  | required | the identifier of the tokens to list for sale                                                |
 | `amountforsale`     | string  | required | the amount of tokens to list for sale                                                        |
-| `amountdesired`     | string  | required | the amount of bitcoins desired                                                               |
+| `amountdesired`     | string  | required | the amount of feathercoins desired                                                               |
 | `paymentwindow`     | number  | required | a time limit in blocks a buyer has to pay following a successful accepting order             |
 | `minacceptfee`      | string  | required | a minimum mining fee a buyer has to pay to accept the offer                                  |
 
@@ -194,7 +194,7 @@ $ omnicore-cli "omni_sendnewdexorder" "37FaKponF7zqoMLUjEiko25pDiuVH5YLEa" 1 "1.
 
 ### omni_sendupdatedexorder
 
-Updates an existing sell offer on the distributed token/BTC exchange.
+Updates an existing sell offer on the distributed token/FTC exchange.
 
 **Arguments:**
 
@@ -203,7 +203,7 @@ Updates an existing sell offer on the distributed token/BTC exchange.
 | `fromaddress`       | string  | required | the address to send from                                                                     |
 | `propertyidforsale` | number  | required | the identifier of the tokens to update                                                       |
 | `amountforsale`     | string  | required | the new amount of tokens to list for sale                                                    |
-| `amountdesired`     | string  | required | the new amount of bitcoins desired                                                           |
+| `amountdesired`     | string  | required | the new amount of feathercoins desired                                                           |
 | `paymentwindow`     | number  | required | a new time limit in blocks a buyer has to pay following a successful accepting order         |
 | `minacceptfee`      | string  | required | a new minimum mining fee a buyer has to pay to accept the offer                              |
 
@@ -222,7 +222,7 @@ $ omnicore-cli "omni_sendupdatedexorder" "37FaKponF7zqoMLUjEiko25pDiuVH5YLEa" 1 
 
 ### omni_sendcanceldexorder
 
-Cancels existing sell offer on the distributed token/BTC exchange.
+Cancels existing sell offer on the distributed token/FTC exchange.
 
 **Arguments:**
 
@@ -275,6 +275,9 @@ $ omnicore-cli "omni_senddexaccept" \
 
 Create and broadcast payment for an accept offer.
 
+Please note:
+Partial purchases are not possible and the whole accepted amount must be paid.
+
 **Arguments:**
 
 | Name                | Type    | Presence | Description                                                                                  |
@@ -282,7 +285,7 @@ Create and broadcast payment for an accept offer.
 | `fromaddress`       | string  | required | the address to send from                                                                     |
 | `toaddress`         | string  | required | the address of the seller                                                                    |
 | `propertyid`        | number  | required | the identifier of the token to purchase                                                      |
-| `amount`            | string  | required | the Bitcoin amount to send                                                                   |
+| `amount`            | string  | required | the Feathercoin amount to send                                                                   |
 
 **Result:**
 ```js
@@ -330,7 +333,7 @@ Create new tokens as crowdsale.
 
 ```bash
 $ omnicore-cli "omni_sendissuancecrowdsale" \
-    "3JYd75REX3HXn1vAU83YuGfmiPXW7BpYXo" 2 1 0 "Companies" "Bitcoin Mining" \
+    "3JYd75REX3HXn1vAU83YuGfmiPXW7BpYXo" 2 1 0 "Companies" "Feathercoin Mining" \
     "Quantum Miner" "" "" 2 "100" 1483228800 30 2
 ```
 
@@ -364,7 +367,7 @@ Create new tokens with fixed supply.
 
 ```bash
 $ omnicore-cli "omni_sendissuancefixed" \
-    "3Ck2kEGLJtZw9ENj2tameMCtS3HB7uRar3" 2 1 0 "Companies" "Bitcoin Mining" \
+    "3Ck2kEGLJtZw9ENj2tameMCtS3HB7uRar3" 2 1 0 "Companies" "Feathercoin Mining" \
     "Quantum Miner" "" "" "1000000"
 ```
 
@@ -397,7 +400,7 @@ Create new tokens with manageable supply.
 
 ```bash
 $ omnicore-cli "omni_sendissuancemanaged" \
-    "3HsJvhr9qzgRe3ss97b1QHs38rmaLExLcH" 2 1 0 "Companies" "Bitcoin Mining" "Quantum Miner" "" ""
+    "3HsJvhr9qzgRe3ss97b1QHs38rmaLExLcH" 2 1 0 "Companies" "Feathercoin Mining" "Quantum Miner" "" ""
 ```
 
 ---
@@ -545,7 +548,7 @@ Transfers all available tokens in the given ecosystem to the recipient.
 | `toaddress  `       | string  | required | the address of the receiver                                                                  |
 | `ecosystem`         | number  | required | the ecosystem of the tokens to send (`1` for main ecosystem, `2` for test ecosystem)         |
 | `redeemaddress`     | string  | optional | an address that can spend the transaction dust (sender by default)                           |
-| `referenceamount`   | string  | optional | a bitcoin amount that is sent to the receiver (minimal by default)                           |
+| `referenceamount`   | string  | optional | a feathercoin amount that is sent to the receiver (minimal by default)                           |
 
 **Result:**
 ```js
@@ -709,7 +712,7 @@ Broadcasts a raw Omni Layer transaction.
 | `rawtransaction`    | string  | required | the hex-encoded raw transaction                                                              |
 | `referenceaddress`  | string  | optional | a reference address (none by default)                                                        |
 | `redeemaddress`     | string  | optional | an address that can spend the transaction dust (sender by default)                           |
-| `referenceamount`   | string  | optional | a bitcoin amount that is sent to the receiver (minimal by default)                           |
+| `referenceamount`   | string  | optional | a feathercoin amount that is sent to the receiver (minimal by default)                           |
 
 **Result:**
 ```js
@@ -730,7 +733,7 @@ $ omnicore-cli "omni_sendrawtx" \
 
 Creates and sends a funded simple send transaction.
 
-All bitcoins from the sender are consumed and if there are bitcoins missing, they are taken from the specified fee source. Change is sent to the fee source!
+All feathercoins from the sender are consumed and if there are feathercoins missing, they are taken from the specified fee source. Change is sent to the fee source!
 
 **Arguments:**
 
@@ -761,7 +764,7 @@ $ omnicore-cli "omni_funded_send" "1DFa5bT6KMEr6ta29QJouainsjaNBsJQhH" \
 
 Creates and sends a transaction that transfers all available tokens in the given ecosystem to the recipient.
 
-All bitcoins from the sender are consumed and if there are bitcoins missing, they are taken from the specified fee source. Change is sent to the fee source!
+All feathercoins from the sender are consumed and if there are feathercoins missing, they are taken from the specified fee source. Change is sent to the fee source!
 
 **Arguments:**
 
@@ -805,8 +808,7 @@ Result:
 {
   "omnicoreversion_int" : xxxxxxx,      // (number) client version as integer
   "omnicoreversion" : "x.x.x.x-xxx",    // (string) client version
-  "bitcoincoreversion" : "x.x.x",       // (string) Bitcoin Core version
-  "commitinfo" : "xxxxxxx",             // (string) build commit identifier
+  "feathercoincoreversion" : "x.x.x",       // (string) Feathercoin Core version
   "block" : nnnnnn,                     // (number) index of the last processed block
   "blocktime" : nnnnnnnnnn,             // (number) timestamp of the last processed block
   "blocktransactions" : nnnn,           // (number) Omni transactions found in the last processed block
@@ -1007,11 +1009,11 @@ Get detailed information about an Omni transaction.
 ```js
 {
   "txid" : "hash",                 // (string) the hex-encoded hash of the transaction
-  "sendingaddress" : "address",    // (string) the Bitcoin address of the sender
-  "referenceaddress" : "address",  // (string) a Bitcoin address used as reference (if any)
+  "sendingaddress" : "address",    // (string) the Feathercoin address of the sender
+  "referenceaddress" : "address",  // (string) a Feathercoin address used as reference (if any)
   "ismine" : true|false,           // (boolean) whether the transaction involes an address in the wallet
   "confirmations" : nnnnnnnnnn,    // (number) the number of transaction confirmations
-  "fee" : "n.nnnnnnnn",            // (string) the transaction fee in bitcoins
+  "fee" : "n.nnnnnnnn",            // (string) the transaction fee in feathercoins
   "blocktime" : nnnnnnnnnn,        // (number) the timestamp of the block that contains the transaction
   "valid" : true|false,            // (boolean) whether the transaction is valid
   "positioninblock" : n,           // (number) the position (index) of the transaction within the block
@@ -1049,11 +1051,11 @@ List wallet transactions, optionally filtered by an address and block boundaries
 [                                // (array of JSON objects)
   {
     "txid" : "hash",                 // (string) the hex-encoded hash of the transaction
-    "sendingaddress" : "address",    // (string) the Bitcoin address of the sender
-    "referenceaddress" : "address",  // (string) a Bitcoin address used as reference (if any)
+    "sendingaddress" : "address",    // (string) the Feathercoin address of the sender
+    "referenceaddress" : "address",  // (string) a Feathercoin address used as reference (if any)
     "ismine" : true|false,           // (boolean) whether the transaction involves an address in the wallet
     "confirmations" : nnnnnnnnnn,    // (number) the number of transaction confirmations
-    "fee" : "n.nnnnnnnn",            // (string) the transaction fee in bitcoins
+    "fee" : "n.nnnnnnnn",            // (string) the transaction fee in feathercoins
     "blocktime" : nnnnnnnnnn,        // (number) the timestamp of the block that contains the transaction
     "valid" : true|false,            // (boolean) whether the transaction is valid
     "positioninblock" : n,           // (number) the position (index) of the transaction within the block
@@ -1146,10 +1148,10 @@ Note: the validity of pending transactions is uncertain, and the state of the me
 [                                // (array of JSON objects)
   {
     "txid" : "hash",                 // (string) the hex-encoded hash of the transaction
-    "sendingaddress" : "address",    // (string) the Bitcoin address of the sender
-    "referenceaddress" : "address",  // (string) a Bitcoin address used as reference (if any)
+    "sendingaddress" : "address",    // (string) the Feathercoin address of the sender
+    "referenceaddress" : "address",  // (string) a Feathercoin address used as reference (if any)
     "ismine" : true|false,           // (boolean) whether the transaction involes an address in the wallet
-    "fee" : "n.nnnnnnnn",            // (string) the transaction fee in bitcoins
+    "fee" : "n.nnnnnnnn",            // (string) the transaction fee in feathercoins
     "version" : n,                   // (number) the transaction version
     "type_int" : n,                  // (number) the transaction type as number
     "type" : "type",                 // (string) the transaction type as string
@@ -1183,20 +1185,20 @@ Returns currently active offers on the distributed exchange.
   {
     "txid" : "hash",                   // (string) the hash of the transaction of this offer
     "propertyid" : n,                  // (number) the identifier of the tokens for sale
-    "seller" : "address",              // (string) the Bitcoin address of the seller
+    "seller" : "address",              // (string) the Feathercoin address of the seller
     "amountavailable" : "n.nnnnnnnn",  // (string) the number of tokens still listed for sale and currently available
-    "bitcoindesired" : "n.nnnnnnnn",   // (string) the number of bitcoins desired in exchange
-    "unitprice" : "n.nnnnnnnn" ,       // (string) the unit price (BTC/token)
+    "feathercoindesired" : "n.nnnnnnnn",   // (string) the number of feathercoins desired in exchange
+    "unitprice" : "n.nnnnnnnn" ,       // (string) the unit price (FTC/token)
     "timelimit" : nn,                  // (number) the time limit in blocks a buyer has to pay following a successful accept
     "minimumfee" : "n.nnnnnnnn",       // (string) the minimum mining fee a buyer has to pay to accept this offer
     "amountaccepted" : "n.nnnnnnnn",   // (string) the number of tokens currently reserved for pending "accept" orders
     "accepts": [                       // (array of JSON objects) a list of pending "accept" orders
       {
-        "buyer" : "address",               // (string) the Bitcoin address of the buyer
+        "buyer" : "address",               // (string) the Feathercoin address of the buyer
         "block" : nnnnnn,                  // (number) the index of the block that contains the "accept" order
         "blocksleft" : nn,                 // (number) the number of blocks left to pay
         "amount" : "n.nnnnnnnn"            // (string) the amount of tokens accepted and reserved
-        "amounttopay" : "n.nnnnnnnn"       // (string) the amount in bitcoins needed finalize the trade
+        "amounttopay" : "n.nnnnnnnn"       // (string) the amount in feathercoins needed finalize the trade
       },
       ...
     ]
@@ -1234,7 +1236,7 @@ To get the total number of tokens, please use omni_getproperty.
     "data" : "information",         // (string) additional information or a description
     "url" : "uri",                  // (string) an URI, for example pointing to a website
     "divisible" : true|false        // (boolean) whether the tokens are divisible
-    "issuer" : "address",           // (string) the Bitcoin address of the issuer on record
+    "issuer" : "address",           // (string) the Feathercoin address of the issuer on record
     "creationtxid" : "hash",        // (string) the hex-encoded creation transaction hash
     "fixedissuance" : true|false,   // (boolean) whether the token supply is fixed
     "managedissuance" : true|false, // (boolean) whether the token supply is managed by the issuer
@@ -1271,7 +1273,7 @@ Returns details for about the tokens or smart property to lookup.
   "data" : "information",         // (string) additional information or a description
   "url" : "uri",                  // (string) an URI, for example pointing to a website
   "divisible" : true|false,       // (boolean) whether the tokens are divisible
-  "issuer" : "address",           // (string) the Bitcoin address of the issuer on record
+  "issuer" : "address",           // (string) the Feathercoin address of the issuer on record
   "creationtxid" : "hash",        // (string) the hex-encoded creation transaction hash
   "fixedissuance" : true|false,   // (boolean) whether the token supply is fixed
   "managedissuance" : true|false, // (boolean) whether the token supply is managed by the issuer
@@ -1302,7 +1304,7 @@ Lists currently active crowdsales.
   {
     "propertyid" : n,                // (number) the identifier of the crowdsale
     "name" : "name",                 // (string) the name of the tokens issued via the crowdsale
-    "issuer" : "address",            // (string) the Bitcoin address of the issuer on record
+    "issuer" : "address",            // (string) the Feathercoin address of the issuer on record
     "propertyiddesired" : n,         // (number) the identifier of the tokens eligible to participate in the crowdsale
     "tokensperunit" : "n.nnnnnnnn",  // (string) the amount of tokens granted per unit invested in the crowdsale
     "earlybonus" : n,                // (number) an early bird bonus for participants in percent per week
@@ -1339,7 +1341,7 @@ Returns information about a crowdsale.
   "propertyid" : n,                    // (number) the identifier of the crowdsale
   "name" : "name",                     // (string) the name of the tokens issued via the crowdsale
   "active" : true|false,               // (boolean) whether the crowdsale is still active
-  "issuer" : "address",                // (string) the Bitcoin address of the issuer on record
+  "issuer" : "address",                // (string) the Feathercoin address of the issuer on record
   "propertyiddesired" : n,             // (number) the identifier of the tokens eligible to participate in the crowdsale
   "tokensperunit" : "n.nnnnnnnn",      // (string) the amount of tokens granted per unit invested in the crowdsale
   "earlybonus" : n,                    // (number) an early bird bonus for participants in percent per week
@@ -1387,7 +1389,7 @@ Returns information about granted and revoked units of managed tokens.
 {
   "propertyid" : n,              // (number) the identifier of the managed tokens
   "name" : "name",               // (string) the name of the tokens
-  "issuer" : "address",          // (string) the Bitcoin address of the issuer on record
+  "issuer" : "address",          // (string) the Feathercoin address of the issuer on record
   "creationtxid" : "hash",       // (string) the hex-encoded creation transaction hash
   "totaltokens" : "n.nnnnnnnn",  // (string) the total number of tokens in existence
   "issuances": [                 // (array of JSON objects) a list of the granted and revoked tokens
@@ -1433,10 +1435,10 @@ Get information and recipients of a send-to-owners transaction.
 ```js
 {
   "txid" : "hash",               // (string) the hex-encoded hash of the transaction
-  "sendingaddress" : "address",  // (string) the Bitcoin address of the sender
+  "sendingaddress" : "address",  // (string) the Feathercoin address of the sender
   "ismine" : true|false,         // (boolean) whether the transaction involes an address in the wallet
   "confirmations" : nnnnnnnnnn,  // (number) the number of transaction confirmations
-  "fee" : "n.nnnnnnnn",          // (string) the transaction fee in bitcoins
+  "fee" : "n.nnnnnnnn",          // (string) the transaction fee in feathercoins
   "blocktime" : nnnnnnnnnn,      // (number) the timestamp of the block that contains the transaction
   "valid" : true|false,          // (boolean) whether the transaction is valid
   "positioninblock" : n,         // (number) the position (index) of the transaction within the block
@@ -1449,7 +1451,7 @@ Get information and recipients of a send-to-owners transaction.
   "totalstofee" : "n.nnnnnnnn",  // (string) the fee paid by the sender, nominated in OMN or TOMN
   "recipients": [                // (array of JSON objects) a list of recipients
     {
-      "address" : "address",         // (string) the Bitcoin address of the recipient
+      "address" : "address",         // (string) the Feathercoin address of the recipient
       "amount" : "n.nnnnnnnn"        // (string) the number of tokens sent to this recipient
     },
     ...
@@ -1835,9 +1837,9 @@ The format of `prevtxs` is as following:
 ```js
 {
   "txid" : "hash",                 // (string) the hex-encoded hash of the transaction
-  "fee" : "n.nnnnnnnn",            // (string) the transaction fee in bitcoins
-  "sendingaddress" : "address",    // (string) the Bitcoin address of the sender
-  "referenceaddress" : "address",  // (string) a Bitcoin address used as reference (if any)
+  "fee" : "n.nnnnnnnn",            // (string) the transaction fee in feathercoins
+  "sendingaddress" : "address",    // (string) the Feathercoin address of the sender
+  "referenceaddress" : "address",  // (string) a Feathercoin address used as reference (if any)
   "ismine" : true|false,           // (boolean) whether the transaction involes an address in the wallet
   "version" : n,                   // (number) the transaction version
   "type_int" : n,                  // (number) the transaction type as number
@@ -2090,7 +2092,7 @@ $ omnicore-cli "omni_createpayload_sendall" 2
 
 ### omni_createpayload_dexsell
 
-Create a payload to place, update or cancel a sell offer on the traditional distributed OMNI/BTC exchange.
+Create a payload to place, update or cancel a sell offer on the distributed exchange.
 
 **Arguments:**
 
@@ -2098,7 +2100,7 @@ Create a payload to place, update or cancel a sell offer on the traditional dist
 |---------------------|---------|----------|----------------------------------------------------------------------------------------------|
 | `propertyidforsale` | number  | required | the identifier of the tokens to list for sale (must be 1 for OMN or 2 for TOMN)              |
 | `amountforsale`     | string  | required | the amount of tokens to list for sale                                                        |
-| `amountdesired`     | string  | required | the amount of bitcoins desired                                                               |
+| `amountdesired`     | string  | required | the amount of feathercoins desired                                                               |
 | `paymentwindow`     | number  | required | a time limit in blocks a buyer has to pay following a successful accepting order             |
 | `minacceptfee`      | string  | required | a minimum mining fee a buyer has to pay to accept the offer                                  |
 | `action`            | number  | required | the action to take (1 for new offers, 2 to update\", 3 to cancel)                            |
@@ -2195,7 +2197,7 @@ Creates the payload for a new tokens issuance with fixed supply.
 **Example:**
 
 ```bash
-$ omnicore-cli "omni_createpayload_issuancefixed" 2 1 0 "Companies" "Bitcoin Mining" "Quantum Miner" "" "" "1000000"
+$ omnicore-cli "omni_createpayload_issuancefixed" 2 1 0 "Companies" "Feathercoin Mining" "Quantum Miner" "" "" "1000000"
 ```
 
 ---
@@ -2230,7 +2232,7 @@ Creates the payload for a new tokens issuance with crowdsale.
 **Example:**
 
 ```bash
-$ omnicore-cli "omni_createpayload_issuancecrowdsale" 2 1 0 "Companies" "Bitcoin Mining" "Quantum Miner" "" "" 2 "100" 1483228800 30 2
+$ omnicore-cli "omni_createpayload_issuancecrowdsale" 2 1 0 "Companies" "Feathercoin Mining" "Quantum Miner" "" "" 2 "100" 1483228800 30 2
 ```
 
 ---
@@ -2260,7 +2262,7 @@ Creates the payload for a new tokens issuance with manageable supply.
 **Example:**
 
 ```bash
-$ omnicore-cli "omni_createpayload_issuancemanaged" 2 1 0 "Companies" "Bitcoin Mining" "Quantum Miner" "" ""
+$ omnicore-cli "omni_createpayload_issuancemanaged" 2 1 0 "Companies" "Feathercoin Mining" "Quantum Miner" "" ""
 ```
 
 ---
@@ -2361,34 +2363,6 @@ Creates the payload to change the issuer on record of the given tokens.
 
 ```bash
 $ omnicore-cli "omni_createpayload_changeissuer" 3
-```
-
----
-
-### omni_createpayload_trade
-
-Creates the payload to place a trade offer on the distributed token exchange.
-
-Note: if the server is not synchronized, amounts are considered as divisible, even if the token may have indivisible units!
-
-**Arguments:**
-
-| Name                | Type    | Presence | Description                                                                                  |
-|---------------------|---------|----------|----------------------------------------------------------------------------------------------|
-| `propertyidforsale` | number  | required | the identifier of the tokens to list for sale                                                |
-| `amountforsale`     | string  | required | the amount of tokens to list for sale                                                        |
-| `propertyiddesired` | number  | required | the identifier of the tokens desired in exchange                                             |
-| `amountdesired`     | string  | required | the amount of tokens desired in exchange                                                     |
-
-**Result:**
-```js
-"payload"  // (string) the hex-encoded payload
-```
-
-**Example:**
-
-```bash
-$ omnicore-cli "omni_createpayload_trade" 31 "250.0" 1 "10.0"
 ```
 
 ---
@@ -2518,6 +2492,183 @@ $ omnicore-cli "omni_createpayload_anydata" "646578782032303230"
 
 ---
 
+## Fee system
+
+The RPCs for the fee system can be used to obtain data about the fee system and fee distributions.
+
+### omni_getfeecache
+
+Obtains the current amount of fees cached (pending distribution).
+
+If a property ID is supplied the results will be filtered to show this property ID only.  If no property ID is supplied the results will contain all properties that currently have fees cached pending distribution.
+
+**Arguments:**
+
+| Name                | Type    | Presence | Description                                                                                  |
+|---------------------|---------|----------|----------------------------------------------------------------------------------------------|
+| `propertyid`        | number  | optional | the identifier of the property to filter results on                                          |
+
+**Result:**
+```js
+[                                  // (array of JSON objects)
+  {
+    "propertyid" : nnnnnnn,        // (number) the property id
+    "cachedfees" : "n.nnnnnnnn",   // (string) the amount of fees cached for this property
+  },
+...
+]
+```
+
+**Example:**
+
+```bash
+$ omnicore-cli "omni_getfeecache" 31
+```
+
+---
+
+### omni_getfeetrigger
+
+Obtains the amount at which cached fees will be distributed.
+
+If a property ID is supplied the results will be filtered to show this property ID only.  If no property ID is supplied the results will contain all properties.
+
+**Arguments:**
+
+| Name                | Type    | Presence | Description                                                                                  |
+|---------------------|---------|----------|----------------------------------------------------------------------------------------------|
+| `propertyid`        | number  | optional | the identifier of the property to filter results on                                          |
+
+**Result:**
+```js
+[                                  // (array of JSON objects)
+  {
+    "propertyid" : nnnnnnn,        // (number) the property id
+    "feetrigger" : "n.nnnnnnnn",   // (string) the amount of fees required to trigger distribution
+  },
+...
+]
+```
+
+**Example:**
+
+```bash
+$ omnicore-cli "omni_getfeetrigger" 31
+```
+
+---
+
+### omni_getfeeshare
+
+Obtains the current percentage share of fees addresses would receive if a distribution were to occur.
+
+If an address is supplied the results will be filtered to show this address only.  If no address is supplied the results will be filtered to show wallet addresses only.  If a wildcard is provided (```"*"```) the results will contain all addresses that would receive a share.
+
+If an ecosystem is supplied the results will reflect the fee share for that ecosystem (main or test).  If no ecosystem is supplied the results will reflect the main ecosystem.
+
+**Arguments:**
+
+| Name                | Type    | Presence | Description                                                                                  |
+|---------------------|---------|----------|----------------------------------------------------------------------------------------------|
+| `address`           | string  | optional | the address to filter results on                                                             |
+| `ecosystem`         | number  | optional | the ecosystem to obtain the current percentage fee share (1 = main, 2 = test)                |
+
+**Result:**
+```js
+[                                  // (array of JSON objects)
+  {
+    "address" : "address"          // (string) the address that would receive a share of fees
+    "feeshare" : "n.nnnn%",        // (string) the percentage of fees this address will receive based on the current state
+  },
+...
+]
+```
+
+**Example:**
+
+```bash
+$ omnicore-cli "omni_getfeeshare" "1CE8bBr1dYZRMnpmyYsFEoexa1YoPz2mfB" 1
+```
+
+---
+
+### omni_getfeedistribution
+
+Obtains data for a past distribution of fees.
+
+A distribution ID must be supplied to identify the distribution to obtain data for.
+
+**Arguments:**
+
+| Name                | Type    | Presence | Description                                                                                  |
+|---------------------|---------|----------|----------------------------------------------------------------------------------------------|
+| `distributionid`    | number  | required | the identifier of the distribution to obtain data for                                        |
+
+**Result:**
+```js
+{
+  "distributionid" : n,            // (number) the distribution id
+  "propertyid" : n,                // (number) the property id of the distributed tokens
+  "block" : n,                     // (number) the block the distribution occurred
+  "amount" : "n.nnnnnnnn",         // (string) the amount that was distributed
+  "recipients": [                  // (array of JSON objects) a list of recipients
+    {
+      "address" : "address",       // (string) the address of the recipient
+      "amount" : "n.nnnnnnnn"      // (string) the amount of fees received by the recipient
+    },
+    ...
+  ]
+}
+```
+
+**Example:**
+
+```bash
+$ omnicore-cli "omni_getfeedistribution" 1
+```
+
+---
+
+### omni_getfeedistributions
+
+Obtains data for past distributions of fees for a property.
+
+A property ID must be supplied to retrieve past distributions for.
+
+**Arguments:**
+
+| Name                | Type    | Presence | Description                                                                                  |
+|---------------------|---------|----------|----------------------------------------------------------------------------------------------|
+| `propertyid`        | number  | required | the identifier of the property to retrieve past distributions for                            |
+
+**Result:**
+```js
+[                                  // (array of JSON objects)
+  {
+    "distributionid" : n,          // (number) the distribution id
+    "propertyid" : n,              // (number) the property id of the distributed tokens
+    "block" : n,                   // (number) the block the distribution occurred
+    "amount" : "n.nnnnnnnn",       // (string) the amount that was distributed
+    "recipients": [                // (array of JSON objects) a list of recipients
+      {
+        "address" : "address",       // (string) the address of the recipient
+        "amount" : "n.nnnnnnnn"      // (string) the amount of fees received by the recipient
+      },
+      ...
+    ]
+  },
+  ...
+]
+```
+
+**Example:**
+
+```bash
+$ omnicore-cli "omni_getfeedistributions" 31
+```
+
+---
+
 ## Configuration
 
 The RPCs for the configuration can be used to alter Omni Core settings.
@@ -2542,3 +2693,29 @@ true|false  // (boolean) the updated flag status
 ```bash
 $ omnicore-cli "omni_setautocommit" false
 ```
+
+---
+
+## Deprecated API calls
+
+To ensure backwards compatibility, deprecated RPCs are kept for at least one major version.
+
+The following calls are replaced in Omni Core 0.0.10, and queries with the old command are forwarded.
+
+- `send_MP` by `omni_send`
+- `sendtoowners_MP` by `omni_sendsto`
+- `sendrawtx_MP` by `omni_sendrawtx`
+- `getinfo_MP` by `omni_getinfo`
+- `getbalance_MP` by `omni_getbalance`
+- `getallbalancesforid_MP` by `omni_getallbalancesforid`
+- `getallbalancesforaddress_MP` by `omni_getallbalancesforaddress`
+- `gettransaction_MP` by `omni_gettransaction`
+- `listtransactions_MP` by `omni_listtransactions`
+- `listblocktransactions_MP` by `omni_listblocktransactions`
+- `getactivedexsells_MP` by `omni_getactivedexsells`
+- `listproperties_MP` by `omni_listproperties`
+- `getproperty_MP` by `omni_getproperty`
+- `getactivecrowdsales_MP` by `omni_getactivecrowdsales`
+- `getcrowdsale_MP` by `omni_getcrowdsale`
+- `getgrants_MP` by `omni_getgrants`
+- `getsto_MP` by `omni_getsto` or `omni_gettransaction`
