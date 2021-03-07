@@ -15,6 +15,8 @@ const uint16_t FEATURE_STOV1 = 10;
 const uint16_t FEATURE_FREEZENOTICE = 14;
 //! Feature identifier to activate trading of any token on the distributed exchange
 const uint16_t FEATURE_FREEDEX = 15;
+//! Feature identifier to enable non-fungible token support
+const uint16_t FEATURE_NONFUNGIBLE = 16;
 
 /** A structure to represent transaction restrictions.
  */
@@ -90,6 +92,8 @@ public:
     int MSC_STOV1_BLOCK;
     //! Block to enable any data payloads
     int MSC_ANYDATA_BLOCK;
+    //! Block to enable non-fungible tokens
+    int MSC_NONFUNGIBLE_BLOCK;
 
     //! Block to activate the waiting period for enabling managed property address freezing
     int FREEZENOTICE_FEATURE_BLOCK;

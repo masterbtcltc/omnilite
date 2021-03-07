@@ -62,6 +62,7 @@ EXPECTED_CIRCULAR_DEPENDENCIES=(
     "omnicore/dex -> omnicore/omnicore -> omnicore/persistence -> omnicore/dex"
     "omnicore/omnicore -> omnicore/tx -> omnicore/sto -> omnicore/omnicore"
     "txdb -> validation -> txdb"
+    "omnicore/nftdb -> omnicore/omnicore -> omnicore/tx -> omnicore/nftdb"
 )
 
 EXIT_CODE=0

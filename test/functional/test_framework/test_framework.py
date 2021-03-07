@@ -513,6 +513,7 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                 os.rmdir(cache_path(i, 'wallets'))  # Remove empty wallets dir
                 # Remove Omni specific dirs
                 shutil.rmtree(cache_path(i, 'Omni_TXDB'))
+                shutil.rmtree(cache_path(i, 'OMNI_nftdb'))
                 shutil.rmtree(cache_path(i, 'MP_persist'))
                 shutil.rmtree(cache_path(i, 'MP_spinfo'))
                 shutil.rmtree(cache_path(i, 'MP_stolist'))

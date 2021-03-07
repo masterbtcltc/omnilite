@@ -118,6 +118,8 @@ CMPTxList* mastercore::pDbTransactionList;
 CMPSTOList* mastercore::pDbStoList;
 //! LevelDB based storage for storing Omni transaction validation and position in block data
 COmniTransactionDB* mastercore::pDbTransaction;
+//! LevelDB based storage for UITs
+CMPNonFungibleTokensDB *mastercore::pDbNFT;
 
 //! In-memory collection of DEx offers
 OfferMap mastercore::my_offers;
@@ -1462,6 +1464,7 @@ void clear_all_state()
     pDbTransactionList->Clear();
     pDbStoList->Clear();
     pDbTransaction->Clear();
+    pDbNFT->Clear();
     assert(pDbTransactionList->setDBVersion() == DB_VERSION); // new set of databases, set DB version
 }
 
@@ -1558,11 +1561,13 @@ int mastercore_init()
                 fs::path spPath = GetDataDir() / "MP_spinfo";
                 fs::path stoPath = GetDataDir() / "MP_stolist";
                 fs::path omniTXDBPath = GetDataDir() / "Omni_TXDB";
+                fs::path nftdbPath = GetDataDir() / "OMNI_nftdb";
                 if (fs::exists(persistPath)) fs::remove_all(persistPath);
                 if (fs::exists(txlistPath)) fs::remove_all(txlistPath);
                 if (fs::exists(spPath)) fs::remove_all(spPath);
                 if (fs::exists(stoPath)) fs::remove_all(stoPath);
                 if (fs::exists(omniTXDBPath)) fs::remove_all(omniTXDBPath);
+                if (fs::exists(nftdbPath)) fs::remove_all(nftdbPath);
                 PrintToLog("Success clearing persistence files in datadir %s\n", GetDataDir().string());
                 startClean = true;
             } catch (const fs::filesystem_error& e) {
@@ -1575,6 +1580,7 @@ int mastercore_init()
         pDbTransactionList = new CMPTxList(GetDataDir() / "MP_txlist", fReindex);
         pDbSpInfo = new CMPSPInfo(GetDataDir() / "MP_spinfo", fReindex);
         pDbTransaction = new COmniTransactionDB(GetDataDir() / "Omni_TXDB", fReindex);
+        pDbNFT = new CMPNonFungibleTokensDB(GetDataDir() / "OMNI_nftdb", fReindex);
 
         pathStateFiles = GetDataDir() / "MP_persist";
         TryCreateDirectories(pathStateFiles);
@@ -1893,6 +1899,9 @@ int mastercore_handler_block_end(int nBlockNow, CBlockIndex const * pBlockIndex,
             uint256 consensusHash = GetConsensusHash();
             PrintToLog("Consensus hash for block %d: %s\n", nBlockNow, consensusHash.GetHex());
         }
+
+        // request nftdb sanity check
+        pDbNFT->SanityCheck();
 
         // request checkpoint verification
         checkpointValid = VerifyCheckpoint(nBlockNow, pBlockIndex->GetBlockHash());

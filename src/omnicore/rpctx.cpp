@@ -7,6 +7,7 @@
 #include <omnicore/createpayload.h>
 #include <omnicore/dex.h>
 #include <omnicore/errors.h>
+#include <omnicore/nftdb.h>
 #include <omnicore/omnicore.h>
 #include <omnicore/pending.h>
 #include <omnicore/rpcrequirements.h>
@@ -298,6 +299,145 @@ static UniValue omni_sendall(const JSONRPCRequest& request)
         }
     }
 }
+
+static UniValue omni_sendnonfungible(const JSONRPCRequest& request)
+{
+    std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
+    std::unique_ptr<interfaces::Wallet> pwallet = interfaces::MakeWallet(wallet);
+
+    if (request.fHelp || request.params.size() < 5 || request.params.size() > 7)
+        throw runtime_error(
+            RPCHelpMan{"omni_sendnonfungible",
+               "\nCreate and broadcast a non-fungible send transaction.\n",
+               {
+                   {"address", RPCArg::Type::STR, RPCArg::Optional::NO, "the address to send from"},
+                   {"toaddress", RPCArg::Type::STR, RPCArg::Optional::NO, "the address of the receiver"},
+                   {"propertyid", RPCArg::Type::NUM, RPCArg::Optional::NO, "the identifier of the tokens to send"},
+                   {"tokenstart", RPCArg::Type::NUM, RPCArg::Optional::NO, "the first token in the range to send"},
+                   {"tokenend", RPCArg::Type::NUM, RPCArg::Optional::NO, "the last token in the range to send"},
+                   {"redeemaddress", RPCArg::Type::STR, RPCArg::Optional::OMITTED_NAMED_ARG, "an address that can spend the transaction dust (sender by default)"},
+                   {"referenceamount", RPCArg::Type::STR, RPCArg::Optional::OMITTED_NAMED_ARG, "a bitcoin amount that is sent to the receiver (minimal by default)"},
+               },
+               RPCResult{
+                   "\"payload\" : \"payload\"        (string) the hex-encoded payload"
+               },
+               RPCExamples{
+                   HelpExampleCli("omni_sendnonfungible", "\"3M9qvHKtgARhqcMtM5cRT9VaiDJ5PSfQGY\" \"37FaKponF7zqoMLUjEiko25pDiuVH5YLEa\" 70 1 1000")
+                   + HelpExampleRpc("omni_sendnonfungible", "\"3M9qvHKtgARhqcMtM5cRT9VaiDJ5PSfQGY\", \"37FaKponF7zqoMLUjEiko25pDiuVH5YLEa\", 70, 1, 1000")
+               }
+            }.ToString());
+
+    std::string fromAddress = ParseAddress(request.params[0]);
+    std::string toAddress = ParseAddress(request.params[1]);
+    uint32_t propertyId = ParsePropertyId(request.params[2]);
+    int64_t tokenStart = request.params[3].get_int64(); // non-fungible tokens are always indivisible
+    int64_t tokenEnd =  request.params[4].get_int64();
+    int64_t uniqueTokenAmount = (tokenEnd - tokenStart)+1;
+    std::string redeemAddress = (request.params.size() > 5 && !ParseText(request.params[5]).empty()) ? ParseAddress(request.params[5]): "";
+    int64_t referenceAmount = (request.params.size() > 6) ? ParseAmount(request.params[6], true): 0;
+
+    // perform checks
+    RequireExistingProperty(propertyId);
+    RequireBalance(fromAddress, propertyId, uniqueTokenAmount);
+    RequireNonFungibleTokenOwner(fromAddress, propertyId, tokenStart, tokenEnd);
+    RequireSaneNonFungibleRange(tokenStart, tokenEnd);
+    RequireSaneReferenceAmount(referenceAmount);
+
+    // create a payload for the transaction
+    std::vector<unsigned char> payload = CreatePayload_SendNonFungible(propertyId, tokenStart, tokenEnd);
+
+    // request the wallet build the transaction (and if needed commit it)
+    uint256 txid;
+    std::string rawHex;
+    int result = WalletTxBuilder(fromAddress, toAddress, redeemAddress, referenceAmount, payload, txid, rawHex, autoCommit, pwallet.get());
+
+    // check error and return the txid (or raw hex depending on autocommit)
+    if (result != 0) {
+        throw JSONRPCError(result, error_str(result));
+    } else {
+        if (!autoCommit) {
+            return rawHex;
+        } else {
+            PendingAdd(txid, fromAddress, MSC_TYPE_SEND_NONFUNGIBLE, propertyId, uniqueTokenAmount);
+            return txid.GetHex();
+        }
+    }
+}
+
+// sets data for a specific token
+static UniValue omni_setnonfungibledata(const JSONRPCRequest& request)
+{
+    std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
+    std::unique_ptr<interfaces::Wallet> pwallet = interfaces::MakeWallet(wallet);
+
+    if (request.fHelp || request.params.size() != 5)
+        throw runtime_error(
+            RPCHelpMan{"omni_setnonfungibledata",
+                "\nSets either the issuer or holder data field in a non-fungible tokem. Holder data can only be\n"
+                "updated by the token owner and issuer data can only be updated by address that created the tokens.",
+                {
+                    {"propertyid", RPCArg::Type::NUM, RPCArg::Optional::NO, "the property identifier"},
+                    {"tokenstart", RPCArg::Type::NUM, RPCArg::Optional::NO, "the first token in the range to set data on"},
+                    {"tokenend", RPCArg::Type::NUM, RPCArg::Optional::NO, "the last token in the range to set data on"},
+                    {"issuer", RPCArg::Type::BOOL, RPCArg::Optional::NO, "if true issuer data set, otherwise holder data set"},
+                    {"data", RPCArg::Type::STR, RPCArg::Optional::NO, "data set as in either issuer or holder fields"},
+                },
+                RPCResult{
+                    "\"payload\" : \"payload\"        (string) the hex-encoded payload"
+                },
+                RPCExamples{
+                    HelpExampleCli("omni_setnonfungibledata", "70 50 60 true \"string data\"")
+                    + HelpExampleRpc("omni_setnonfungibledata", "70, 55, 60, true, \"string data\"")
+                }
+            }.ToString());
+
+    uint32_t propertyId = ParsePropertyId(request.params[0]);
+    uint64_t tokenStart = request.params[1].get_int64();
+    int64_t tokenEnd =  request.params[2].get_int64();
+    bool issuer = request.params[3].isNum() ? (request.params[3].get_int() != 0) : request.params[3].get_bool();
+    std::string data = ParseText(request.params[4]);
+
+    RequireExistingProperty(propertyId);
+    RequireNonFungibleProperty(propertyId);
+    RequireSaneNonFungibleRange(tokenStart, tokenEnd);
+
+    if (!issuer && !pDbNFT->IsRangeContiguous(propertyId, tokenStart, tokenEnd)) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Range set owned by multiple addresses, set data one owner a time");
+    }
+
+    std::string fromAddress = pDbNFT->GetNonFungibleTokenOwner(propertyId, tokenStart);
+
+    if (issuer) {
+        CMPSPInfo::Entry sp;
+        {
+            LOCK(cs_tally);
+            if (!pDbSpInfo->getSP(propertyId, sp)) {
+                throw JSONRPCError(RPC_INVALID_PARAMETER, "Property identifier does not exist");
+            }
+            fromAddress = sp.issuer;
+        }
+    }
+
+    // create a payload for the transaction
+    std::vector<unsigned char> payload = CreatePayload_SetNonFungibleData(propertyId, tokenStart, tokenEnd, issuer, data);
+
+    // request the wallet build the transaction (and if needed commit it)
+    uint256 txid;
+    std::string rawHex;
+    int result = WalletTxBuilder(fromAddress, "", "", 0, payload, txid, rawHex, autoCommit, pwallet.get());
+
+    // check error and return the txid (or raw hex depending on autocommit)
+    if (result != 0) {
+        throw JSONRPCError(result, error_str(result));
+    } else {
+        if (!autoCommit) {
+            return rawHex;
+        } else {
+            return txid.GetHex();
+        }
+    }
+}
+
 
 static UniValue omni_senddexsell(const JSONRPCRequest& request)
 {
@@ -925,7 +1065,7 @@ static UniValue omni_sendissuancemanaged(const JSONRPCRequest& request)
                {
                    {"fromaddress", RPCArg::Type::STR, RPCArg::Optional::NO, "the address to send from\n"},
                    {"ecosystem", RPCArg::Type::NUM, RPCArg::Optional::NO, "the ecosystem to create the tokens in (1 for main ecosystem, 2 for test ecosystem)\n"},
-                   {"type", RPCArg::Type::NUM, RPCArg::Optional::NO, "the type of the tokens to create: (1 for indivisible tokens, 2 for divisible tokens)\n"},
+                   {"type", RPCArg::Type::NUM, RPCArg::Optional::NO, "the type of the tokens to create: (1 for indivisible tokens, 2 for divisible tokens, 5 for non-fungible tokens)\n"},
                    {"previousid", RPCArg::Type::NUM, RPCArg::Optional::NO, "an identifier of a predecessor token (use 0 for new tokens)\n"},
                    {"category", RPCArg::Type::STR, RPCArg::Optional::NO, "a category for the new tokens (can be \"\")\n"},
                    {"subcategory", RPCArg::Type::STR, RPCArg::Optional::NO, "a subcategory for the new tokens  (can be \"\")\n"},
@@ -934,18 +1074,18 @@ static UniValue omni_sendissuancemanaged(const JSONRPCRequest& request)
                    {"data", RPCArg::Type::STR, RPCArg::Optional::NO, "a description for the new tokens (can be \"\")\n"},
                },
                RPCResult{
-                   "\"hash\"                  (string) the hex-encoded transaction hash\n"
+                   "\"payload\" : \"payload\"        (string) the hex-encoded payload"
                },
                RPCExamples{
-                   HelpExampleCli("omni_sendissuancemanaged", "\"3HsJvhr9qzgRe3ss97b1QHs38rmaLExLcH\" 2 1 0 \"Companies\" \"Feathercoin Mining\" \"Quantum Miner\" \"\" \"\"")
-                   + HelpExampleRpc("omni_sendissuancemanaged", "\"3HsJvhr9qzgRe3ss97b1QHs38rmaLExLcH\", 2, 1, 0, \"Companies\", \"Feathercoin Mining\", \"Quantum Miner\", \"\", \"\"")
+                   HelpExampleCli("omni_sendissuancemanaged", "\"3HsJvhr9qzgRe3ss97b1QHs38rmaLExLcH\" 2 1 0 \"Companies\" \"Bitcoin Mining\" \"Quantum Miner\" \"\" \"\"")
+                   + HelpExampleRpc("omni_sendissuancemanaged", "\"3HsJvhr9qzgRe3ss97b1QHs38rmaLExLcH\", 2, 1, 0, \"Companies\", \"Bitcoin Mining\", \"Quantum Miner\", \"\", \"\"")
                }
             }.ToString());
 
     // obtain parameters & info
     std::string fromAddress = ParseAddress(request.params[0]);
     uint8_t ecosystem = ParseEcosystem(request.params[1]);
-    uint16_t type = ParsePropertyType(request.params[2]);
+    uint16_t type = ParseManagedPropertyType(request.params[2]);
     uint32_t previousId = ParsePreviousPropertyId(request.params[3]);
     std::string category = ParseText(request.params[4]);
     std::string subcategory = ParseText(request.params[5]);
@@ -1046,10 +1186,10 @@ static UniValue omni_sendgrant(const JSONRPCRequest& request)
                    {"toaddress", RPCArg::Type::STR, RPCArg::Optional::NO, "the receiver of the tokens (sender by default, can be \"\")\n"},
                    {"propertyid", RPCArg::Type::NUM, RPCArg::Optional::NO, "the identifier of the tokens to grant\n"},
                    {"amount", RPCArg::Type::STR, RPCArg::Optional::NO, "the amount of tokens to create\n"},
-                   {"memo", RPCArg::Type::STR, RPCArg::Optional::OMITTED, "a text note attached to this transaction (none by default)\n"},
+                   {"grantdata", RPCArg::Type::STR, RPCArg::Optional::OMITTED, "NFT only: data set in all NFTs created in this grant (default: empty)\n"},
                },
                RPCResult{
-                   "\"hash\"                  (string) the hex-encoded transaction hash\n"
+                   "\"payload\" : \"payload\"        (string) the hex-encoded payload"
                },
                RPCExamples{
                    HelpExampleCli("omni_sendgrant", "\"3HsJvhr9qzgRe3ss97b1QHs38rmaLExLcH\" \"\" 51 \"7000\"")
@@ -1062,7 +1202,7 @@ static UniValue omni_sendgrant(const JSONRPCRequest& request)
     std::string toAddress = !ParseText(request.params[1]).empty() ? ParseAddress(request.params[1]): "";
     uint32_t propertyId = ParsePropertyId(request.params[2]);
     int64_t amount = ParseAmount(request.params[3], isPropertyDivisible(propertyId));
-    std::string memo = (request.params.size() > 4) ? ParseText(request.params[4]): "";
+    std::string info = (request.params.size() > 4) ? ParseText(request.params[4]) : "";
 
     // perform checks
     RequireExistingProperty(propertyId);
@@ -1070,7 +1210,7 @@ static UniValue omni_sendgrant(const JSONRPCRequest& request)
     RequireTokenIssuer(fromAddress, propertyId);
 
     // create a payload for the transaction
-    std::vector<unsigned char> payload = CreatePayload_Grant(propertyId, amount, memo);
+    std::vector<unsigned char> payload = CreatePayload_Grant(propertyId, amount, info);
 
     // request the wallet build the transaction (and if needed commit it)
     uint256 txid;
@@ -1695,6 +1835,8 @@ static const CRPCCommand commands[] =
     { "omni layer (transaction creation)", "omni_sendclosecrowdsale",      &omni_sendclosecrowdsale,      {"fromaddress", "propertyid"} },
     { "omni layer (transaction creation)", "omni_sendchangeissuer",        &omni_sendchangeissuer,        {"fromaddress", "toaddress", "propertyid"} },
     { "omni layer (transaction creation)", "omni_sendall",                 &omni_sendall,                 {"fromaddress", "toaddress", "ecosystem", "redeemaddress", "referenceamount"} },
+    { "omni layer (transaction creation)", "omni_sendnonfungible",         &omni_sendnonfungible,         {"fromaddress", "toaddress", "propertyid", "tokenstart", "tokenend", "redeemaddress", "referenceamount"} },
+    { "omni layer (transaction creation)", "omni_setnonfungibledata",      &omni_setnonfungibledata,      {"propertyid", "tokenstart", "tokenend", "issuer", "data"} },
     { "omni layer (transaction creation)", "omni_sendenablefreezing",      &omni_sendenablefreezing,      {"fromaddress", "propertyid"} },
     { "omni layer (transaction creation)", "omni_senddisablefreezing",     &omni_senddisablefreezing,     {"fromaddress", "propertyid"} },
     { "omni layer (transaction creation)", "omni_sendfreeze",              &omni_sendfreeze,              {"fromaddress", "toaddress", "propertyid", "amount"} },
