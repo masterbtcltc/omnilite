@@ -414,6 +414,7 @@ void SetupServerArgs()
 #else
     hidden_args.emplace_back("-sysperms");
 #endif
+    gArgs.AddArg("-txindex", strprintf("Maintain a full transaction index, used by the getrawtransaction rpc call (default: %u)", DEFAULT_TXINDEX), false, OptionsCategory::OPTIONS);
     gArgs.AddArg("-experimental-btc-balances", strprintf("Maintain a full address index (default: %u)", DEFAULT_ADDRINDEX), false, OptionsCategory::OPTIONS);
 
     gArgs.AddArg("-addnode=<ip>", "Add a node to connect to and attempt to keep the connection open (see the `addnode` RPC command help for more info). This option can be specified multiple times to add multiple nodes.", false, OptionsCategory::CONNECTION);
@@ -990,7 +991,8 @@ bool AppInitParameterInteraction()
 
     // if using block pruning, then disallow txindex
     if (gArgs.GetArg("-prune", 0)) {
-        return InitError(_("Prune mode is incompatible with -txindex."));
+        if (gArgs.GetBoolArg("-txindex", DEFAULT_TXINDEX))
+            return InitError(_("Prune mode is incompatible with -txindex."));
     }
 
     // -bind and -whitebind can't be set when not listening
@@ -1501,9 +1503,13 @@ bool AppInitMain(InitInterfaces& interfaces)
     if (gArgs.GetBoolArg("-experimental-btc-balances", DEFAULT_ADDRINDEX)) {
         // enable 3/4 of the cache if addressindex is enabled
         nBlockTreeDBCache = nTotalCache * 3 / 4;
+    } else {
+        if (nBlockTreeDBCache > (1 << 21) && !gArgs.GetBoolArg("-txindex", DEFAULT_TXINDEX)) {
+            nBlockTreeDBCache = (1 << 21); // block tree db cache shouldn't be larger than 2 MiB
+        }
     }
     nTotalCache -= nBlockTreeDBCache;
-    int64_t nTxIndexCache = std::min(nTotalCache / 8, nMaxTxIndexCache << 20);
+    int64_t nTxIndexCache = std::min(nTotalCache / 8, gArgs.GetBoolArg("-txindex", DEFAULT_TXINDEX) ? nMaxTxIndexCache << 20 : 0);
     nTotalCache -= nTxIndexCache;
     int64_t nCoinDBCache = std::min(nTotalCache / 2, (nTotalCache / 4) + (1 << 23)); // use 25%-50% of the remainder for disk cache
     nCoinDBCache = std::min(nCoinDBCache, nMaxCoinsDBCache << 20); // cap total coins db cache
@@ -1512,7 +1518,9 @@ bool AppInitMain(InitInterfaces& interfaces)
     int64_t nMempoolSizeMax = gArgs.GetArg("-maxmempool", DEFAULT_MAX_MEMPOOL_SIZE) * 1000000;
     LogPrintf("Cache configuration:\n");
     LogPrintf("* Using %.1f MiB for block index database\n", nBlockTreeDBCache * (1.0 / 1024 / 1024));
-    LogPrintf("* Using %.1f MiB for transaction index database\n", nTxIndexCache * (1.0 / 1024 / 1024));
+    if (gArgs.GetBoolArg("-txindex", DEFAULT_TXINDEX)) {
+        LogPrintf("* Using %.1f MiB for transaction index database\n", nTxIndexCache * (1.0 / 1024 / 1024));
+    }
     LogPrintf("* Using %.1f MiB for chain state database\n", nCoinDBCache * (1.0 / 1024 / 1024));
     LogPrintf("* Using %.1f MiB for in-memory UTXO set (plus up to %.1f MiB of unused mempool space)\n", nCoinCacheUsage * (1.0 / 1024 / 1024), nMempoolSizeMax * (1.0 / 1024 / 1024));
 
@@ -1709,8 +1717,10 @@ bool AppInitMain(InitInterfaces& interfaces)
     fFeeEstimatesInitialized = true;
 
     // ********************************************************* Step 8: start indexers
-    g_txindex = MakeUnique<TxIndex>(nTxIndexCache, false, fReindex);
-    g_txindex->Start();
+    if (gArgs.GetBoolArg("-txindex", DEFAULT_TXINDEX)) {
+        g_txindex = MakeUnique<TxIndex>(nTxIndexCache, false, fReindex);
+        g_txindex->Start();
+    }
 
     // ********************************************************* Step 8.5: load omni core
 
