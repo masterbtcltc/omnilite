@@ -1708,6 +1708,10 @@ int mastercore_shutdown()
         delete pDbTransaction;
         pDbTransaction = nullptr;
     }
+    if (pDbNFT) {
+        delete pDbNFT;
+        pDbNFT = nullptr;
+    }
 
     mastercoreInitialized = 0;
 
