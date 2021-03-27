@@ -61,7 +61,7 @@ bool msc_debug_consensus_hash_every_transaction = 0;
 //! Debug fees
 bool msc_debug_fees               = 1;
 //! Debug the non-fungible tokens database
-bool msc_debug_nftdb               = 1;
+bool msc_debug_nftdb              = 0;
 
 /**
  * LogPrintf() has been broken a couple of times now
