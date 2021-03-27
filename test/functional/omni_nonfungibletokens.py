@@ -80,10 +80,10 @@ class OmniNonFungibleTokensTest(BitcoinTestFramework):
 
         # Check data blank
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 1)
-        assert_equal(result['owner'], token_address)
-        assert_equal(result['grantdata'], '')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], '')
+        assert_equal(result[0]['owner'], token_address)
+        assert_equal(result[0]['grantdata'], '')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], '')
 
         # Grant 1 tokens with data
         txid = self.nodes[0].omni_sendgrant(token_address, "", property_id, "1", "Test grantdata")
@@ -109,13 +109,13 @@ class OmniNonFungibleTokensTest(BitcoinTestFramework):
 
         # Make sure original token data unchanged
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 1)
-        assert_equal(result['owner'], token_address)
-        assert_equal(result['grantdata'], '')
+        assert_equal(result[0]['owner'], token_address)
+        assert_equal(result[0]['grantdata'], '')
 
         # Check tokens have expected data set
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 101)
-        assert_equal(result['owner'], token_address)
-        assert_equal(result['grantdata'], 'Test grantdata')
+        assert_equal(result[0]['owner'], token_address)
+        assert_equal(result[0]['grantdata'], 'Test grantdata')
 
         # Grant 99 tokens with different data
         txid = self.nodes[0].omni_sendgrant(token_address, "", property_id, "99", "Different grantdata")
@@ -141,23 +141,23 @@ class OmniNonFungibleTokensTest(BitcoinTestFramework):
 
         # Make sure previous token data unchanged
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 1)
-        assert_equal(result['owner'], token_address)
-        assert_equal(result['grantdata'], '')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], '')
+        assert_equal(result[0]['owner'], token_address)
+        assert_equal(result[0]['grantdata'], '')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], '')
 
         # Make sure previous token data unchanged
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 101)
-        assert_equal(result['owner'], token_address)
-        assert_equal(result['grantdata'], 'Test grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], '')
+        assert_equal(result[0]['owner'], token_address)
+        assert_equal(result[0]['grantdata'], 'Test grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], '')
 
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 200)
-        assert_equal(result['owner'], token_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], '')
+        assert_equal(result[0]['owner'], token_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], '')
 
         # Grant 100 tokens to different address
         txid = self.nodes[0].omni_sendgrant(token_address, grant_address, property_id, "100", "Multiple grantdata")
@@ -195,10 +195,10 @@ class OmniNonFungibleTokensTest(BitcoinTestFramework):
 
         # Check data fields
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 300)
-        assert_equal(result['owner'], grant_address)
-        assert_equal(result['grantdata'], 'Multiple grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], '')
+        assert_equal(result[0]['owner'], grant_address)
+        assert_equal(result[0]['grantdata'], 'Multiple grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], '')
 
         # Test sending tokens to a new address
         self.nodes[0].sendtoaddress(destination_address, 1)
@@ -279,22 +279,22 @@ class OmniNonFungibleTokensTest(BitcoinTestFramework):
 
         # Check owner and data fields on transfered tokens
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 1)
-        assert_equal(result['owner'], destination_address)
-        assert_equal(result['grantdata'], '')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], '')
+        assert_equal(result[0]['owner'], destination_address)
+        assert_equal(result[0]['grantdata'], '')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], '')
 
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 101)
-        assert_equal(result['owner'], destination_address)
-        assert_equal(result['grantdata'], 'Test grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], '')
+        assert_equal(result[0]['owner'], destination_address)
+        assert_equal(result[0]['grantdata'], 'Test grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], '')
 
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 201)
-        assert_equal(result['owner'], destination_address)
-        assert_equal(result['grantdata'], 'Multiple grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], '')
+        assert_equal(result[0]['owner'], destination_address)
+        assert_equal(result[0]['grantdata'], 'Multiple grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], '')
 
         # Set data on a non-issuer/holder address
         non_issuer_address = self.nodes[1].getnewaddress()
@@ -338,23 +338,23 @@ class OmniNonFungibleTokensTest(BitcoinTestFramework):
 
         # Before blank
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 101)
-        assert_equal(result['owner'], destination_address)
-        assert_equal(result['grantdata'], 'Test grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], '')
+        assert_equal(result[0]['owner'], destination_address)
+        assert_equal(result[0]['grantdata'], 'Test grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], '')
 
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 102)
-        assert_equal(result['owner'], non_issuer_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], 'Test holderdata')
+        assert_equal(result[0]['owner'], non_issuer_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], 'Test holderdata')
 
         # End new data
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 103)
-        assert_equal(result['owner'], non_issuer_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], '')
+        assert_equal(result[0]['owner'], non_issuer_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], '')
 
         # Set holder data range and overwrite just set entry
         self.nodes[1].omni_setnonfungibledata(property_id, 102, 111, False, "New holderdata")
@@ -364,31 +364,31 @@ class OmniNonFungibleTokensTest(BitcoinTestFramework):
 
         # Before blank
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 101)
-        assert_equal(result['owner'], destination_address)
-        assert_equal(result['grantdata'], 'Test grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], '')
+        assert_equal(result[0]['owner'], destination_address)
+        assert_equal(result[0]['grantdata'], 'Test grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], '')
 
         # Start new data
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 102)
-        assert_equal(result['owner'], non_issuer_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], 'New holderdata')
+        assert_equal(result[0]['owner'], non_issuer_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], 'New holderdata')
 
         # End new data
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 111)
-        assert_equal(result['owner'], non_issuer_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], 'New holderdata')
+        assert_equal(result[0]['owner'], non_issuer_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], 'New holderdata')
 
         # After blank
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 112)
-        assert_equal(result['owner'], token_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], '')
+        assert_equal(result[0]['owner'], token_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], '')
 
         # Set holder data in the middle of the range
         self.nodes[1].omni_setnonfungibledata(property_id, 106, 106, False, "Even newer holderdata")
@@ -398,52 +398,52 @@ class OmniNonFungibleTokensTest(BitcoinTestFramework):
 
         # Before blank
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 101)
-        assert_equal(result['owner'], destination_address)
-        assert_equal(result['grantdata'], 'Test grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], '')
+        assert_equal(result[0]['owner'], destination_address)
+        assert_equal(result[0]['grantdata'], 'Test grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], '')
 
         # Before range start
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 102)
-        assert_equal(result['owner'], non_issuer_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], 'New holderdata')
+        assert_equal(result[0]['owner'], non_issuer_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], 'New holderdata')
 
         # Before range end
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 105)
-        assert_equal(result['owner'], non_issuer_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], 'New holderdata')
+        assert_equal(result[0]['owner'], non_issuer_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], 'New holderdata')
 
         # Data changed?
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 106)
-        assert_equal(result['owner'], non_issuer_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], 'Even newer holderdata')
+        assert_equal(result[0]['owner'], non_issuer_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], 'Even newer holderdata')
 
         # After range
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 107)
-        assert_equal(result['owner'], non_issuer_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], 'New holderdata')
+        assert_equal(result[0]['owner'], non_issuer_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], 'New holderdata')
 
         # End after range data
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 111)
-        assert_equal(result['owner'], non_issuer_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], 'New holderdata')
+        assert_equal(result[0]['owner'], non_issuer_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], 'New holderdata')
 
         # After blank
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 112)
-        assert_equal(result['owner'], token_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], '')
+        assert_equal(result[0]['owner'], token_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], '')
 
         # Test issuer data
         self.nodes[0].omni_setnonfungibledata(property_id, 106, 106, True, "Test issuerdata")
@@ -453,24 +453,24 @@ class OmniNonFungibleTokensTest(BitcoinTestFramework):
 
         # Before
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 105)
-        assert_equal(result['owner'], non_issuer_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], 'New holderdata')
+        assert_equal(result[0]['owner'], non_issuer_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], 'New holderdata')
 
         # Changed?
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 106)
-        assert_equal(result['owner'], non_issuer_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], 'Test issuerdata')
-        assert_equal(result['holderdata'], 'Even newer holderdata')
+        assert_equal(result[0]['owner'], non_issuer_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], 'Test issuerdata')
+        assert_equal(result[0]['holderdata'], 'Even newer holderdata')
 
         # After
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 107)
-        assert_equal(result['owner'], non_issuer_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], 'New holderdata')
+        assert_equal(result[0]['owner'], non_issuer_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], 'New holderdata')
 
         # Set issuer data across multiple ranges owned by different addresses
         self.nodes[0].omni_setnonfungibledata(property_id, 101, 112, True, "Different issuerdata")
@@ -479,38 +479,38 @@ class OmniNonFungibleTokensTest(BitcoinTestFramework):
 
         # Before blank
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 100)
-        assert_equal(result['owner'], token_address)
-        assert_equal(result['grantdata'], '')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], '')
+        assert_equal(result[0]['owner'], token_address)
+        assert_equal(result[0]['grantdata'], '')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], '')
 
         # Before range start
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 101)
-        assert_equal(result['owner'], destination_address)
-        assert_equal(result['grantdata'], 'Test grantdata')
-        assert_equal(result['issuerdata'], 'Different issuerdata')
-        assert_equal(result['holderdata'], '')
+        assert_equal(result[0]['owner'], destination_address)
+        assert_equal(result[0]['grantdata'], 'Test grantdata')
+        assert_equal(result[0]['issuerdata'], 'Different issuerdata')
+        assert_equal(result[0]['holderdata'], '')
 
         # Changed previously set record?
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 106)
-        assert_equal(result['owner'], non_issuer_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], 'Different issuerdata')
-        assert_equal(result['holderdata'], 'Even newer holderdata')
+        assert_equal(result[0]['owner'], non_issuer_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], 'Different issuerdata')
+        assert_equal(result[0]['holderdata'], 'Even newer holderdata')
 
         # End after range data
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 112)
-        assert_equal(result['owner'], token_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], 'Different issuerdata')
-        assert_equal(result['holderdata'], '')
+        assert_equal(result[0]['owner'], token_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], 'Different issuerdata')
+        assert_equal(result[0]['holderdata'], '')
 
         # After blank
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 113)
-        assert_equal(result['owner'], token_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], '')
-        assert_equal(result['holderdata'], '')
+        assert_equal(result[0]['owner'], token_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], '')
 
         # Send tokens and chekd data is the same
         self.nodes[0].sendtoaddress(non_issuer_address, 1)
@@ -522,32 +522,85 @@ class OmniNonFungibleTokensTest(BitcoinTestFramework):
 
         # Before range start
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 105)
-        assert_equal(result['owner'], non_issuer_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], 'Different issuerdata')
-        assert_equal(result['holderdata'], 'New holderdata')
+        assert_equal(result[0]['owner'], non_issuer_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], 'Different issuerdata')
+        assert_equal(result[0]['holderdata'], 'New holderdata')
 
         # Changed previously set record?
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 106)
-        assert_equal(result['owner'], destination_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], 'Different issuerdata')
-        assert_equal(result['holderdata'], 'Even newer holderdata')
+        assert_equal(result[0]['owner'], destination_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], 'Different issuerdata')
+        assert_equal(result[0]['holderdata'], 'Even newer holderdata')
 
         # End after range data
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 111)
-        assert_equal(result['owner'], destination_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], 'Different issuerdata')
-        assert_equal(result['holderdata'], 'New holderdata')
+        assert_equal(result[0]['owner'], destination_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], 'Different issuerdata')
+        assert_equal(result[0]['holderdata'], 'New holderdata')
 
         # After blank
         result = self.nodes[0].omni_getnonfungibletokendata(property_id, 112)
-        assert_equal(result['owner'], token_address)
-        assert_equal(result['grantdata'], 'Different grantdata')
-        assert_equal(result['issuerdata'], 'Different issuerdata')
-        assert_equal(result['holderdata'], '')
+        assert_equal(result[0]['owner'], token_address)
+        assert_equal(result[0]['grantdata'], 'Different grantdata')
+        assert_equal(result[0]['issuerdata'], 'Different issuerdata')
+        assert_equal(result[0]['holderdata'], '')
+
+        # Test omni_getnonfungibletokendata ranges
+        result = self.nodes[0].omni_getnonfungibletokendata(property_id)
+        assert_equal(len(result), 300)
+
+        # Check first in range
+        assert_equal(result[0]['index'], 1)
+        assert_equal(result[0]['owner'], destination_address)
+        assert_equal(result[0]['grantdata'], '')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], '')
+
+        # Check last in range
+        assert_equal(result[299]['index'], 300)
+        assert_equal(result[299]['owner'], grant_address)
+        assert_equal(result[299]['grantdata'], 'Multiple grantdata')
+        assert_equal(result[299]['issuerdata'], '')
+        assert_equal(result[299]['holderdata'], '')
+
+        # Below range will return first in range, only one result expected.
+        result = self.nodes[0].omni_getnonfungibletokendata(property_id, 0)
+        assert_equal(len(result), 1)
+
+        assert_equal(result[0]['index'], 1)
+        assert_equal(result[0]['owner'], destination_address)
+        assert_equal(result[0]['grantdata'], '')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], '')
+
+        # Above range will return last in range
+        result = self.nodes[0].omni_getnonfungibletokendata(property_id, 301)
+        assert_equal(len(result), 1)
+
+        assert_equal(result[0]['index'], 300)
+        assert_equal(result[0]['owner'], grant_address)
+        assert_equal(result[0]['grantdata'], 'Multiple grantdata')
+        assert_equal(result[0]['issuerdata'], '')
+        assert_equal(result[0]['holderdata'], '')
+
+        # Test sub range
+        result = self.nodes[0].omni_getnonfungibletokendata(property_id, 101, 200)
+        assert_equal(len(result), 100)
+
+        assert_equal(result[0]['index'], 101)
+        assert_equal(result[0]['owner'], destination_address)
+        assert_equal(result[0]['grantdata'], 'Test grantdata')
+        assert_equal(result[0]['issuerdata'], 'Different issuerdata')
+        assert_equal(result[0]['holderdata'], '')
+
+        assert_equal(result[99]['index'], 200)
+        assert_equal(result[99]['owner'], token_address)
+        assert_equal(result[99]['grantdata'], 'Different grantdata')
+        assert_equal(result[99]['issuerdata'], '')
+        assert_equal(result[99]['holderdata'], '')
 
 if __name__ == '__main__':
     OmniNonFungibleTokensTest().main()
-

@@ -1648,18 +1648,21 @@ $ omnicore-cli "omni_getnonfungibletokens 1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P 1"
 
 ### omni_getnonfungibletokendata
 
-Returns owner and all data set in a non-fungible token.
+Returns owner and all data set in a non-fungible token. If looking
+up a single token on tokenidstart can be specified only.
 
 **Arguments:**
 
 | Name                | Type    | Presence | Description                                                                                  |
 |---------------------|---------|----------|----------------------------------------------------------------------------------------------|
 | `propertyid`        | number  | required | the property identifier                                                                      |
-| `tokenid`           | number  | required | the non-fungible token identifier                                                            |
+| `tokenidstart`      | number  | required | the first non-fungible token in range                                                        |
+| `tokenidend`        | number  | required | the last non-fungible token in range                                                         |
 
 **Result:**
 ```js
 {
+  "index" : n,                  // (number) the unique index of the token
   "owner" : "owner",            // (string) the Bitcoin address of the owner
   "grantdata" : "grantdata",    // (string) contents of the grant data field
   "issuerdata" : "issuerdata",  // (string) contents of the issuer data field
@@ -1670,7 +1673,7 @@ Returns owner and all data set in a non-fungible token.
 **Example:**
 
 ```bash
-$ omnicore-cli "omni_getnonfungibletokendata 1 55"
+$ omnicore-cli "omni_getnonfungibletokendata 1 10 20"
 ```
 
 ---

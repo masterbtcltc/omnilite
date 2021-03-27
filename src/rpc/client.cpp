@@ -196,7 +196,8 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "omni_getwalletaddressbalances", 0, "includewatchonly" },
     { "omni_getnonfungibletokens", 1, "propertyid"},
     { "omni_getnonfungibletokendata", 0, "propertyid"},
-    { "omni_getnonfungibletokendata", 1, "non-fungibleid"},
+    { "omni_getnonfungibletokendata", 1, "tokenidstart"},
+    { "omni_getnonfungibletokendata", 2, "tokenidend"},
     { "omni_getnonfungibletokenranges", 0, "propertyid"},
 
     /* Omni Core - transaction calls */
