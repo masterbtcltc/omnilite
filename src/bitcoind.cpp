@@ -23,6 +23,7 @@
 #include <walletinitinterface.h>
 
 #include <omnicore/utilsui.h>
+#include <omnicore/version.h>
 
 #include <stdio.h>
 
@@ -79,7 +80,7 @@ static bool AppInit(int argc, char* argv[])
 
     // Process help and version before taking care about datadir
     if (HelpRequested(gArgs) || gArgs.IsArgSet("-version")) {
-        std::string strUsage = PACKAGE_NAME " Daemon version " + FormatFullVersion() + "\n";
+        std::string strUsage = PACKAGE_NAME " Daemon version " + OmniCoreVersion() + "\n";
 
         if (gArgs.IsArgSet("-version"))
         {

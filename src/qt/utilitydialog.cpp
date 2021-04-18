@@ -25,6 +25,8 @@
 #include <util/system.h>
 #include <util/strencodings.h>
 
+#include <omnicore/version.h>
+
 #include <stdio.h>
 
 #include <QCloseEvent>
@@ -41,7 +43,7 @@ HelpMessageDialog::HelpMessageDialog(interfaces::Node& node, QWidget *parent, bo
 {
     ui->setupUi(this);
 
-    QString version = tr(PACKAGE_NAME) + " " + tr("version") + " " + QString::fromStdString(FormatFullVersion());
+    QString version = tr(PACKAGE_NAME) + " " + tr("version") + " " + QString::fromStdString(OmniCoreVersion());
     /* On x86 add a bit specifier to the version so that users can distinguish between
      * 32 and 64 bit builds. On other architectures, 32/64 bit may be more ambiguous.
      */
