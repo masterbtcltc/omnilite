@@ -373,7 +373,7 @@ static UniValue omni_setnonfungibledata(const JSONRPCRequest& request)
     if (request.fHelp || request.params.size() != 5)
         throw runtime_error(
             RPCHelpMan{"omni_setnonfungibledata",
-                "\nSets either the issuer or holder data field in a non-fungible tokem. Holder data can only be\n"
+                "\nSets either the issuer or holder data field in a non-fungible token. Holder data can only be\n"
                 "updated by the token owner and issuer data can only be updated by address that created the tokens.",
                 {
                     {"propertyid", RPCArg::Type::NUM, RPCArg::Optional::NO, "the property identifier"},

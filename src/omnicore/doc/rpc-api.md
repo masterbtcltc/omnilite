@@ -827,7 +827,7 @@ $ omnicore-cli "omni_sendnonfungible" "3M9qvHKtgARhqcMtM5cRT9VaiDJ5PSfQGY" "37Fa
 
 ### omni_setnonfungibledata
 
-Sets either the issuer or holder data field in a non-fungible tokem. Holder data can only be
+Sets either the issuer or holder data field in a non-fungible token. Holder data can only be
 updated by the token owner and issuer data can only be updated by address that created the tokens.
 
 **Arguments:**
