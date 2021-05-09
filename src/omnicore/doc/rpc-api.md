@@ -810,7 +810,7 @@ Create and broadcast a non-fungible send transaction.
 | `tokenstart`        | number  | required | the first token in the range to send                                                         |
 | `tokenend`          | number  | required | the last token in the range to send                                                          |
 | `redeemaddress`     | string  | optional | an address that can spend the transaction dust (sender by default)                           |
-| `referenceamount`   | string  | optional | a bitcoin amount that is sent to the receiver (minimal by default)                           |
+| `referenceamount`   | string  | optional | a feathercoin amount that is sent to the receiver (minimal by default)                           |
 
 **Result:**
 ```js
@@ -1620,22 +1620,29 @@ $ omnicore-cli "omni_getcurrentconsensushash"
 
 ### omni_getnonfungibletokens
 
-Returns the non-fungible tokens for a given address and property.
+Returns the non-fungible tokens for a given address. Optional property ID filter.
 
 **Arguments:**
 
 | Name                | Type    | Presence | Description                                                                                  |
 |---------------------|---------|----------|----------------------------------------------------------------------------------------------|
 | `address`           | string  | required | the address                                                                                  |
-| `propertyid`        | number  | required | the property identifier                                                                      |
+| `propertyid`        | number  | optional | the property identifier                                                                      |
 
 **Result:**
 ```js
-{
-  "tokenstart" : n,            // (number) the first token in this range
-  "tokenend" : n,              // (number) the last token in this range
-  "amount" : n.nnnnnnnn,       // (number) the amount of tokens in the range
-}
+[
+  {
+    "propertyid" : n,
+    "tokens" : [
+      {
+        "tokenstart" : n,            // (number) the first token in this range
+        "tokenend" : n,              // (number) the last token in this range
+        "amount" : n.nnnnnnnn,       // (number) the amount of tokens in the range
+      }...
+    ]
+  }...
+]
 ```
 
 **Example:**

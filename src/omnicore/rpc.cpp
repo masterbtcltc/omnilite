@@ -132,51 +132,65 @@ bool BalanceToJSON(const std::string& address, uint32_t property, UniValue& bala
 // display the non-fungible tokens owned by an address for a property
 UniValue omni_getnonfungibletokens(const JSONRPCRequest& request)
 {
-    if (request.fHelp || request.params.size() != 2)
+    if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
         throw runtime_error(
                 RPCHelpMan{"omni_getnonfungibletokens",
-                   "\nReturns the non-fungible tokens for a given address and property.\n",
+                   "\nReturns the non-fungible tokens for a given address. Optional property ID filter.\n",
                    {
                        {"address", RPCArg::Type::STR, RPCArg::Optional::NO, "the address"},
-                       {"propertyid", RPCArg::Type::NUM, RPCArg::Optional::NO, "the property identifier"},
+                       {"propertyid", RPCArg::Type::NUM, RPCArg::Optional::OMITTED, "the property identifier"},
                    },
                    RPCResult{
                        "[                           (array of JSON objects)\n"
                        "  {\n"
-                       "    \"tokenstart\" : n,         (number) the first token in this range"
-                       "    \"tokenend\" n,             (number) the last token in this range"
-                       "    \"amount\" n,               (number) the amount of tokens in the range"
-                       "  },\n"
-                       "  ...\n"
+                       "    \"propertyid\" : n\n"
+                       "    \"tokens\" : [                 (array of JSON objects)\n"
+                       "      {\n"
+                       "        \"tokenstart\" : n,         (number) the first token in this range\n"
+                       "        \"tokenend\" n,             (number) the last token in this range\n"
+                       "        \"amount\" n,               (number) the amount of tokens in the range\n"
+                       "      }...\n"
+                       "    ]\n"
+                       "  }...\n"
                        "]\n"
                    },
                    RPCExamples{
-                       HelpExampleCli("omni_getnonfungibletokens", "\"1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P\" 1")
-                       + HelpExampleRpc("omni_getnonfungibletokens", "\"1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P\", 1")
+                       HelpExampleCli("omni_getnonfungibletokens", "\"6eXoDUSUV7yrAxKVNPEeKAHMY8San5Z37V\" 1")
+                       + HelpExampleRpc("omni_getnonfungibletokens", "\"6eXoDUSUV7yrAxKVNPEeKAHMY8San5Z37V\", 1")
                    }
                 }.ToString());
 
     std::string address = ParseAddress(request.params[0]);
-    uint32_t propertyId = ParsePropertyId(request.params[1]);
-
-    RequireExistingProperty(propertyId);
-    RequireNonFungibleProperty(propertyId);
-
-    UniValue response(UniValue::VARR);
-
-    std::vector<std::pair<int64_t,int64_t> > uniqueRanges = pDbNFT->GetAddressNonFungibleTokens(propertyId, address);
-
-    for (std::vector<std::pair<int64_t,int64_t> >::iterator it = uniqueRanges.begin(); it != uniqueRanges.end(); ++it) {
-        std::pair<int64_t,int64_t> range = *it;
-        int64_t amount = (range.second - range.first) + 1;
-        UniValue uniqueRangeObj(UniValue::VOBJ);
-        uniqueRangeObj.pushKV("tokenstart", range.first);
-        uniqueRangeObj.pushKV("tokenend", range.second);
-        uniqueRangeObj.pushKV("amount", amount);
-        response.push_back(uniqueRangeObj);
+    uint32_t propertyId{0};
+    if (!request.params[1].isNull()) {
+        propertyId = ParsePropertyId(request.params[1]);
+        RequireExistingProperty(propertyId);
+        RequireNonFungibleProperty(propertyId);
     }
 
-    return response;
+    UniValue propertyRanges(UniValue::VARR);
+
+    const auto uniqueRanges = pDbNFT->GetAddressNonFungibleTokens(propertyId, address);
+
+    for (const auto& range : uniqueRanges) {
+        UniValue property(UniValue::VOBJ);
+        property.pushKV("propertyid", static_cast<uint64_t>(range.first));
+        UniValue tokenRanges(UniValue::VARR);
+
+        for (const auto& subRange : range.second) {
+            UniValue tokenRange(UniValue::VOBJ);
+            tokenRange.pushKV("tokenstart", subRange.first);
+            tokenRange.pushKV("tokenend", subRange.second);
+            int64_t amount = (subRange.second - subRange.first) + 1;
+            tokenRange.pushKV("amount", amount);
+            tokenRanges.push_back(tokenRange);
+        }
+
+        property.pushKV("tokens", tokenRanges);
+        propertyRanges.push_back(property);
+    }
+
+    return propertyRanges;
 }
 
 // provides all data for a specific token
@@ -193,15 +207,15 @@ UniValue omni_getnonfungibletokendata(const JSONRPCRequest& request)
                        {"tokenidend", RPCArg::Type::NUM, RPCArg::Optional::OMITTED, "the last non-fungible token in range"},
                    },
                    RPCResult{
-                       "[                                  (array of JSON objects)"
+                       "[                                  (array of JSON objects)\n"
                        "  {\n"
-                       "    \"index\" : n,                     (number) the unique index of the token"
-                       "    \"owner\" : \"owner\",             (string) the Bitcoin address of the owner"
-                       "    \"grantdata\" : \"grantdata\"      (string) contents of the grant data field"
-                       "    \"issuerdata\" : \"issuerdata\"    (string) contents of the issuer data field"
-                       "    \"holderdata\" : \"holderdata\"    (string) contents of the holder data field"
+                       "    \"index\" : n,                     (number) the unique index of the token\n"
+                       "    \"owner\" : \"owner\",             (string) the Feathercoin address of the owner\n"
+                       "    \"grantdata\" : \"grantdata\"      (string) contents of the grant data field\n"
+                       "    \"issuerdata\" : \"issuerdata\"    (string) contents of the issuer data field\n"
+                       "    \"holderdata\" : \"holderdata\"    (string) contents of the holder data field\n"
                        "  }...\n"
-                       "]"
+                       "]\n"
                    },
                    RPCExamples{
                        HelpExampleCli("omni_getnonfungibletokendata", "1 10 20")
@@ -284,12 +298,11 @@ UniValue omni_getnonfungibletokenranges(const JSONRPCRequest& request)
                    RPCResult{
                        "[                                   (array of JSON objects)\n"
                        "  {\n"
-                       "\"address\" : \"address\",              (string) the address"
-                       "\"tokenstart\" : n,                   (number) the first token in this range"
-                       "\"tokenend\" : n,                     (number) the last token in this range"
-                       "\"amount\" : n,                       (number) the amount of tokens in the range"
-                       "  },\n"
-                       "  ...\n"
+                       "    \"address\" : \"address\",              (string) the address\n"
+                       "    \"tokenstart\" : n,                   (number) the first token in this range\n"
+                       "    \"tokenend\" : n,                     (number) the last token in this range\n"
+                       "    \"amount\" : n,                       (number) the amount of tokens in the range\n"
+                       "  }...\n"
                        "]\n"
                    },
                    RPCExamples{
@@ -570,8 +583,8 @@ static UniValue omni_getbalance(const JSONRPCRequest& request)
                    "}\n"
                },
                RPCExamples{
-                   HelpExampleCli("omni_getbalance", "\"1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P\" 1")
-                   + HelpExampleRpc("omni_getbalance", "\"1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P\", 1")
+                   HelpExampleCli("omni_getbalance", "\"6eXoDUSUV7yrAxKVNPEeKAHMY8San5Z37V\" 1")
+                   + HelpExampleRpc("omni_getbalance", "\"6eXoDUSUV7yrAxKVNPEeKAHMY8San5Z37V\", 1")
                }
             }.ToString());
 
@@ -669,8 +682,8 @@ static UniValue omni_getallbalancesforaddress(const JSONRPCRequest& request)
                    "]\n"
                },
                RPCExamples{
-                   HelpExampleCli("omni_getallbalancesforaddress", "\"1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P\"")
-                   + HelpExampleRpc("omni_getallbalancesforaddress", "\"1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P\"")
+                   HelpExampleCli("omni_getallbalancesforaddress", "\"6eXoDUSUV7yrAxKVNPEeKAHMY8San5Z37V\"")
+                   + HelpExampleRpc("omni_getallbalancesforaddress", "\"6eXoDUSUV7yrAxKVNPEeKAHMY8San5Z37V\"")
                }
             }.ToString());
 

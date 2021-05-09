@@ -316,7 +316,7 @@ static UniValue omni_sendnonfungible(const JSONRPCRequest& request)
                    {"tokenstart", RPCArg::Type::NUM, RPCArg::Optional::NO, "the first token in the range to send"},
                    {"tokenend", RPCArg::Type::NUM, RPCArg::Optional::NO, "the last token in the range to send"},
                    {"redeemaddress", RPCArg::Type::STR, RPCArg::Optional::OMITTED_NAMED_ARG, "an address that can spend the transaction dust (sender by default)"},
-                   {"referenceamount", RPCArg::Type::STR, RPCArg::Optional::OMITTED_NAMED_ARG, "a bitcoin amount that is sent to the receiver (minimal by default)"},
+                   {"referenceamount", RPCArg::Type::STR, RPCArg::Optional::OMITTED_NAMED_ARG, "a feathercoin amount that is sent to the receiver (minimal by default)"},
                },
                RPCResult{
                    "\"payload\" : \"payload\"        (string) the hex-encoded payload"
@@ -1512,8 +1512,8 @@ static UniValue omni_sendfreeze(const JSONRPCRequest& request)
                    "\"hash\"                  (string) the hex-encoded transaction hash\n"
                },
                RPCExamples{
-                   HelpExampleCli("omni_sendfreeze", "\"1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P\" \"3HTHRxu3aSDV4deakjC7VmsiUp7c6dfbvs\" 1 \"0\"")
-                   + HelpExampleRpc("omni_sendfreeze", "\"1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P\", \"3HTHRxu3aSDV4deakjC7VmsiUp7c6dfbvs\", 1, \"0\"")
+                   HelpExampleCli("omni_sendfreeze", "\"6eXoDUSUV7yrAxKVNPEeKAHMY8San5Z37V\" \"3HTHRxu3aSDV4deakjC7VmsiUp7c6dfbvs\" 1 \"0\"")
+                   + HelpExampleRpc("omni_sendfreeze", "\"6eXoDUSUV7yrAxKVNPEeKAHMY8San5Z37V\", \"3HTHRxu3aSDV4deakjC7VmsiUp7c6dfbvs\", 1, \"0\"")
                }
             }.ToString());
 
@@ -1569,8 +1569,8 @@ static UniValue omni_sendunfreeze(const JSONRPCRequest& request)
                    "\"hash\"                  (string) the hex-encoded transaction hash\n"
                },
                RPCExamples{
-                   HelpExampleCli("omni_sendunfreeze", "\"1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P\" \"3HTHRxu3aSDV4deakjC7VmsiUp7c6dfbvs\" 1 0")
-                   + HelpExampleRpc("omni_sendunfreeze", "\"1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P\", \"3HTHRxu3aSDV4deakjC7VmsiUp7c6dfbvs\", 1, 0")
+                   HelpExampleCli("omni_sendunfreeze", "\"6eXoDUSUV7yrAxKVNPEeKAHMY8San5Z37V\" \"3HTHRxu3aSDV4deakjC7VmsiUp7c6dfbvs\" 1 0")
+                   + HelpExampleRpc("omni_sendunfreeze", "\"6eXoDUSUV7yrAxKVNPEeKAHMY8San5Z37V\", \"3HTHRxu3aSDV4deakjC7VmsiUp7c6dfbvs\", 1, 0")
                }
             }.ToString());
 
@@ -1677,8 +1677,8 @@ static UniValue omni_sendactivation(const JSONRPCRequest& request)
                    "\"hash\"                  (string) the hex-encoded transaction hash\n"
                },
                RPCExamples{
-                   HelpExampleCli("omni_sendactivation", "\"1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P\" 1 370000 999")
-                   + HelpExampleRpc("omni_sendactivation", "\"1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P\", 1, 370000, 999")
+                   HelpExampleCli("omni_sendactivation", "\"6eXoDUSUV7yrAxKVNPEeKAHMY8San5Z37V\" 1 370000 999")
+                   + HelpExampleRpc("omni_sendactivation", "\"6eXoDUSUV7yrAxKVNPEeKAHMY8San5Z37V\", 1, 370000, 999")
                }
             }.ToString());
 
@@ -1726,8 +1726,8 @@ static UniValue omni_senddeactivation(const JSONRPCRequest& request)
                    "\"hash\"                  (string) the hex-encoded transaction hash\n"
                },
                RPCExamples{
-                   HelpExampleCli("omni_senddeactivation", "\"1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P\" 1")
-                   + HelpExampleRpc("omni_senddeactivation", "\"1EXoDusjGwvnjZUyKkxZ4UHEf77z6A5S4P\", 1")
+                   HelpExampleCli("omni_senddeactivation", "\"6eXoDUSUV7yrAxKVNPEeKAHMY8San5Z37V\" 1")
+                   + HelpExampleRpc("omni_senddeactivation", "\"6eXoDUSUV7yrAxKVNPEeKAHMY8San5Z37V\", 1")
                }
             }.ToString());
 

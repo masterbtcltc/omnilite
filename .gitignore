@@ -98,6 +98,9 @@ background.tiff*
 # Qt Creator
 Makefile.am.user
 
+# CLion
+.idea/
+
 # Unit-tests
 Makefile.test
 feathercoin-qt_test
