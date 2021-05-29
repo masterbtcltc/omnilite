@@ -23,19 +23,6 @@ class OmniSendToOwnersV1(BitcoinTestFramework):
         # Obtaining a master address to work with
         address = self.nodes[0].getnewaddress()
 
-        # Import and fund exodus address
-        self.nodes[0].importprivkey("cV35DD5QsWnFDF9B3tAaZjFgC8FRXBuTpLSE1wf734MgKiJFDLtx")
-        self.nodes[0].sendtoaddress("mgimY5b4MTXRdc9LgQk9KYQtB37W4UmKwT", 10)
-        self.nodes[0].generatetoaddress(1, coinbase_address)
-
-        # Funding the address with some FEATHER for fees
-        txid = self.nodes[0].omni_send("mgimY5b4MTXRdc9LgQk9KYQtB37W4UmKwT", address, 3, "0.2")
-        self.nodes[0].generatetoaddress(1, coinbase_address)
-
-        # Checking the transaction was valid...
-        result = self.nodes[0].omni_gettransaction(txid)
-        assert_equal(result['valid'], True)
-
         # Funding the address with some testnet BTC for fees
         self.nodes[0].sendtoaddress(address, 20)
         self.nodes[0].generatetoaddress(1, coinbase_address)

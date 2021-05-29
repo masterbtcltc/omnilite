@@ -27,14 +27,6 @@ class OmniSTOSpec(BitcoinTestFramework):
         self.nodes[0].sendtoaddress(address, 10)
         self.nodes[0].generatetoaddress(1, coinbase_address)
 
-        # Import and fund exodus address
-        self.nodes[0].importprivkey("cV35DD5QsWnFDF9B3tAaZjFgC8FRXBuTpLSE1wf734MgKiJFDLtx")
-        self.nodes[0].sendtoaddress("mgimY5b4MTXRdc9LgQk9KYQtB37W4UmKwT", 10)
-        self.nodes[0].generatetoaddress(1, coinbase_address)
-
-        stoFeePerAddress = "0.00000001"
-        FEATHER = 3
-
         NUM_OWNERS = "30" # Was 70 in OmniJ tests but very slow in python!
         params = [{"maxN": NUM_OWNERS, "amountStartPerOwner": "1", "amountDistributePerOwner": "1", "propertyType": 1},
                   {"maxN": NUM_OWNERS, "amountStartPerOwner": "1", "amountDistributePerOwner": "3", "propertyType": 1},
@@ -69,17 +61,11 @@ class OmniSTOSpec(BitcoinTestFramework):
                 actorSPT = ((maxN * (maxN + 1)) / 2) * amountDistributePerOwner
             else:
                 actorSPT = "{:.8f}".format(((maxN * (maxN + 1)) / 2) * amountDistributePerOwner)
-            actorMSC = maxN * Decimal(stoFeePerAddress)
 
             # Create actor
             actorAddress = self.nodes[0].getnewaddress()
-            txid = self.nodes[0].omni_send("mgimY5b4MTXRdc9LgQk9KYQtB37W4UmKwT", actorAddress, FEATHER, "{:.8f}".format(actorMSC))
             self.nodes[0].sendtoaddress(actorAddress, "1")
             self.nodes[0].generatetoaddress(1, coinbase_address)
-
-            # Checking the transaction was valid...
-            result = self.nodes[0].omni_gettransaction(txid)
-            assert_equal(result['valid'], True)
 
             # Create property
             txid = self.nodes[0].omni_sendissuancefixed(actorAddress, 1, settings['propertyType'], 0, "", "", "TST", "", "", str(fundingSPT))
@@ -93,9 +79,7 @@ class OmniSTOSpec(BitcoinTestFramework):
             currencySPT = result['propertyid']
 
             # Check funding balances of actor
-            startingBalanceMSC = self.nodes[0].omni_getbalance(actorAddress, FEATHER)
             startingBalanceSPT = self.nodes[0].omni_getbalance(actorAddress, currencySPT)
-            assert_equal(Decimal(startingBalanceMSC['balance']), actorMSC)
             assert_equal(Decimal(startingBalanceSPT['balance']), fundingSPT)
 
             # Create owners
@@ -114,9 +98,7 @@ class OmniSTOSpec(BitcoinTestFramework):
             self.nodes[0].generatetoaddress(1, coinbase_address)
 
             # Check starting balances of actor
-            reallyBalanceMSC = self.nodes[0].omni_getbalance(actorAddress, FEATHER)
             reallyBalanceSPT = self.nodes[0].omni_getbalance(actorAddress, currencySPT)
-            assert_equal(Decimal(reallyBalanceMSC['balance']), actorMSC)
             assert_equal(Decimal(reallyBalanceSPT['balance']), Decimal(actorSPT))
 
             # Check owner balances
