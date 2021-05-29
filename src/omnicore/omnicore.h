@@ -33,12 +33,12 @@ int const MAX_STATE_HISTORY = 200;
 int const STORE_EVERY_N_BLOCK = 5000;
 // Don't store the state every block on mainnet until block 622000
 // was reached
-int const DONT_STORE_MAINNET_STATE_UNTIL = 622000;
+int const DONT_STORE_MAINNET_STATE_UNTIL = 3454000;
 
 #define TEST_ECO_PROPERTY_1 (0x80000003UL)
 
 // increment this value to force a refresh of the state (similar to --startclean)
-#define DB_VERSION 8
+#define DB_VERSION 9
 
 // could probably also use: int64_t maxInt64 = std::numeric_limits<int64_t>::max();
 // maximum numeric values from the spec:
@@ -114,7 +114,6 @@ enum TransactionType {
 #define OMNI_PROPERTY_BTC   0
 #define OMNI_PROPERTY_MSC   1
 #define OMNI_PROPERTY_TMSC  2
-#define OMNI_PROPERTY_FEATHER  3
 
 /** Number formatting related functions. */
 std::string FormatDivisibleMP(int64_t amount, bool fSign = false);
@@ -127,9 +126,6 @@ std::string FormatShortMP(uint32_t propertyId, int64_t amount);
 
 /** Returns the Exodus address. */
 const CTxDestination ExodusAddress();
-
-/** Returns the FEATHER address. */
-const CTxDestination FeatherAddress();
 
 /** Returns the marker for class C transactions. */
 const std::vector<unsigned char> GetOmMarker();

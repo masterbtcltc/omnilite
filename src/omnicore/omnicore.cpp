@@ -83,13 +83,6 @@ static const std::string exodus_testnet = "mpEXodUS8LUsXUHm1Vyk7b1AzG9CkKw6Mp";
 //! Regtest Exodus address
 static const std::string exodus_regtest = "moPocgnrjjtnx8FWqLTQUxXmWvGiMmQUdo";
 
-//! Mainnet FEATHER address
-static const std::string feather_mainnet = "6kkYNUiQFDbYoj7Pr8wc9oqJ1TjDNtxy77";
-//! Testnet FEATHER address
-static const std::string feather_testnet = "n1yVXkHgAuQ8bNtwMWVZkGMK76cUqWngP9";
-//! Regtest FEATHER address
-static const std::string feather_regtest = "mgimY5b4MTXRdc9LgQk9KYQtB37W4UmKwT";
-
 static int nWaterlineBlock = 0;
 
 /**
@@ -159,8 +152,6 @@ std::string mastercore::strMPProperty(uint32_t propertyId)
             case OMNI_PROPERTY_MSC: str = "OMN";
                 break;
             case OMNI_PROPERTY_TMSC: str = "TOMN";
-                break;
-            case OMNI_PROPERTY_FEATHER: str = "FEATHER";
                 break;
             default:
                 str = strprintf("SP token: %d", propertyId);
@@ -1840,21 +1831,6 @@ int mastercore_handler_block_begin(int nBlockPrev, CBlockIndex const * pBlockInd
         eraseExpiredCrowdsale(pBlockIndex);
     }
 
-    // Create property ID 3 FEATHER at one past OmniFeather genesis block
-    if (pBlockIndex->nHeight == ConsensusParams().GENESIS_BLOCK)
-    {
-        CMPSPInfo::Entry info;
-        uint32_t propertyId = OMNI_PROPERTY_FEATHER;
-
-        pDbSpInfo->getSP(propertyId, info);
-        info.creation_block = pBlockIndex->GetBlockHash();
-        pDbSpInfo->putSPGeneral(info, propertyId);
-
-        assert(update_tally_map(info.issuer, propertyId, info.num_tokens, BALANCE));
-
-        return 1;
-    }
-
     return 0;
 }
 
@@ -1963,30 +1939,6 @@ const CTxDestination ExodusAddress()
     else
     {
         static CTxDestination mainAddress = DecodeDestination(exodus_mainnet);
-        return mainAddress;
-    }
-}
-
-/**
- * Returns the Feather address.
- *
- * @return The Exodus address
- */
-const CTxDestination FeatherAddress()
-{
-    if (TestNet())
-    {
-        static CTxDestination testAddress = DecodeDestination(feather_testnet);
-        return testAddress;
-    }
-    else if (RegTest())
-    {
-        static CTxDestination testAddress = DecodeDestination(feather_regtest);
-        return testAddress;
-    }
-    else
-    {
-        static CTxDestination mainAddress = DecodeDestination(feather_mainnet);
         return mainAddress;
     }
 }

@@ -112,18 +112,6 @@ CMPSPInfo::CMPSPInfo(const fs::path& path, bool fWipe)
     implied_tomni.url = "N/A";
     implied_tomni.data = "Reserved";
 
-    implied_feather.issuer = EncodeDestination(FeatherAddress());
-    implied_feather.updateIssuer(0, 0, implied_tomni.issuer);
-    implied_feather.txid = Params().GenesisBlock().vtx[0]->GetHash(); // Use genesis coinbase as txid! Used for DB lookups
-    implied_feather.prop_type = MSC_PROPERTY_TYPE_DIVISIBLE;
-    implied_feather.num_tokens = MAX_MONEY;
-    implied_feather.category = "N/A";
-    implied_feather.subcategory = "N/A";
-    implied_feather.name = "Feather";
-    implied_feather.url = "http://feathercoin.com";
-    implied_feather.data = "Feather tokens serve as the binding between Feathercoin, smart properties and contracts created on OmniFeather.";
-    implied_feather.fixed = true;
-
     init();
 }
 
@@ -280,9 +268,6 @@ bool CMPSPInfo::getSP(uint32_t propertyId, Entry& info) const
     if (OMNI_PROPERTY_MSC == propertyId) {
         info = implied_omni;
         return true;
-    } else if (OMNI_PROPERTY_FEATHER == propertyId) {
-        info = implied_feather;
-        return true;
     } else if (OMNI_PROPERTY_TMSC == propertyId) {
         info = implied_tomni;
         return true;
@@ -317,7 +302,7 @@ bool CMPSPInfo::getSP(uint32_t propertyId, Entry& info) const
 bool CMPSPInfo::hasSP(uint32_t propertyId) const
 {
     // Special cases for constant SPs MSC and TMSC
-    if (OMNI_PROPERTY_MSC == propertyId || OMNI_PROPERTY_TMSC == propertyId || OMNI_PROPERTY_FEATHER == propertyId) {
+    if (OMNI_PROPERTY_MSC == propertyId || OMNI_PROPERTY_TMSC == propertyId) {
         return true;
     }
 
@@ -491,7 +476,7 @@ bool CMPSPInfo::getWatermark(uint256& watermark) const
 void CMPSPInfo::printAll() const
 {
     // print off the hard coded MSC and TMSC entries
-    for (uint32_t idx = OMNI_PROPERTY_MSC; idx <= OMNI_PROPERTY_FEATHER; idx++) {
+    for (uint32_t idx = OMNI_PROPERTY_MSC; idx <= OMNI_PROPERTY_TMSC; idx++) {
         Entry info;
         PrintToConsole("%10d => ", idx);
         if (getSP(idx, info)) {

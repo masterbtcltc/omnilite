@@ -136,7 +136,6 @@ private:
     // implied version of OMN and TOMN so they don't hit the leveldb
     Entry implied_omni;
     Entry implied_tomni;
-    Entry implied_feather;
 
     uint32_t next_spid;
     uint32_t next_test_spid;
