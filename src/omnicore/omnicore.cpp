@@ -394,13 +394,11 @@ bool mastercore::isAddressFrozen(const std::string& address, uint32_t propertyId
 std::string mastercore::getTokenLabel(uint32_t propertyId)
 {
     std::string tokenStr;
-    if (propertyId <= 3) {
+    if (propertyId <= 2) {
         if (propertyId == 1) {
             tokenStr = " OMNI";
         } else if (propertyId == 2) {
             tokenStr = " TOMNI";
-        } else {
-            tokenStr = " FEATHER";
         }
     } else {
         tokenStr = strprintf(" SPT#%d", propertyId);
