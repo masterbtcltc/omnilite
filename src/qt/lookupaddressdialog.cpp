@@ -157,8 +157,9 @@ void LookupAddressDialog::searchAddress()
     {
         // update top fields
         ui->addressLabel->setText(QString::fromStdString(searchText));
-        if ((searchText.substr(0,1) == "1") || (searchText.substr(0,1) == "m") || (searchText.substr(0,1) == "n")) ui->addressTypeLabel->setText("Public Key Hash");
-        if ((searchText.substr(0,1) == "2") || (searchText.substr(0,1) == "3")) ui->addressTypeLabel->setText("Pay to Script Hash");
+        if ((searchText.substr(0,1) == "6") || (searchText.substr(0,1) == "m")) ui->addressTypeLabel->setText("Public Key Hash");
+        if ((searchText.substr(0,1) == "3") || (searchText.substr(0,1) == "2")) ui->addressTypeLabel->setText("Pay to Script Hash");
+        if ((searchText.substr(0,1) == "f") || (searchText.substr(0,1) == "t")) ui->addressTypeLabel->setText("Native SegWit Bech32");
         if (IsMyAddress(searchText, &walletModel->wallet())) { ui->isMineLabel->setText("Yes"); } else { ui->isMineLabel->setText("No"); }
         ui->balanceLabel->setText(QString::fromStdString(FormatDivisibleMP(GetAvailableTokenBalance(searchText, 1)) + " OMNI"));
         // QR
