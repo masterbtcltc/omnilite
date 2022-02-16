@@ -295,8 +295,9 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "omni_createpayload_sendnonfungible", 1, "tokenstart"},
     { "omni_createpayload_sendnonfungible", 2, "tokenend"},
     { "omni_createpayload_setnonfungibledata", 0, "propertyid"},
-    { "omni_createpayload_setnonfungibledata", 1, "tokenid"},
-    { "omni_createpayload_setnonfungibledata", 2, "issuer"},
+    { "omni_createpayload_setnonfungibledata", 1, "tokenstart"},
+    { "omni_createpayload_setnonfungibledata", 2, "tokenend"},
+    { "omni_createpayload_setnonfungibledata", 3, "issuer"},
 };
 // clang-format on
 
