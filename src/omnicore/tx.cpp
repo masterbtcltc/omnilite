@@ -2200,6 +2200,10 @@ int CMPTransaction::logicMath_NonFungibleData()
                     __func__,
                     sender,
                     property);
+
+            if (IsFeatureActivated(FEATURE_NONFUNGIBLE_ISSUER, block)) {
+                return (PKT_ERROR_SP -22);
+            }
         }
     }
 

@@ -143,6 +143,7 @@ CMainConsensusParams::CMainConsensusParams()
     // Other feature activations:
     FREEZENOTICE_FEATURE_BLOCK = 100000000;
     FREEDEX_FEATURE_BLOCK = GENESIS_BLOCK;
+    NONFUNGIBLETOKEN_ISSUER_DATA = 100000000;
 }
 
 /**
@@ -176,6 +177,7 @@ CTestNetConsensusParams::CTestNetConsensusParams()
     // Other feature activations:
     FREEZENOTICE_FEATURE_BLOCK = 0;
     FREEDEX_FEATURE_BLOCK = 0;
+    NONFUNGIBLETOKEN_ISSUER_DATA = 0;
 }
 
 /**
@@ -209,6 +211,7 @@ CRegTestConsensusParams::CRegTestConsensusParams()
     // Other feature activations:
     FREEZENOTICE_FEATURE_BLOCK = 100000000;
     FREEDEX_FEATURE_BLOCK = 100000000;
+    NONFUNGIBLETOKEN_ISSUER_DATA = 100000000;
 }
 
 //! Consensus parameters for mainnet
@@ -353,6 +356,9 @@ bool ActivateFeature(uint16_t featureId, int activationBlock, uint32_t minClient
         case FEATURE_NONFUNGIBLE:
             MutableConsensusParams().MSC_NONFUNGIBLE_BLOCK = activationBlock;
         break;
+        case FEATURE_NONFUNGIBLE_ISSUER:
+            MutableConsensusParams().NONFUNGIBLETOKEN_ISSUER_DATA = activationBlock;
+        break;
         default:
             supported = false;
         break;
@@ -403,6 +409,9 @@ bool DeactivateFeature(uint16_t featureId, int transactionBlock)
         case FEATURE_NONFUNGIBLE:
             MutableConsensusParams().MSC_NONFUNGIBLE_BLOCK = 100000000;
         break;
+        case FEATURE_NONFUNGIBLE_ISSUER:
+            MutableConsensusParams().NONFUNGIBLETOKEN_ISSUER_DATA = 999999;
+        break;
         default:
             return false;
         break;
@@ -427,6 +436,7 @@ std::string GetFeatureName(uint16_t featureId)
         case FEATURE_FREEZENOTICE: return "Activate the waiting period for enabling freezing";
         case FEATURE_FREEDEX: return "Activate trading of any token on the distributed exchange";
         case FEATURE_NONFUNGIBLE: return "Uniquely identifiable tokens";
+        case FEATURE_NONFUNGIBLE_ISSUER: return "NFT issuer data update by issuers only";
 
         default: return "Unknown feature";
     }
@@ -453,6 +463,9 @@ bool IsFeatureActivated(uint16_t featureId, int transactionBlock)
         case FEATURE_NONFUNGIBLE:
             activationBlock = params.MSC_NONFUNGIBLE_BLOCK;
         break;
+        case FEATURE_NONFUNGIBLE_ISSUER:
+            activationBlock = params.NONFUNGIBLETOKEN_ISSUER_DATA;
+            break;
         default:
             return false;
     }

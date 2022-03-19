@@ -17,6 +17,8 @@ const uint16_t FEATURE_FREEZENOTICE = 14;
 const uint16_t FEATURE_FREEDEX = 15;
 //! Feature identifier to enable non-fungible token support
 const uint16_t FEATURE_NONFUNGIBLE = 16;
+//! Feature identifier to enable NFT issuer data update by issuers only
+const uint16_t FEATURE_NONFUNGIBLE_ISSUER = 18;
 
 /** A structure to represent transaction restrictions.
  */
@@ -99,6 +101,8 @@ public:
     int FREEZENOTICE_FEATURE_BLOCK;
     //! Block to activate the waiting period to activate trading of any token on the distributed exchange
     int FREEDEX_FEATURE_BLOCK;
+    //! Block to activate the ability for only issuers to update issuer data on NFTs
+    int NONFUNGIBLETOKEN_ISSUER_DATA;
 
     /** Returns a mapping of transaction types, and the blocks at which they are enabled. */
     virtual std::vector<TransactionRestriction> GetRestrictions() const;
